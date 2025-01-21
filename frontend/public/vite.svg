@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <path d="M0,128 Q64,32 128,128 T256,128" fill="none" stroke="url(#waveGradient)" stroke-width="10" />
+  <path d="M0,160 Q64,64 128,160 T256,160" fill="none" stroke="url(#waveGradient)" stroke-width="8" opacity="0.6" />
+  <path d="M0,192 Q64,96 128,192 T256,192" fill="none" stroke="url(#waveGradient)" stroke-width="6" opacity="0.4" />
+</svg>
