@@ -3,6 +3,7 @@ import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import QueueList from "./QueueList";
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -17,6 +18,7 @@ export const PlaybackControls = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [showQueue, setShowQueue] = useState(false);
 
   useEffect(() => {
     audioRef.current = document.querySelector("audio");
@@ -124,7 +126,10 @@ export const PlaybackControls = () => {
                 <Repeat className='h-4 w-4' />
               </Button>
               {repeatMode === 2 && (
-                <span className="absolute bottom-0 right-0 text-xs text-red-400">x2</span>
+                <span className="absolute bottom-0 right-0 text-xs text-red-400">✦</span>
+              )}
+              {repeatMode === 1  && (
+                <span className="absolute bottom-0 right-0 text-xs text-red-400">•</span>
               )}
             </div>
           </div>
@@ -146,7 +151,9 @@ export const PlaybackControls = () => {
           <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
             <Mic2 className='h-4 w-4' />
           </Button>
-          <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
+          <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'
+          onClick={() => setShowQueue(!showQueue)}
+          >
             <ListMusic className='h-4 w-4' />
           </Button>
           <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
@@ -173,6 +180,7 @@ export const PlaybackControls = () => {
           </div>
         </div>
       </div>
+      {showQueue && <QueueList onClose={() => setShowQueue(false)} />}
     </footer>
   );
 };

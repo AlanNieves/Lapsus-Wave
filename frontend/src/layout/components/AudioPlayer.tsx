@@ -24,30 +24,33 @@ const AudioPlayer = () => {
   // handle song ends
   useEffect(() => {
     const audio = audioRef.current;
-    let repeatCount = 0;
 
     const handleEnded = () => {
       if (!audio) return;
 
       if (repeatMode === 1) {
-        audio.currentTime = 0;
-        audio.play();
-        setRepeatMode(0); // Disable repeat after one repeat
-        setIsPlaying(true); // Set play button to pause state
+        // Repetir una vez
+        audio.currentTime = 0; // Reiniciar la canción
+        setIsPlaying(true); // Forzar el estado de reproducción
+        audio.play() // Reproducir automáticamente
+          .catch((error) => {
+            if (error.name !== "AbortError") {
+              console.error("Error playing audio:", error);
+            }
+          });
+        setRepeatMode(0); // Desactivar el modo de repetición después de una repetición
       } else if (repeatMode === 2) {
-        if (repeatCount < 1) {
-          repeatCount++;
-          audio.currentTime = 0;
-          audio.play();
-          setIsPlaying(true); // Set play button to pause state
-        } else {
-          repeatCount = 0;
-          setRepeatMode(0); // Disable repeat after two repeats
-          audio.currentTime = 0;
-          audio.play();
-          setIsPlaying(true); // Set play button to pause state
-        }
+        // Repetir infinitamente
+        audio.currentTime = 0; // Reiniciar la canción
+        setIsPlaying(true); // Forzar el estado de reproducción
+        audio.play() // Reproducir automáticamente
+          .catch((error) => {
+            if (error.name !== "AbortError") {
+              console.error("Error playing audio:", error);
+            }
+          });
       } else {
+        // No hay repetición, continuar con la siguiente canción
         playNext();
       }
     };
@@ -72,6 +75,9 @@ const AudioPlayer = () => {
 
       prevSongRef.current = currentSong?.audioUrl;
 
+      // Desactivar el modo de repetición al cambiar de canción
+      setRepeatMode(0);
+
       if (isPlaying) {
         audio.play().catch((error) => {
           if (error.name !== "AbortError") {
@@ -80,7 +86,7 @@ const AudioPlayer = () => {
         });
       }
     }
-  }, [currentSong, isPlaying]);
+  }, [currentSong, isPlaying, setRepeatMode]);
 
   return <audio ref={audioRef} />;
 };

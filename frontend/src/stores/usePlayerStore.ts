@@ -10,6 +10,7 @@ interface PlayerStore {
   currentIndex: number;
   isShuffleActive: boolean;
   repeatMode: number; // 0: no repeat, 1: repeat once, 2: repeat twice
+  setQueue: (queue: Song[]) => void;
 
   initializeQueue: (songs: Song[]) => void;
   playAlbum: (songs: Song[], startIndex?: number) => void;
@@ -220,5 +221,15 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
   setIsPlaying: (isPlaying: boolean) => {
     set({ isPlaying });
+  },
+
+  setQueue: (queue: Song[]) => {
+    set({ queue });
+
+    //si la cancion actual fue eliminada, pasar a la siguiente
+    const { currentSong} = get();
+    if(currentSong && !queue.some((song) => song._id === currentSong._id)){
+      set({ currentSong: queue[0], currentIndex: 0 });
+    }
   },
 }));
