@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Song } from "@/types";
 import { useChatStore } from "./useChatStore";
 
+
 interface PlayerStore {
   currentSong: Song | null;
   isPlaying: boolean;
@@ -9,9 +10,8 @@ interface PlayerStore {
   originalQueue: Song[];
   currentIndex: number;
   isShuffleActive: boolean;
-  repeatMode: number; // 0: no repeat, 1: repeat once, 2: repeat twice
+  repeatMode: number; // 0: no repeat, 1: repeat once, 2: repeat ininitely
   setQueue: (queue: Song[]) => void;
-
   initializeQueue: (songs: Song[]) => void;
   playAlbum: (songs: Song[], startIndex?: number) => void;
   setCurrentSong: (song: Song | null) => void;
@@ -23,9 +23,15 @@ interface PlayerStore {
   toggleRepeat: () => void;
   setRepeatMode: (mode: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
+  showQueue: boolean;
+  toggleQueue: () => void;
+  setShowQueue: (show: boolean) => void;
+  isExpandedViewOpen: boolean;
+  toggleExpandedView: () => void;
 }
 
-export const usePlayerStore = create<PlayerStore>((set, get) => ({
+export const usePlayerStore = create<PlayerStore>
+((set, get) => ({
   currentSong: null,
   isPlaying: false,
   queue: [],
@@ -33,6 +39,10 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   currentIndex: -1,
   isShuffleActive: false,
   repeatMode: 0,
+  showQueue: false,
+  isExpandedViewOpen: false,
+  
+
 
   initializeQueue: (songs: Song[]) => {
     set({
@@ -58,7 +68,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     set({
       queue: songs,
       originalQueue: songs,
-      currentSong: song,
+      currentSong: songs[startIndex],
       currentIndex: startIndex,
       isPlaying: true,
     });
@@ -232,4 +242,14 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       set({ currentSong: queue[0], currentIndex: 0 });
     }
   },
+  toggleQueue: () => {
+    set((state) => ({ showQueue: !state.showQueue })); // Usar el estado anterior
+  },
+
+  setShowQueue: (show: boolean) => {
+    set({ showQueue: show });
+  },
+
+  toggleExpandedView: () => set((state) => ({ isExpandedViewOpen: !state.isExpandedViewOpen})),
+
 }));

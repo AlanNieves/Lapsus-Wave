@@ -3,7 +3,8 @@ import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import QueueList from "./QueueList";
+
+
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -12,13 +13,13 @@ const formatTime = (seconds: number) => {
 };
 
 export const PlaybackControls = () => {
-  const { currentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode } = usePlayerStore();
+  const { currentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleQueue, toggleExpandedView} = usePlayerStore();
 
   const [volume, setVolume] = useState(75);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [showQueue, setShowQueue] = useState(false);
+
 
   useEffect(() => {
     audioRef.current = document.querySelector("audio");
@@ -62,12 +63,15 @@ export const PlaybackControls = () => {
                 src={currentSong.imageUrl}
                 alt={currentSong.title}
                 className='w-14 h-14 object-cover rounded-md'
+                onClick={toggleExpandedView}
               />
               <div className='flex-1 min-w-0'>
                 <div className='font-medium truncate hover:underline cursor-pointer'>
                   {currentSong.title}
                 </div>
-                <div className='text-sm text-lapsus-800 truncate hover:underline cursor-pointer'>
+                <div className='text-sm text-lapsus-800 truncate hover:underline cursor-pointer'
+                onClick={toggleExpandedView}
+                >
                   {currentSong.artist}
                 </div>
               </div>
@@ -128,7 +132,7 @@ export const PlaybackControls = () => {
               {repeatMode === 2 && (
                 <span className="absolute bottom-0 right-0 text-xs text-red-400">✦</span>
               )}
-              {repeatMode === 1  && (
+              {repeatMode === 1 && (
                 <span className="absolute bottom-0 right-0 text-xs text-red-400">•</span>
               )}
             </div>
@@ -151,11 +155,22 @@ export const PlaybackControls = () => {
           <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
             <Mic2 className='h-4 w-4' />
           </Button>
-          <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'
-          onClick={() => setShowQueue(!showQueue)}
+
+          <Button
+            size='icon'
+            variant='ghost'
+            className='hover:text-white text-lapsus-500'
+            onClick={() => toggleQueue()}
           >
             <ListMusic className='h-4 w-4' />
           </Button>
+
+          <div className="absolute right-0 z-50 mt-2">
+
+
+          </div>
+
+
           <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
             <Laptop2 className='h-4 w-4' />
           </Button>
@@ -180,7 +195,6 @@ export const PlaybackControls = () => {
           </div>
         </div>
       </div>
-      {showQueue && <QueueList onClose={() => setShowQueue(false)} />}
     </footer>
   );
 };

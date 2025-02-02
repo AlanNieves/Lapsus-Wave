@@ -5,6 +5,8 @@ import FriendsActivity from "./components/FriendsActivity";
 import AudioPlayer from "./components/AudioPlayer";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { useEffect, useState } from "react";
+import ExpandedPlayerView from "./components/ExpandedPlayerView";
+
 
 const MainLayout = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -24,8 +26,16 @@ const MainLayout = () => {
       <ResizablePanelGroup direction="horizontal" className="flex-1 flex h-full overflow-hidden p-2">
         <AudioPlayer />
         {/* left sidebar */}
-        <ResizablePanel defaultSize={20} minSize={isMobile ? 0 : 10} maxSize={30}>
+        <ResizablePanel defaultSize={20} minSize={isMobile ? 0 : 10} maxSize={30} onResize={(size) => {
+          localStorage.setItem("leftSidebarSize", size.toString())
+        }}>
           <LeftSidebar />
+        </ResizablePanel>
+
+        <ResizablePanel>
+          <div className="h-screen bg-lapsus-900 text-lapsus-500 flex flex-col">
+          <ExpandedPlayerView/>
+          </div>
         </ResizablePanel>
 
         <ResizableHandle className="w-2 bg-lapsus-900 rounded-lg transition-colors" />
@@ -51,6 +61,7 @@ const MainLayout = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-gradient from-lapsus-1200/90 to backdrop-blur-lg border-t border-transparent z-50">
         <PlaybackControls />
       </div>
+
     </div>
   );
 };
