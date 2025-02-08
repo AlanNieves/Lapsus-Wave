@@ -56,7 +56,7 @@ const ExpandedPlayerView = () => {
 
           {/* Efecto de luz pulsante alrededor de la carátula */}
           <motion.div
-            initial={{ opacity: 0.5, scale: 0.9 }}
+            initial={{ opacity: 0.5, scale: 1 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{
               duration: 2,

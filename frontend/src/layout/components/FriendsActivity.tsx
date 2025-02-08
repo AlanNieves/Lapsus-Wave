@@ -15,7 +15,7 @@ const FriendsActivity = () => {
 
 	return (
 		<div className='h-full bg-gradient-to-b from-lapsus-1200/30 to-lapsus-900 rounded-lg flex flex-col'>
-			<div className='p-4 flex justify-between items-center border-b border-lapsus-00'>
+			<div className='p-4 flex justify-between items-center'>
 				<div className='flex items-center gap-2'>
 					<Users className='size-5 shrink-0' />
 					<h2 className='font-semibold'>What they're listening to</h2>
