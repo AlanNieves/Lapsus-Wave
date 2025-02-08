@@ -1,19 +1,31 @@
 import { create } from "zustand";
-import { Song } from "@/types";
-import { useChatStore } from "./useChatStore";
+import { Playlist, Song } from "@/types";
+
 
 
 interface PlayerStore {
+  // Estado del reproductor
   currentSong: Song | null;
   isPlaying: boolean;
   queue: Song[];
   originalQueue: Song[];
   currentIndex: number;
   isShuffleActive: boolean;
-  repeatMode: number; // 0: no repeat, 1: repeat once, 2: repeat ininitely
+  repeatMode: number;
+  showQueue: boolean;
+  isExpandedViewOpen: boolean;
+  isMenuOpen: boolean;
+
+  // Estado de las playlists
+  playlists: Playlist[];
+
+  showPlaylists: boolean;
+
+  // Acciones del reproductor
   setQueue: (queue: Song[]) => void;
   initializeQueue: (songs: Song[]) => void;
   playAlbum: (songs: Song[], startIndex?: number) => void;
+  reproducePlaylist:(songs: Song[], startIndex?: number) =>void;
   setCurrentSong: (song: Song | null) => void;
   togglePlay: () => void;
   playNext: () => void;
@@ -23,15 +35,33 @@ interface PlayerStore {
   toggleRepeat: () => void;
   setRepeatMode: (mode: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
-  showQueue: boolean;
   toggleQueue: () => void;
   setShowQueue: (show: boolean) => void;
-  isExpandedViewOpen: boolean;
   toggleExpandedView: () => void;
+  setIsMenuOpen: (show: boolean) => void;
+
+  // Acciones de las playlists
+  createPlaylist: (name: string, description?: string) => Playlist;
+  addSongToPlaylist: (playlistId: string, song: Song) => void;
+  removeSongFromPlaylist: (playlistId: string, songId: string) => void;
+  updatePlaylist: (id: string, data: { name?: string; description?: string; imageUrl?: string }) => void;
+  deletePlaylist: (playlistId: string) => void;
+  
+  toggleShowPlaylists: () => void;
 }
 
-export const usePlayerStore = create<PlayerStore>
-((set, get) => ({
+//guardar funcion para cargar las playlists desde localstorage
+const loadPlaylists = (): Playlist[] => {
+  const playlists = localStorage.getItem("playlists");
+  return playlists ? JSON.parse(playlists) : [];
+};
+
+const savePlaylists = (playlists: Playlist[]) => {
+  localStorage.setItem("playlists", JSON.stringify(playlists));
+}
+
+export const usePlayerStore = create<PlayerStore>((set, get) => ({
+  // Estado inicial del reproductor
   currentSong: null,
   isPlaying: false,
   queue: [],
@@ -41,10 +71,17 @@ export const usePlayerStore = create<PlayerStore>
   repeatMode: 0,
   showQueue: false,
   isExpandedViewOpen: false,
-  
+  isMenuOpen: false,
 
+  // Estado inicial de las playlists
+  playlists: loadPlaylists(),
+  currentPlaylist: null,
+  showPlaylists: false,
 
-  initializeQueue: (songs: Song[]) => {
+  toggleShowPlaylists: () => set((state) => ({ showPlaylists: !state.showPlaylists })),
+
+  // Acciones del reproductor
+  initializeQueue: (songs) => {
     set({
       queue: songs,
       originalQueue: songs,
@@ -53,18 +90,8 @@ export const usePlayerStore = create<PlayerStore>
     });
   },
 
-  playAlbum: (songs: Song[], startIndex = 0) => {
+  playAlbum: (songs, startIndex = 0) => {
     if (songs.length === 0) return;
-
-    const song = songs[startIndex];
-
-    const socket = useChatStore.getState().socket;
-    if (socket.auth) {
-      socket.emit("update_activity", {
-        userId: socket.auth.userId,
-        activity: `Playing ${song.title} by ${song.artist}`,
-      });
-    }
     set({
       queue: songs,
       originalQueue: songs,
@@ -73,18 +100,19 @@ export const usePlayerStore = create<PlayerStore>
       isPlaying: true,
     });
   },
-
-  setCurrentSong: (song: Song | null) => {
-    if (!song) return;
-
-    const socket = useChatStore.getState().socket;
-    if (socket.auth) {
-      socket.emit("update_activity", {
-        userId: socket.auth.userId,
-        activity: `Playing ${song.title} by ${song.artist}`,
+  reproducePlaylist :(songs, startIndex = 0) => {
+      if(songs.length === 0) return;
+      set({
+        queue: songs,
+        originalQueue: songs,
+        currentSong: songs[startIndex],
+        currentIndex: startIndex,
+        isPlaying: true,
       });
-    }
+  },
 
+  setCurrentSong: (song) => {
+    if (!song) return;
     const songIndex = get().queue.findIndex((s) => s._id === song._id);
     set({
       currentSong: song,
@@ -93,93 +121,38 @@ export const usePlayerStore = create<PlayerStore>
     });
   },
 
-  togglePlay: () => {
-    const willStartPlaying = !get().isPlaying;
-
-    const currentSong = get().currentSong;
-    const socket = useChatStore.getState().socket;
-    if (socket.auth) {
-      socket.emit("update_activity", {
-        userId: socket.auth.userId,
-        activity:
-          willStartPlaying && currentSong ? `Playing ${currentSong.title} by ${currentSong.artist}` : "Idle",
-      });
-    }
-
-    set({
-      isPlaying: willStartPlaying,
-    });
-  },
+  togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
 
   playNext: () => {
     const { currentIndex, queue } = get();
     const nextIndex = currentIndex + 1;
-
     if (nextIndex < queue.length) {
-      const nextSong = queue[nextIndex];
-
-      const socket = useChatStore.getState().socket;
-      if (socket.auth) {
-        socket.emit("update_activity", {
-          userId: socket.auth.userId,
-          activity: `Playing ${nextSong.title} by ${nextSong.artist}`,
-        });
-      }
-
       set({
-        currentSong: nextSong,
+        currentSong: queue[nextIndex],
         currentIndex: nextIndex,
         isPlaying: true,
       });
     } else {
       set({ isPlaying: false });
-
-      const socket = useChatStore.getState().socket;
-      if (socket.auth) {
-        socket.emit("update_activity", {
-          userId: socket.auth.userId,
-          activity: `Idle`,
-        });
-      }
     }
   },
 
   playPrevious: () => {
     const { currentIndex, queue } = get();
     const prevIndex = currentIndex - 1;
-
     if (prevIndex >= 0) {
-      const prevSong = queue[prevIndex];
-
-      const socket = useChatStore.getState().socket;
-      if (socket.auth) {
-        socket.emit("update_activity", {
-          userId: socket.auth.userId,
-          activity: `Playing ${prevSong.title} by ${prevSong.artist}`,
-        });
-      }
-
       set({
-        currentSong: prevSong,
+        currentSong: queue[prevIndex],
         currentIndex: prevIndex,
         isPlaying: true,
       });
     } else {
       set({ isPlaying: false });
-
-      const socket = useChatStore.getState().socket;
-      if (socket.auth) {
-        socket.emit("update_activity", {
-          userId: socket.auth.userId,
-          activity: `Idle`,
-        });
-      }
     }
   },
 
   toggleShuffle: () => {
     const { isShuffleActive, originalQueue, currentSong } = get();
-
     if (isShuffleActive) {
       const currentSongIndex = originalQueue.findIndex((song) => song._id === currentSong?._id);
       set({
@@ -195,16 +168,8 @@ export const usePlayerStore = create<PlayerStore>
 
   shuffleQueue: () => {
     const { queue, currentSong } = get();
-
     if (queue.length <= 1) return;
-
-    const shuffledQueue = queue.slice();
-
-    for (let i = shuffledQueue.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledQueue[i], shuffledQueue[j]] = [shuffledQueue[j], shuffledQueue[i]];
-    }
-
+    const shuffledQueue = [...queue].sort(() => Math.random() - 0.5);
     if (currentSong) {
       const currentSongIndex = shuffledQueue.findIndex((song) => song._id === currentSong._id);
       if (currentSongIndex !== -1) {
@@ -212,44 +177,91 @@ export const usePlayerStore = create<PlayerStore>
         shuffledQueue.unshift(song);
       }
     }
-
-    set({
-      queue: shuffledQueue,
-      currentIndex: 0,
-    });
+    set({ queue: shuffledQueue, currentIndex: 0 });
   },
 
-  toggleRepeat: () => {
-    const { repeatMode } = get();
-    const newRepeatMode = (repeatMode + 1) % 3; // Cycle through 0, 1, 2
-    set({ repeatMode: newRepeatMode });
-  },
+  toggleRepeat: () => set((state) => ({ repeatMode: (state.repeatMode + 1) % 3 })),
 
-  setRepeatMode: (mode: number) => {
-    set({ repeatMode: mode });
-  },
+  setRepeatMode: (mode) => set({ repeatMode: mode }),
 
-  setIsPlaying: (isPlaying: boolean) => {
-    set({ isPlaying });
-  },
+  setIsPlaying: (isPlaying) => set({ isPlaying }),
 
-  setQueue: (queue: Song[]) => {
+  setQueue: (queue) => {
     set({ queue });
-
-    //si la cancion actual fue eliminada, pasar a la siguiente
-    const { currentSong} = get();
-    if(currentSong && !queue.some((song) => song._id === currentSong._id)){
+    const { currentSong } = get();
+    if (currentSong && !queue.some((song) => song._id === currentSong._id)) {
       set({ currentSong: queue[0], currentIndex: 0 });
     }
   },
-  toggleQueue: () => {
-    set((state) => ({ showQueue: !state.showQueue })); // Usar el estado anterior
+
+  toggleQueue: () => set((state) => ({ showQueue: !state.showQueue })),
+
+  setShowQueue: (show) => set({ showQueue: show }),
+
+  toggleExpandedView: () => set((state) => ({ isExpandedViewOpen: !state.isExpandedViewOpen })),
+
+  setIsMenuOpen: (show) => set({ isMenuOpen: show }),
+
+  // Acciones de las playlists
+  createPlaylist: (name, description = "") => {
+    const newPlaylist: Playlist = {
+      id: Date.now().toString(),
+      name,
+      description,
+      songs: [],
+      imageUrl: "",
+    };
+    set((state) => {
+      const updatedPlaylists = [...state.playlists, newPlaylist];
+      savePlaylists(updatedPlaylists);
+      return { playlists: updatedPlaylists };
+    });
+    return newPlaylist;
   },
 
-  setShowQueue: (show: boolean) => {
-    set({ showQueue: show });
+  updatePlaylist: (id, data) => {
+    set((state) => {
+      const updatedPlaylists = state.playlists.map((playlist) =>
+        playlist.id === id ? { ...playlist, ...data } : playlist
+      );
+      savePlaylists(updatedPlaylists);
+      return { playlists: updatedPlaylists };
+    });
   },
 
-  toggleExpandedView: () => set((state) => ({ isExpandedViewOpen: !state.isExpandedViewOpen})),
+  addSongToPlaylist: (playlistId, song) => {
+    set((state) => {
+      const updatedPlaylists = state.playlists.map((playlist) =>
+        playlist.id === playlistId
+          ? { ...playlist, songs: [...playlist.songs, song] }
+          : playlist
+      );
+      savePlaylists(updatedPlaylists);
+      return { playlists: updatedPlaylists };
+    });
+  },
 
+  removeSongFromPlaylist: (playlistId, songId) => {
+    set((state) => {
+      const updatedPlaylists = state.playlists.map((playlist) =>
+        playlist.id === playlistId
+          ? { ...playlist, songs: playlist.songs.filter((s) => s._id !== songId) }
+          : playlist
+      );
+      savePlaylists(updatedPlaylists);
+      return { playlists: updatedPlaylists };
+    });
+  },
+
+  deletePlaylist: (id) => {
+    set((state) => {
+      const updatedPlaylists = state.playlists.filter((playlist) => playlist.id !== id);
+      savePlaylists(updatedPlaylists);
+      return { playlists: updatedPlaylists };
+    });
+  },
+
+
+
+  
 }));

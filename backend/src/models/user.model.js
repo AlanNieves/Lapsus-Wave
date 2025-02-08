@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const userSchema = new mongoose.Schema(
 	{
@@ -15,6 +16,16 @@ const userSchema = new mongoose.Schema(
 			required: true,
 			unique: true,
 		},
+
+		playlists: [{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Playlist"
+		}],
+
+		collaborators: [{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User"
+		}],
 	},
 	{ timestamps: true } //  createdAt, updatedAt
 );

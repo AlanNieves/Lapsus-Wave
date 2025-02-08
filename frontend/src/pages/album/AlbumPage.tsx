@@ -5,6 +5,7 @@ import { usePlayerStore } from "@/stores/usePlayerStore";
 import { Clock, Pause, Play } from "lucide-react";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import SongOptionsMenu from "@/layout/components/SongMenu";
 
 export const formatDuration = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -15,7 +16,7 @@ export const formatDuration = (seconds: number) => {
 const AlbumPage = () => {
   const { albumId } = useParams();
   const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
-  const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
+  const { currentSong, isPlaying, playAlbum, togglePlay, isMenuOpen, setIsMenuOpen } = usePlayerStore();
 
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);
@@ -26,7 +27,9 @@ const AlbumPage = () => {
   const handlePlayAlbum = () => {
     if (!currentAlbum) return;
 
-    const isCurrentAlbumPlaying = currentAlbum?.songs.some((song) => song._id === currentSong?._id);
+    const isCurrentAlbumPlaying = currentAlbum?.songs.some(
+      (song) => song._id === currentSong?._id
+    );
     if (isCurrentAlbumPlaying) togglePlay();
     else {
       // start playing the album from the beginning
@@ -36,7 +39,6 @@ const AlbumPage = () => {
 
   const handlePlaySong = (index: number) => {
     if (!currentAlbum) return;
-
     playAlbum(currentAlbum?.songs, index);
   };
 
@@ -48,8 +50,7 @@ const AlbumPage = () => {
           <div className="relative min-h-full">
             {/* bg gradient */}
             <div
-              className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000
-              to-red-1000 pointer-events-none"
+              className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000 to-red-1000 pointer-events-none"
               aria-hidden="true"
             />
 
@@ -72,15 +73,17 @@ const AlbumPage = () => {
                 </div>
               </div>
 
-              {/* play button */}
+              {/* Play button */}
               <div className="px-6 pb-4 flex items-center gap-6">
                 <Button
                   onClick={handlePlayAlbum}
                   size="icon"
-                  className="w-14 h-14 rounded-full bg-lapsus-1200 hover:bg-lapsus- 
-                  hover:scale-105 transition-all"
+                  className="w-14 h-14 rounded-full bg-lapsus-1200 hover:bg-lapsus- hover:scale-105 transition-all"
                 >
-                  {isPlaying && currentAlbum?.songs.some((song) => song._id === currentSong?._id) ? (
+                  {isPlaying &&
+                  currentAlbum?.songs.some(
+                    (song) => song._id === currentSong?._id
+                  ) ? (
                     <Pause className="h-7 w-7 text-lapsus-500" />
                   ) : (
                     <Play className="h-7 w-7 text-lapsus-500" />
@@ -90,20 +93,19 @@ const AlbumPage = () => {
 
               {/* Table Section */}
               <div className="bg-black/20 backdrop-blur-sm">
-                {/* table header */}
+                {/* Table header */}
                 <div
-                  className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-10 py-2 text-sm 
-                  text-lapsus-800 border-b border-white/5"
+                  className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-10 py-2 text-sm text-lapsus-100"
                 >
                   <div>#</div>
                   <div>Title</div>
-                  <div>Released Date</div>
+                  <div>Added Date</div>
                   <div>
                     <Clock className="h-4 w-4" />
                   </div>
                 </div>
 
-                {/* songs list */}
+                {/* Songs list */}
                 <div className="px-6">
                   <div className="space-y-2 py-4">
                     {currentAlbum?.songs.map((song, index) => {
@@ -111,32 +113,60 @@ const AlbumPage = () => {
                       return (
                         <div
                           key={`${song._id}-${index}`} // Clave única
-                          onClick={() => handlePlaySong(index)}
-                          className={`grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm 
-                          text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer
-                          `}
+                          onMouseLeave={() => {
+                            if(isMenuOpen) {
+                              setIsMenuOpen(false);
+                            }
+                          }}
+
+                          className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
                         >
-                          <div className="flex items-center justify-center">
+                          <div className="flex items-center justify-center"
+                          onClick={(e)=> {
+                            e.stopPropagation();
+                            handlePlaySong(index);
+                          }}
+                          >
                             {isCurrentSong && isPlaying ? (
                               <div className="size-4 text-lapsus-1100">♫</div>
                             ) : (
                               <span className="group-hover:hidden">{index + 1}</span>
+                              
                             )}
                             {!isCurrentSong && (
                               <Play className="h-4 w-4 hidden group-hover:block" />
                             )}
+                            
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <img src={song.imageUrl} alt={song.title} className="size-10" />
+                            <img
+                              src={song.imageUrl}
+                              alt={song.title}
+                              className="size-10"
+                            />
 
                             <div>
-                              <div className={`font-medium text-lapsus-500`}>{song.title}</div>
+                              <div className="font-medium text-lapsus-500">
+                                {song.title}
+                              </div>
                               <div>{song.artist}</div>
                             </div>
                           </div>
-                          <div className="flex items-center">{song.createdAt.split("T")[0]}</div>
-                          <div className="flex items-center">{formatDuration(song.duration)}</div>
+                          <div className="flex items-center">
+                            {song.createdAt.split("T")[0]}
+                          </div>
+                          <div className="flex items-center">
+                            {formatDuration(song.duration)}
+                          </div>
+                          {/* Contenedor del menú de opciones */}
+                          <div
+                           className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            // Evitamos que el clic en los tres puntos se propague a la fila (para que no se dispare el onDoubleClick)
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <SongOptionsMenu song={song} playlistId={""}/>
+                          </div>
                         </div>
                       );
                     })}
