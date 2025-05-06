@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, VolumeX } from "lucide-react";
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 
@@ -65,6 +65,24 @@ export const PlaybackControls = () => {
       audioRef.current.muted = isMuted;
     }
   }, [isMuted]);
+
+  useEffect(() => {
+    // Si el volumen es 0 y no está muteado, activamos el mute
+    if (volume === 0 && !isMuted) {
+      toggleMute();
+    }
+  
+    // Si el volumen sube de 0 y está muteado, lo desmuteamos
+    if (volume > 0 && isMuted) {
+      toggleMute();
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100; // El volumen en HTML va de 0.0 a 1.0
+    }
+  }, [volume]);
   
 
   const handleSeek = (value: number[]) => {
@@ -197,13 +215,20 @@ export const PlaybackControls = () => {
           </Button>
 
           <div className='flex items-center gap-2'>
+
+           
           <Button onClick={toggleMute} variant="ghost" size="icon">
-            {(isMuted || volume === 0) ? (
+            {isMuted || volume === 0 ? (
               <VolumeX className="h-5 w-5" />
-            ) : (
+            ) : volume <= 33 ? (
+              <Volume className="h-5 w-5" />
+            ) : volume <= 66 ? (
               <Volume1 className="h-5 w-5" />
+            ) : (
+              <Volume2 className="h-5 w-5" />
             )}
           </Button>
+
 
 
             <Slider
@@ -218,6 +243,7 @@ export const PlaybackControls = () => {
                 }
               }}
             />
+
           </div>
         </div>
       </div>

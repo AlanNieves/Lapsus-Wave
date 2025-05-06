@@ -69,5 +69,13 @@ export const initializeSocket = (server) => {
 				io.emit("user_disconnected", disconnectedUserId);
 			}
 		});
+		socket.on("send_message", async ({ receiverId, message }) => {
+			// Emitir el mensaje al receptor
+			const receiverSocketId = userSockets.get(receiverId);
+			if (receiverSocketId) {
+			  io.to(receiverSocketId).emit("newMessage", message);
+			}
+		  });
+		
 	});
 };
