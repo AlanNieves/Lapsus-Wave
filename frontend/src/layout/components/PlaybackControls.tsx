@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 
@@ -13,7 +13,21 @@ const formatTime = (seconds: number) => {
 };
 
 export const PlaybackControls = () => {
-  const { currentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleQueue, toggleExpandedView} = usePlayerStore();
+  const { 
+    currentSong, 
+    isPlaying, 
+    togglePlay, 
+    playNext, 
+    playPrevious, 
+    toggleShuffle, 
+    isShuffleActive, 
+    toggleRepeat, 
+    repeatMode, 
+    toggleQueue, 
+    toggleExpandedView, 
+    isMuted, 
+    toggleMute,
+  } = usePlayerStore();
 
   const [volume, setVolume] = useState(75);
   const [currentTime, setCurrentTime] = useState(0);
@@ -45,6 +59,13 @@ export const PlaybackControls = () => {
       audio.removeEventListener("ended", handleEnded);
     };
   }, [currentSong]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+  
 
   const handleSeek = (value: number[]) => {
     if (audioRef.current) {
@@ -176,9 +197,14 @@ export const PlaybackControls = () => {
           </Button>
 
           <div className='flex items-center gap-2'>
-            <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
-              <Volume1 className='h-4 w-4' />
-            </Button>
+          <Button onClick={toggleMute} variant="ghost" size="icon">
+            {(isMuted || volume === 0) ? (
+              <VolumeX className="h-5 w-5" />
+            ) : (
+              <Volume1 className="h-5 w-5" />
+            )}
+          </Button>
+
 
             <Slider
               value={[volume]}

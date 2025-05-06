@@ -15,6 +15,7 @@ interface PlayerStore {
   showQueue: boolean;
   isExpandedViewOpen: boolean;
   isMenuOpen: boolean;
+  isMuted: boolean;
 
   // Estado de las playlists
   playlists: Playlist[];
@@ -39,6 +40,7 @@ interface PlayerStore {
   setShowQueue: (show: boolean) => void;
   toggleExpandedView: () => void;
   setIsMenuOpen: (show: boolean) => void;
+  toggleMute: () => void;
 
   // Acciones de las playlists
   createPlaylist: (name: string, description?: string) => Playlist;
@@ -260,6 +262,14 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       return { playlists: updatedPlaylists };
     });
   },
+
+  isMuted: false,
+
+  toggleMute: () =>
+    set((state) => ({
+      isMuted: !state.isMuted
+    })),
+
 
 
 
