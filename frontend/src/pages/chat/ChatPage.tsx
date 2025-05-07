@@ -33,13 +33,7 @@ const ChatPage = () => {
 		  useChatStore.getState().initSocket(user.id);
 		}
 	  }, [user]);
-
-	  useEffect(() => {
-		return () => {
-		  useChatStore.getState().disconnectSocket();
-		};
-	  }, []);
-	  
+			
 	  
 
 	console.log({ messages });

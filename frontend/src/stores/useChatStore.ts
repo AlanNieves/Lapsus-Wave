@@ -103,6 +103,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				});
 			});
 
+
 			set({ isConnected: true });
 		}
 	},
