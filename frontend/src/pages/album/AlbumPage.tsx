@@ -94,8 +94,8 @@ const AlbumPage = () => {
                 <div className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-10 py-2 text-sm text-lapsus-100">
                   <div>#</div>
                   <div>Title</div>
-                  <div>Added Date</div>
-                  <div>
+                  <div className="flex justify-start -translate-x-[55px]">Added Date</div>
+                  <div className="flex justify-start -translate-x-[78px]">
                     <Clock className="h-4 w-4" />
                   </div>
                 </div>
