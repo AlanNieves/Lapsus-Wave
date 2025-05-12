@@ -24,37 +24,40 @@ const AlbumPage = () => {
 
   if (isLoading) return null;
 
+  const isAlbumPlaying = currentAlbum?.songs.some(
+    (song) => song._id === currentSong?._id
+  );
+
   const handlePlayAlbum = () => {
     if (!currentAlbum) return;
 
-    const isCurrentAlbumPlaying = currentAlbum?.songs.some(
-      (song) => song._id === currentSong?._id
-    );
-    if (isCurrentAlbumPlaying) togglePlay();
-    else {
-      // start playing the album from the beginning
-      playAlbum(currentAlbum?.songs, 0);
+    if (isAlbumPlaying) {
+      togglePlay();
+    } else {
+      playAlbum(currentAlbum.songs, 0);
     }
   };
 
-  const handlePlaySong = (index: number) => {
+  const handleSongClick = (index: number) => {
     if (!currentAlbum) return;
-    playAlbum(currentAlbum?.songs, index);
+    
+    if (currentSong?._id === currentAlbum.songs[index]._id) {
+      togglePlay();
+    } else {
+      playAlbum(currentAlbum.songs, index);
+    }
   };
 
   return (
     <div className="h-full flex">
-      {/* Main Content */}
       <div className="flex-1">
         <ScrollArea className="h-full rounded-md">
           <div className="relative min-h-full">
-            {/* bg gradient */}
             <div
               className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000 to-red-1000 pointer-events-none"
               aria-hidden="true"
             />
 
-            {/* Content */}
             <div className="relative z-10">
               <div className="flex p-6 gap-6 pb-8">
                 <img
@@ -73,70 +76,59 @@ const AlbumPage = () => {
                 </div>
               </div>
 
-              {/* Play button */}
               <div className="px-6 pb-4 flex items-center gap-6">
                 <Button
                   onClick={handlePlayAlbum}
                   size="icon"
-                  className="w-14 h-14 rounded-full bg-lapsus-1200 hover:bg-lapsus- hover:scale-105 transition-all"
+                  className="w-14 h-14 rounded-full bg-lapsus-1200 hover:bg-lapsus-1100 hover:scale-105 transition-all"
                 >
-                  {isPlaying &&
-                  currentAlbum?.songs.some(
-                    (song) => song._id === currentSong?._id
-                  ) ? (
-                    <Pause className="h-7 w-7 text-lapsus-500" />
+                  {isAlbumPlaying && isPlaying ? (
+                    <Pause className="h-7 w-7 text-lapsus-500 fill-current" />
                   ) : (
-                    <Play className="h-7 w-7 text-lapsus-500" />
+                    <Play className="h-7 w-7 text-lapsus-500 fill-current" />
                   )}
                 </Button>
               </div>
 
-              {/* Table Section */}
               <div className="bg-black/20 backdrop-blur-sm">
-                {/* Table header */}
-                <div
-                  className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-10 py-2 text-sm text-lapsus-100"
-                >
-                  <div>#</div>
+                <div className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-10 py-2 text-sm text-lapsus-100">
+                  <div className="flex justify-end -translate-x-[3px]">#</div>
                   <div>Title</div>
-                  <div>Added Date</div>
-                  <div>
+                  <div className="flex justify-start -translate-x-[28px]">Added Date</div>
+                  <div className="flex justify-start -translate-x-[35px]">
                     <Clock className="h-4 w-4" />
                   </div>
                 </div>
 
-                {/* Songs list */}
                 <div className="px-6">
                   <div className="space-y-2 py-4">
                     {currentAlbum?.songs.map((song, index) => {
                       const isCurrentSong = currentSong?._id === song._id;
                       return (
                         <div
-                          key={`${song._id}-${index}`} // Clave única
-                          onMouseLeave={() => {
-                            if(isMenuOpen) {
-                              setIsMenuOpen(false);
-                            }
-                          }}
-
+                          key={`${song._id}-${index}`}
+                          onMouseLeave={() => isMenuOpen && setIsMenuOpen(false)}
                           className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
                         >
-                          <div className="flex items-center justify-center"
-                          onClick={(e)=> {
-                            e.stopPropagation();
-                            handlePlaySong(index);
-                          }}
+                          <div 
+                            className="flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSongClick(index);
+                            }}
                           >
-                            {isCurrentSong && isPlaying ? (
-                              <div className="size-4 text-lapsus-1100">♫</div>
+                            {isCurrentSong ? (
+                              isPlaying ? (
+                                <Pause className="h-4 w-4 text-lapsus-1100 fill-current" />
+                              ) : (
+                                <Play className="h-4 w-4 text-lapsus-1100 fill-current" />
+                              )
                             ) : (
-                              <span className="group-hover:hidden">{index + 1}</span>
-                              
+                              <>
+                                <span className="group-hover:hidden">{index + 1}</span>
+                                <Play className="h-4 w-4 hidden group-hover:block text-lapsus-500" />
+                              </>
                             )}
-                            {!isCurrentSong && (
-                              <Play className="h-4 w-4 hidden group-hover:block" />
-                            )}
-                            
                           </div>
 
                           <div className="flex items-center gap-3">
@@ -145,7 +137,6 @@ const AlbumPage = () => {
                               alt={song.title}
                               className="size-10"
                             />
-
                             <div>
                               <div className="font-medium text-lapsus-500">
                                 {song.title}
@@ -159,13 +150,11 @@ const AlbumPage = () => {
                           <div className="flex items-center">
                             {formatDuration(song.duration)}
                           </div>
-                          {/* Contenedor del menú de opciones */}
                           <div
-                           className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                            // Evitamos que el clic en los tres puntos se propague a la fila (para que no se dispare el onDoubleClick)
+                            className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <SongOptionsMenu song={song} playlistId={""}/>
+                            <SongOptionsMenu song={song} playlistId={""} />
                           </div>
                         </div>
                       );
