@@ -27,7 +27,8 @@ const LeftSidebar = () => {
     showPlaylists,
     toggleShowPlaylists,
     createPlaylist,
-    setCurrentPlaylist,
+  
+    
   } = usePlayerStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -68,7 +69,7 @@ const LeftSidebar = () => {
   // Handle creating a new playlist
   const handleCreatePlaylist = () => {
     const newPlaylist = createPlaylist("New Playlist");
-    setCurrentPlaylist(newPlaylist);
+    //
     navigate(`/playlists/${newPlaylist.id}`);
   };
 
