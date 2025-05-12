@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+
+
+
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -56,6 +59,27 @@ export const PlaybackControls = () => {
       audioRef.current.currentTime = value[0];
     }
   };
+
+
+
+  /*Codigo para el Mute*/ 
+  const [isMuted, setIsMuted] = useState(false);
+
+    const toggleMute = () => {
+    setIsMuted((prev) => !prev);
+  };
+
+    const getVolumeIcon = () => {
+      if (isMuted || volume === 0) return <VolumeX />;
+      if (volume < 34) return <Volume />;
+      if (volume < 67) return <Volume1 />;
+      return <Volume2 />;
+    };
+    useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume / 100;
+    }
+  }, [volume, isMuted]);
 
   return (
     <footer className='h-20 sm:h-24 bg-gradient-to-tl from-lapsus-1200/30 to-lapsus-900  border-x-lapsus-900 px-4'>
@@ -239,15 +263,19 @@ export const PlaybackControls = () => {
 
           {/* Volume Controls */}
           <div className="relative flex items-center gap-2">
-            <Button 
-              size='icon' 
-              variant='ghost' 
-              className='hover:text-white text-lapsus-500'
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={toggleMute}
+              className="hover:text-white text-lapsus-500"
               onMouseEnter={() => setHoveredButton('mute')}
               onMouseLeave={() => setHoveredButton(null)}
             >
-              <Volume1 className='h-4 w-4' />
+              {getVolumeIcon()}
             </Button>
+
+
+            
             {hoveredButton === 'mute' && <Tooltip text="Mute" />}
             
             <Slider
