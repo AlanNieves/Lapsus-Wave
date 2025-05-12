@@ -1,19 +1,60 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faPlus, faStar, faShareAlt, faList, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useState } from 'react';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
-import { Song } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Song } from '@/types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faThumbsUp, 
+  faPlus, 
+  faStar, 
+  faShareAlt, 
+  faList, 
+  faTrash,
+  faCopy
+} from '@fortawesome/free-solid-svg-icons';
+import { 
+  faFacebook,
+  faXTwitter,
+  faWhatsapp
+} from '@fortawesome/free-brands-svg-icons';
 
-const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string }) => {
+type SongWithShare = Song & {
+  shareUrl?: string;
+};
+
+const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId: string }) => {
   const { isMenuOpen, setIsMenuOpen, playlists, addSongToPlaylist, removeSongFromPlaylist } = usePlayerStore();
-
   const [showPlaylistOptions, setShowPlaylistOptions] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
+
+  const handleShare = (platform: string) => {
+    const baseUrl = window.location.origin;
+    const shareUrl = song.shareUrl || `${baseUrl}/song/${song._id}`;
+    const shareText = `Mira esta canción: ${song.title} - ${song.artist}`;
+
+    switch(platform) {
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText}\n${shareUrl}`)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(shareUrl);
+        break;
+      default:
+        break;
+    }
+    
+    setIsMenuOpen(false);
+  };
 
   return (
     <div className="relative">
-      {/* Botón de tres puntos */}
       <Button
         onClick={(e) => {
           e.stopPropagation();
@@ -35,79 +76,108 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
             d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
           />
         </svg>
-   
       </Button>
-      <Button
-        onClick={() => removeSongFromPlaylist(playlistId, song._id)}
-        className='text-lapsus-500 hover:text-lapsus-300'
+
+      {playlistId && (
+        <Button
+          onClick={() => removeSongFromPlaylist(playlistId, song._id)}
+          className='text-lapsus-500 hover:text-lapsus-300'
         >
           <FontAwesomeIcon icon={faTrash}/>
         </Button>
+      )}
 
-      {/* Menú desplegable */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9, filter: "blur(5px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: 20, scale: 0.9, filter: "blur(5px)" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="absolute right-0 bottom-2.5 mt-2 w-48 bg-lapsus-1000 rounded-lg shadow-lg z-50"
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 bottom-2.5 mt-2 w-56 bg-lapsus-1000 rounded-lg shadow-lg z-50 border border-lapsus-900"
           >
             <div className="p-2 space-y-1">
-              {/* Opciones principales */}
               {[
                 { text: "Darle Me Gusta", icon: faThumbsUp },
                 { text: "Agregar a la Cola", icon: faPlus },
                 { text: "Darle una Review", icon: faStar },
-                { text: "Compartir", icon: faShareAlt },
-              ].map((item, index) => (
-                <motion.button
+              ].map((item) => (
+                <button
                   key={item.text}
-                  className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-all transform hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.2, ease: "easeOut" }}
-                  whileHover={{ scale: 1.05, y: -2, rotateX: 10, translateZ: 10 }}
+                  className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
                 >
                   {item.text}
                   <FontAwesomeIcon icon={item.icon} className="text-lapsus-500" />
-                </motion.button>
+                </button>
               ))}
 
-              {/* Opción para añadir a playlist */}
-              <motion.button
-                className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-all transform hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.2, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -2, rotateX: 10, translateZ: 10 }}
+              <div>
+                <button
+                  className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
+                  onClick={() => setShowShareOptions(!showShareOptions)}
+                >
+                  Compartir
+                  <FontAwesomeIcon 
+                    icon={faShareAlt} 
+                    className={`text-lapsus-500 transition-transform ${showShareOptions ? 'rotate-45' : ''}`} 
+                  />
+                </button>
+
+                {showShareOptions && (
+                  <div className="pl-4 space-y-1 mt-1">
+                    <button
+                      className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
+                      onClick={() => handleShare('whatsapp')}
+                    >
+                      <FontAwesomeIcon icon={faWhatsapp} className="text-green-500 h-5 w-5" />
+                      <span>WhatsApp</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
+                      onClick={() => handleShare('facebook')}
+                    >
+                      <FontAwesomeIcon icon={faFacebook} className="text-blue-500 h-5 w-5" />
+                      <span>Facebook</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
+                      onClick={() => handleShare('twitter')}
+                    >
+                      <FontAwesomeIcon icon={faXTwitter} className="text-gray-900 h-5 w-5" />
+                      <span>X (Twitter)</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
+                      onClick={() => handleShare('copy')}
+                    >
+                      <FontAwesomeIcon icon={faCopy} className="text-lapsus-500" />
+                      <span>Copiar enlace</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
                 onClick={() => setShowPlaylistOptions(!showPlaylistOptions)}
               >
                 Añadir a Playlist
                 <FontAwesomeIcon icon={faList} className="text-lapsus-500" />
-              </motion.button>
+              </button>
 
-              {/* Submenú de playlists */}
               {showPlaylistOptions && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="pl-4 space-y-1"
-                >
+                <div className="pl-4 space-y-1">
                   {playlists.map((playlist) => (
-                    <motion.button
+                    <button
                       key={playlist.id}
-                      className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-all transform hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg"
-                      whileHover={{ scale: 1.05, y: -2, rotateX: 10, translateZ: 10 }}
+                      className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
                       onClick={() => addSongToPlaylist(playlist.id, song)}
                     >
                       {playlist.name}
                       <FontAwesomeIcon icon={faPlus} className="text-lapsus-500" />
-                    </motion.button>
+                    </button>
                   ))}
-                </motion.div>
+                </div>
               )}
             </div>
           </motion.div>

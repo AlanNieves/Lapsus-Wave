@@ -122,21 +122,21 @@ const LeftSidebar = () => {
 
       {/* Library/Queue section */}
       <div className="flex-1 rounded-lg bg-gradient-to-b from-lapsus-1200/30 to-lapsus-900 p-4 relative overflow-hidden">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center text-lapsus-500 px-2">
+        <div
+          onClick={toggleShowPlaylists}
+          className={cn(
+            "flex items-center justify-between mb-4 text-lapsus-500 hover:bg-lapsus-1000 p-2 rounded-md transition-colors cursor-pointer"
+          )}
+        >
+          <div className="flex items-center">
             <Library className="size-5 mr-2 flex-shrink-0" />
             <span className="hidden md:inline truncate">
               {showQueue ? "Now Playing" : showPlaylists ? "Your Playlists" : "Your Library"}
             </span>
           </div>
-          <button
-            onClick={toggleShowPlaylists}
-            className="text-lapsus-500 hover:text-lapsus-300 transition-colors p-1"
-          >
-            <ChevronRight
-              className={`size-5 transition-transform ${showPlaylists ? "rotate-90" : ""}`}
-            />
-          </button>
+          <ChevronRight
+            className={`size-5 transition-transform ${showPlaylists ? "rotate-90" : ""}`}
+          />
         </div>
 
         <AnimatePresence mode="wait">
