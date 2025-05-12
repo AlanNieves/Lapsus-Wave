@@ -3,8 +3,6 @@ import { usePlayerStore } from '@/stores/usePlayerStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Song } from '@/types';
-
-// Importa solo los iconos que necesitas
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faThumbsUp, 
@@ -15,19 +13,29 @@ import {
   faTrash,
   faCopy
 } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faFacebook,
+  faXTwitter,
+  faWhatsapp
+} from '@fortawesome/free-brands-svg-icons';
 
-const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string }) => {
+type SongWithShare = Song & {
+  shareUrl?: string;
+};
+
+const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId: string }) => {
   const { isMenuOpen, setIsMenuOpen, playlists, addSongToPlaylist, removeSongFromPlaylist } = usePlayerStore();
   const [showPlaylistOptions, setShowPlaylistOptions] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
 
   const handleShare = (platform: string) => {
-    const shareUrl = `${window.location.origin}/song/${song._id}`;
+    const baseUrl = window.location.origin;
+    const shareUrl = song.shareUrl || `${baseUrl}/song/${song._id}`;
     const shareText = `Mira esta canción: ${song.title} - ${song.artist}`;
 
     switch(platform) {
       case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, '_blank');
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText}\n${shareUrl}`)}`, '_blank');
         break;
       case 'facebook':
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
@@ -37,7 +45,6 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
         break;
       case 'copy':
         navigator.clipboard.writeText(shareUrl);
-        // Puedes agregar un toast de confirmación aquí
         break;
       default:
         break;
@@ -48,7 +55,6 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
 
   return (
     <div className="relative">
-      {/* Botón de tres puntos */}
       <Button
         onClick={(e) => {
           e.stopPropagation();
@@ -81,7 +87,6 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
         </Button>
       )}
 
-      {/* Menú desplegable */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -92,7 +97,6 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
             className="absolute right-0 bottom-2.5 mt-2 w-56 bg-lapsus-1000 rounded-lg shadow-lg z-50 border border-lapsus-900"
           >
             <div className="p-2 space-y-1">
-              {/* Opciones principales */}
               {[
                 { text: "Darle Me Gusta", icon: faThumbsUp },
                 { text: "Agregar a la Cola", icon: faPlus },
@@ -107,7 +111,6 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
                 </button>
               ))}
 
-              {/* Opción de compartir */}
               <div>
                 <button
                   className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
@@ -126,19 +129,22 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
                       className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
                       onClick={() => handleShare('whatsapp')}
                     >
-                      <span className="text-green-500 font-semibold">WhatsApp</span>
+                      <FontAwesomeIcon icon={faWhatsapp} className="text-green-500 h-5 w-5" />
+                      <span>WhatsApp</span>
                     </button>
                     <button
                       className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
                       onClick={() => handleShare('facebook')}
                     >
-                      <span className="text-blue-500 font-semibold">Facebook</span>
+                      <FontAwesomeIcon icon={faFacebook} className="text-blue-500 h-5 w-5" />
+                      <span>Facebook</span>
                     </button>
                     <button
                       className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
                       onClick={() => handleShare('twitter')}
                     >
-                      <span className="text-sky-500 font-semibold">Twitter</span>
+                      <FontAwesomeIcon icon={faXTwitter} className="text-gray-900 h-5 w-5" />
+                      <span>X (Twitter)</span>
                     </button>
                     <button
                       className="w-full flex items-center gap-3 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
@@ -151,7 +157,6 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
                 )}
               </div>
 
-              {/* Opción para añadir a playlist */}
               <button
                 className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
                 onClick={() => setShowPlaylistOptions(!showPlaylistOptions)}
@@ -160,7 +165,6 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
                 <FontAwesomeIcon icon={faList} className="text-lapsus-500" />
               </button>
 
-              {/* Submenú de playlists */}
               {showPlaylistOptions && (
                 <div className="pl-4 space-y-1">
                   {playlists.map((playlist) => (
