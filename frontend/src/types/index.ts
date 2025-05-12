@@ -49,3 +49,4 @@ export interface Playlist {
     songs: Song[];
     imageUrl: string;
   }
+

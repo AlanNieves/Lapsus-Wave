@@ -7,6 +7,7 @@ import ChatHeader from "./components/ChatHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import MessageInput from "./components/MessageInput";
+import { useRef } from "react";
 
 const formatTime = (date: string) => {
 	return new Date(date).toLocaleTimeString("en-US", {
@@ -16,8 +17,13 @@ const formatTime = (date: string) => {
 	});
 };
 
+
 const ChatPage = () => {
 	const { user } = useUser();
+
+	const bottomRef = useRef<HTMLDivElement | null>(null);
+
+	if (!user) return null; // Si no hay usuario, no se muestra nada
 	const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
 
 	useEffect(() => {
@@ -27,6 +33,13 @@ const ChatPage = () => {
 	useEffect(() => {
 		if (selectedUser) fetchMessages(selectedUser.clerkId);
 	}, [selectedUser, fetchMessages]);
+
+	useEffect(() => {
+		if(bottomRef.current) {
+			bottomRef.current.scrollIntoView({ behavior: "smooth"});
+		}
+	}, [messages, selectedUser]);
+
 
 	console.log({ messages });
 
@@ -46,12 +59,11 @@ const ChatPage = () => {
 							{/* Messages */}
 							<ScrollArea className='h-[calc(100vh-340px)]'>
 								<div className='p-4 space-y-4'>
-									{messages.map((message) => (
+									{(messages[selectedUser.clerkId] || []).map((message) => (
 										<div
 											key={message._id}
-											className={`flex items-start gap-3 ${
-												message.senderId === user?.id ? "flex-row-reverse" : ""
-											}`}
+											className={`flex items-start gap-3 ${message.senderId === user?.id ? "flex-row-reverse" : ""
+												}`}
 										>
 											<Avatar className='size-8'>
 												<AvatarImage
@@ -65,8 +77,8 @@ const ChatPage = () => {
 
 											<div
 												className={`rounded-lg p-3 max-w-[70%]
-													${message.senderId === user?.id ? "bg-lapsus-1000" : "bg-lapsus-1100/20"}
-												`}
+						${message.senderId === user?.id ? "bg-lapsus-1000" : "bg-lapsus-1100/20"}
+					`}
 											>
 												<p className='text-sm'>{message.content}</p>
 												<span className='text-xs text-lapsus-500 mt-1 block'>
@@ -75,6 +87,8 @@ const ChatPage = () => {
 											</div>
 										</div>
 									))}
+
+									<div ref={bottomRef}/>
 								</div>
 							</ScrollArea>
 

@@ -9,9 +9,12 @@ interface ChatStore {
 	error: string | null;
 	socket: any;
 	isConnected: boolean;
+
 	onlineUsers: Set<string>;
 	userActivities: Map<string, string>;
-	messages: Message[];
+
+	messages: Record<string, Message[]>; // userId => mensajes
+	chatOrder: string[]; // userIds en orden por actividad
 	selectedUser: User | null;
 
 	fetchUsers: () => Promise<void>;
@@ -25,7 +28,7 @@ interface ChatStore {
 const baseURL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
 
 const socket = io(baseURL, {
-	autoConnect: false, // only connect if user is authenticated
+	autoConnect: false,
 	withCredentials: true,
 });
 
@@ -37,7 +40,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	isConnected: false,
 	onlineUsers: new Set(),
 	userActivities: new Map(),
-	messages: [],
+	messages: {},
+	chatOrder: [],
 	selectedUser: null,
 
 	setSelectedUser: (user) => set({ selectedUser: user }),
@@ -48,7 +52,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			const response = await axiosInstance.get("/users");
 			set({ users: response.data });
 		} catch (error: any) {
-			set({ error: error.response.data.message });
+			set({ error: error.response?.data?.message || "Error fetching users" });
 		} finally {
 			set({ isLoading: false });
 		}
@@ -77,24 +81,49 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
 			socket.on("user_disconnected", (userId: string) => {
 				set((state) => {
-					const newOnlineUsers = new Set(state.onlineUsers);
-					newOnlineUsers.delete(userId);
-					return { onlineUsers: newOnlineUsers };
+					const updated = new Set(state.onlineUsers);
+					updated.delete(userId);
+					return { onlineUsers: updated };
 				});
 			});
 
 			socket.on("receive_message", (message: Message) => {
-				set((state) => ({
-					messages: [...state.messages, message],
-				}));
+				set((state) => {
+					const userId = message.senderId;
+					const prevMessages = state.messages[userId] || [];
+					const updatedMessages = [...prevMessages, message];
+			
+					// Actualiza el orden moviendo este userId al principio
+					const newOrder = [userId, ...state.chatOrder.filter((id) => id !== userId)];
+			
+					return {
+						messages: {
+							...state.messages,
+							[userId]: updatedMessages,
+						},
+						chatOrder: newOrder,
+					};
+				});
 			});
-
+			
 			socket.on("message_sent", (message: Message) => {
-				set((state) => ({
-					messages: [...state.messages, message],
-				}));
+				set((state) => {
+					const userId = message.receiverId;
+					const prevMessages = state.messages[userId] || [];
+					const updatedMessages = [...prevMessages, message];
+			
+					const newOrder = [userId, ...state.chatOrder.filter((id) => id !== userId)];
+			
+					return {
+						messages: {
+							...state.messages,
+							[userId]: updatedMessages,
+						},
+						chatOrder: newOrder,
+					};
+				});
 			});
-
+			
 			socket.on("activity_updated", ({ userId, activity }) => {
 				set((state) => {
 					const newActivities = new Map(state.userActivities);
@@ -125,9 +154,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		set({ isLoading: true, error: null });
 		try {
 			const response = await axiosInstance.get(`/users/messages/${userId}`);
-			set({ messages: response.data });
+			set((state) => ({
+				messages: {
+					...state.messages,
+					[userId]: response.data,
+				},
+			}));
 		} catch (error: any) {
-			set({ error: error.response.data.message });
+			set({ error: error.response?.data?.message || "Error loading messages" });
 		} finally {
 			set({ isLoading: false });
 		}
