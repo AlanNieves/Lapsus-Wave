@@ -149,7 +149,7 @@ const LeftSidebar = () => {
               exit="hidden"
               className="h-full"
             >
-              <ScrollArea className="h-[calc(100vh-220px)]" ref={scrollRef}>
+              <ScrollArea className="h-full" ref={scrollRef}>
                 {isLoading ? (
                   <QueueSkeleton />
                 ) : (
@@ -161,7 +161,7 @@ const LeftSidebar = () => {
                         className={cn(
                           "p-2 hover:bg-lapsus-1000 rounded-md flex items-center gap-3 group cursor-pointer relative",
                           currentSong?._id === song._id &&
-                            "bg-lapsus-1000/80 active-song border-l-4 border-lapsus-500"
+                          "bg-lapsus-1000/80 active-song border-l-4 border-lapsus-500"
                         )}
                         onClick={() => handleSongClick(song)}
                       >

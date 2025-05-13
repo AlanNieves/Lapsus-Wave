@@ -1,23 +1,28 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faPlus, faStar, faShareAlt, faList, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faThumbsUp, faPlus, faStar, faShareAlt, faList, faTrash, faT, faThumbTack } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { Song } from '@/types';
 import { Button } from '@/components/ui/button';
 
-const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string }) => {
-  const { isMenuOpen, setIsMenuOpen, playlists, addSongToPlaylist, removeSongFromPlaylist } = usePlayerStore();
 
+const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string }) => {
+  const { openMenuSongId, setOpenMenuSongId, playlists, addSongToPlaylist, removeSongFromPlaylist } = usePlayerStore();
+  const { addToQueue, addNextSong } = usePlayerStore();
   const [showPlaylistOptions, setShowPlaylistOptions] = useState(false);
 
+  const isMenuOpen = openMenuSongId === song._id;
   return (
     <div className="relative">
       {/* Botón de tres puntos */}
       <Button
         onClick={(e) => {
           e.stopPropagation();
-          setIsMenuOpen(!isMenuOpen);
+          // ⬇️ Si ya está abierto, lo cerramos. Si no, lo abrimos
+          setOpenMenuSongId(isMenuOpen ? null : song._id);
+          // ⬇️ Siempre cerramos el submenú de playlists cuando clickeas
+          setShowPlaylistOptions(false);
         }}
         className="text-lapsus-500 hover:text-lapsus-100 transition-colors"
       >
@@ -35,14 +40,9 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
             d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
           />
         </svg>
-   
+
       </Button>
-      <Button
-        onClick={() => removeSongFromPlaylist(playlistId, song._id)}
-        className='text-lapsus-500 hover:text-lapsus-300'
-        >
-          <FontAwesomeIcon icon={faTrash}/>
-        </Button>
+
 
       {/* Menú desplegable */}
       <AnimatePresence>
@@ -58,16 +58,21 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
               {/* Opciones principales */}
               {[
                 { text: "Darle Me Gusta", icon: faThumbsUp },
-                { text: "Agregar a la Cola", icon: faPlus },
+                { text: "Siguiente cancion", icon: faThumbTack, onClick: () => addNextSong(song) },
+                { text: "Agregar a la Cola", icon: faPlus, onClick: () => addToQueue(song) },
                 { text: "Darle una Review", icon: faStar },
                 { text: "Compartir", icon: faShareAlt },
               ].map((item, index) => (
                 <motion.button
                   key={item.text}
+                  onClick={() => {
+                    if (item.onClick) item.onClick(); // ✅ Ejecuta la acción si existe
+                    setOpenMenuSongId(null); // ✅ Opcional: cerrar el menú después de clickear
+                  }}
                   className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-all transform hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.2, ease: "easeOut" }}
+                  transition={{ delay: index * 0.1, duration: 0.2, ease: 'easeOut' }}
                   whileHover={{ scale: 1.05, y: -2, rotateX: 10, translateZ: 10 }}
                 >
                   {item.text}

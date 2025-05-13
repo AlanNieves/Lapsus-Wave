@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Playlist, Song } from "@/types";
-
+import toast from 'react-hot-toast';
 
 
 interface PlayerStore {
@@ -14,7 +14,8 @@ interface PlayerStore {
   repeatMode: number;
   showQueue: boolean;
   isExpandedViewOpen: boolean;
-  isMenuOpen: boolean;
+  //isMenuOpen: boolean;
+  openMenuSongId: string | null;
 
   // Estado de las playlists
   playlists: Playlist[];
@@ -38,8 +39,7 @@ interface PlayerStore {
   toggleQueue: () => void;
   setShowQueue: (show: boolean) => void;
   toggleExpandedView: () => void;
-  setIsMenuOpen: (show: boolean) => void;
-
+  setOpenMenuSongId: (songId: string | null) => void;
   // Acciones de las playlists
   createPlaylist: (name: string, description?: string) => Playlist;
   addSongToPlaylist: (playlistId: string, song: Song) => void;
@@ -48,6 +48,8 @@ interface PlayerStore {
   deletePlaylist: (playlistId: string) => void;
   
   toggleShowPlaylists: () => void;
+  addToQueue: (song: Song) => void;
+  addNextSong : (song: Song)=> void;
 }
 
 //guardar funcion para cargar las playlists desde localstorage
@@ -71,8 +73,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   repeatMode: 0,
   showQueue: false,
   isExpandedViewOpen: false,
-  isMenuOpen: false,
-
+  openMenuSongId: null,
   // Estado inicial de las playlists
   playlists: loadPlaylists(),
   currentPlaylist: null,
@@ -99,6 +100,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       currentIndex: startIndex,
       isPlaying: true,
     });
+  
   },
   reproducePlaylist :(songs, startIndex = 0) => {
       if(songs.length === 0) return;
@@ -193,6 +195,24 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       set({ currentSong: queue[0], currentIndex: 0 });
     }
   },
+  addToQueue: (song) => {
+    set((state) => {
+      const newQueue = [...state.queue, song];
+      return { queue: newQueue };
+    });
+  },
+
+  addNextSong: (song) => {
+  const { queue, currentIndex } = get();
+  // Insertar la canción en la posición siguiente
+  const newQueue = [...queue];
+  newQueue.splice(currentIndex + 1, 0, song);
+  // Solo actualiza la cola, NO cambia la canción actual
+  set({
+    queue: newQueue,
+  });
+  toast.success('Canción añadida a continuación');
+},
 
   toggleQueue: () => set((state) => ({ showQueue: !state.showQueue })),
 
@@ -200,7 +220,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
   toggleExpandedView: () => set((state) => ({ isExpandedViewOpen: !state.isExpandedViewOpen })),
 
-  setIsMenuOpen: (show) => set({ isMenuOpen: show }),
+  setOpenMenuSongId: (songId) => set({ openMenuSongId: songId }),
 
   // Acciones de las playlists
   createPlaylist: (name, description = "") => {
