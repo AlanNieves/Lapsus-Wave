@@ -8,7 +8,7 @@ import SongOptionsMenu from "@/layout/components/SongMenu";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { Clock, Play, Pause } from "lucide-react";
-import { useMusicStore } from "@/stores/useMusicStore";
+import { useMusicStore } from "@/stores/useMusicStore"; 
 
 
 export const formatDuration = (seconds: number) => {
@@ -20,10 +20,19 @@ export const formatDuration = (seconds: number) => {
 const PlaylistPage = () => {
   const { currentPlaylist } = useMusicStore();
   const { playlistId } = useParams();
-  const { playlists, updatePlaylist, deletePlaylist, reproducePlaylist, currentSong, togglePlay, isPlaying, isMenuOpen, setIsMenuOpen } = usePlayerStore();
-  const playlist = playlists.find((p) => p.id === playlistId);
+  const { 
+    playlists, 
+    updatePlaylist, 
+    deletePlaylist, 
+    reproducePlaylist, 
+    currentSong, 
+    togglePlay, 
+    isPlaying, 
+    openMenuSongId: isMenuOpen,  // Alias para mantener compatibilidad
+    setOpenMenuSongId: setIsMenuOpen // Alias para el setter
+  } = usePlayerStore();  const playlist = playlists.find((p) => p.id === playlistId);
+    
   const navigate = useNavigate();
-
   const [name, setName] = useState(playlist?.name || "");
   const [description, setDescription] = useState(playlist?.description || "");
   const [imageUrl, setImageUrl] = useState(playlist?.imageUrl || "");
@@ -191,7 +200,7 @@ const PlaylistPage = () => {
                       key={`${song._id}-${index}`}
                       onMouseLeave={() => {
                         if (isMenuOpen) {
-                          setIsMenuOpen(false);
+                          setIsMenuOpen(null);
                         }
                       }}
                       className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"

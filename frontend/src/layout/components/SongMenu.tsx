@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { usePlayerStore } from '@/stores/usePlayerStore';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Song } from '@/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
+  faForwardStep,
   faThumbsUp, 
   faPlus, 
   faStar, 
@@ -18,15 +15,29 @@ import {
   faXTwitter,
   faWhatsapp
 } from '@fortawesome/free-brands-svg-icons';
+import { usePlayerStore } from '@/stores/usePlayerStore';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Song } from '@/types';
 
 type SongWithShare = Song & {
   shareUrl?: string;
 };
 
 const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId: string }) => {
-  const { isMenuOpen, setIsMenuOpen, playlists, addSongToPlaylist, removeSongFromPlaylist } = usePlayerStore();
+  const { 
+    openMenuSongId, 
+    setOpenMenuSongId, 
+    playlists, 
+    addSongToPlaylist, 
+    removeSongFromPlaylist,
+    addToQueue, 
+    addNextSong 
+  } = usePlayerStore();
+  
   const [showPlaylistOptions, setShowPlaylistOptions] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
+  const isMenuOpen = openMenuSongId === song._id;
 
   const handleShare = (platform: string) => {
     const baseUrl = window.location.origin;
@@ -50,7 +61,7 @@ const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId
         break;
     }
     
-    setIsMenuOpen(false);
+    setOpenMenuSongId(null);
   };
 
   return (
@@ -58,7 +69,8 @@ const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId
       <Button
         onClick={(e) => {
           e.stopPropagation();
-          setIsMenuOpen(!isMenuOpen);
+          setOpenMenuSongId(isMenuOpen ? null : song._id);
+          setShowPlaylistOptions(false);
         }}
         className="text-lapsus-500 hover:text-lapsus-100 transition-colors"
       >
@@ -99,12 +111,17 @@ const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId
             <div className="p-2 space-y-1">
               {[
                 { text: "Darle Me Gusta", icon: faThumbsUp },
-                { text: "Agregar a la Cola", icon: faPlus },
+                { text: "Siguiente cancion", icon: faForwardStep, onClick: () => addNextSong(song) },
+                { text: "Agregar a la Cola", icon: faPlus, onClick: () => addToQueue(song) },
                 { text: "Darle una Review", icon: faStar },
               ].map((item) => (
                 <button
                   key={item.text}
-                  className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
+                  onClick={() => {
+                    item.onClick?.();
+                    setOpenMenuSongId(null);
+                  }}
+                  className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-all transform hover:scale-105 hover:translate-y-[-2px] hover:shadow-lg"
                 >
                   {item.text}
                   <FontAwesomeIcon icon={item.icon} className="text-lapsus-500" />

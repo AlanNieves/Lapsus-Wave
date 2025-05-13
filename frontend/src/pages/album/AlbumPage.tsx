@@ -16,7 +16,14 @@ export const formatDuration = (seconds: number) => {
 const AlbumPage = () => {
   const { albumId } = useParams();
   const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
-  const { currentSong, isPlaying, playAlbum, togglePlay, isMenuOpen, setIsMenuOpen } = usePlayerStore();
+  const { 
+    currentSong, 
+    isPlaying, 
+    playAlbum, 
+    togglePlay, 
+    openMenuSongId: isMenuOpen,  // Alias para mantener la lógica existente
+    setOpenMenuSongId: setIsMenuOpen // Alias para el setter
+  } = usePlayerStore();
 
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);
@@ -107,7 +114,7 @@ const AlbumPage = () => {
                       return (
                         <div
                           key={`${song._id}-${index}`}
-                          onMouseLeave={() => isMenuOpen && setIsMenuOpen(false)}
+                          onMouseLeave={() => isMenuOpen && setIsMenuOpen(null)}
                           className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
                         >
                           <div 
