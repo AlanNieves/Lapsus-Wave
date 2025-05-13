@@ -1,6 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faForwardStep } from "@fortawesome/free-solid-svg-icons";
-import { useState } from 'react';
 import { faThumbsUp, faPlus, faStar, faShareAlt, faList, faTrash, faT, faThumbTack } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { AnimatePresence, motion } from 'framer-motion';

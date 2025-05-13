@@ -73,7 +73,7 @@ const LeftSidebar = () => {
   };
 
   // Use the original queue if shuffle is active
-  const visibleQueue = isShuffleActive ? originalQueue : queue;
+  const visibleQueue = isShuffleActive ? queue : originalQueue;
 
   // Animation variants
   const containerVariants = {
