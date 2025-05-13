@@ -27,7 +27,7 @@ const LeftSidebar = () => {
     showPlaylists,
     toggleShowPlaylists,
     createPlaylist,
-    setCurrentPlaylist,
+    //setCurrentPlaylist,
   } = usePlayerStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -68,12 +68,12 @@ const LeftSidebar = () => {
   // Handle creating a new playlist
   const handleCreatePlaylist = () => {
     const newPlaylist = createPlaylist("New Playlist");
-    setCurrentPlaylist(newPlaylist);
+    //setCurrentPlaylist(newPlaylist);
     navigate(`/playlists/${newPlaylist.id}`);
   };
 
   // Use the original queue if shuffle is active
-  const visibleQueue = isShuffleActive ? queue : originalQueue;
+  const visibleQueue = isShuffleActive ? originalQueue : queue;
 
   // Animation variants
   const containerVariants = {
@@ -196,7 +196,6 @@ const LeftSidebar = () => {
                     )}
                   </motion.div>
                 )}
-                <motion.div className="h-8" />
               </ScrollArea>
             </motion.div>
 
@@ -243,6 +242,7 @@ const LeftSidebar = () => {
                       </Link>
                     </motion.div>
                   ))}
+                  <motion.div className="h-8" />
                 </motion.div>
               </ScrollArea>
             </motion.div>

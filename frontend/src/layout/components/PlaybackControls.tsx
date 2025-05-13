@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+
 
 
 
@@ -12,15 +13,22 @@ const formatTime = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-export const PlaybackControls = () => {
-  const { currentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleQueue, toggleExpandedView} = usePlayerStore();
+const Tooltip = ({ text }: { text: string }) => {
+  return (
+    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded-md shadow-lg whitespace-nowrap transition-opacity duration-150">
+      {text}
+      <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-neutral-800 transform rotate-45" />
+    </div>
+  );
+};
 
+export const PlaybackControls = () => {
+  const { currentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleQueue, toggleExpandedView } = usePlayerStore();
   const [volume, setVolume] = useState(75);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-
+  const [hoveredButton, setHoveredButton] = useState<null | 'shuffle' | 'previous' | 'play' | 'next' | 'repeat' | 'queue' | 'lyrics' | 'mute' | 'connect'>(null);
   useEffect(() => {
     audioRef.current = document.querySelector("audio");
 
@@ -52,6 +60,27 @@ export const PlaybackControls = () => {
     }
   };
 
+
+
+  /*Codigo para el Mute*/ 
+  const [isMuted, setIsMuted] = useState(false);
+
+    const toggleMute = () => {
+    setIsMuted((prev) => !prev);
+  };
+
+    const getVolumeIcon = () => {
+      if (isMuted || volume === 0) return <VolumeX />;
+      if (volume < 34) return <Volume />;
+      if (volume < 67) return <Volume1 />;
+      return <Volume2 />;
+    };
+    useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume / 100;
+    }
+  }, [volume, isMuted]);
+
   return (
     <footer className='h-20 sm:h-24 bg-gradient-to-tl from-lapsus-1200/30 to-lapsus-900  border-x-lapsus-900 px-4'>
       <div className='flex justify-between items-center h-full max-w-[1800px] mx-auto'>
@@ -82,53 +111,89 @@ export const PlaybackControls = () => {
         {/* player controls*/}
         <div className='flex flex-col items-center gap-2 flex-1 max-w-full sm:max-w-[45%]'>
           <div className='flex items-center gap-4 sm:gap-6'>
-            <Button
-              size='icon'
-              variant='ghost'
-              className={`hidden sm:inline-flex ${isShuffleActive ? 'text-red-400 hover:text-white hover:bg-accent' : 'text-lapsus-500 hover:text-white'}`}
-              onClick={toggleShuffle}
-              disabled={!currentSong}
-            >
-              <Shuffle className='h-4 w-4' />
-            </Button>
+            {/* Shuffle Button */}
+            <div className="relative hidden sm:inline-flex">
+              <Button
+                size='icon'
+                variant='ghost'
+                className={`${isShuffleActive ? 'text-red-400 hover:text-white hover:bg-accent' : 'text-lapsus-500 hover:text-white'}`}
+                onClick={toggleShuffle}
+                onMouseEnter={() => setHoveredButton('shuffle')}
+                onMouseLeave={() => setHoveredButton(null)}
+                disabled={!currentSong}
+              >
+                <Shuffle className='h-4 w-4' />
+              </Button>
+              {hoveredButton === 'shuffle' && <Tooltip text="Enable shuffle" />}
+            </div>
 
-            <Button
-              size='icon'
-              variant='ghost'
-              className='hover:text-lapsus-500 text-lapsus-500'
-              onClick={playPrevious}
-              disabled={!currentSong}
-            >
-              <SkipBack className='h-4 w-4' />
-            </Button>
+            {/* Previous Button */}
+            <div className="relative">
+              <Button
+                size='icon'
+                variant='ghost'
+                className='hover:text-lapsus-500 text-lapsus-500'
+                onClick={playPrevious}
+                onMouseEnter={() => setHoveredButton('previous')}
+                onMouseLeave={() => setHoveredButton(null)}
+                disabled={!currentSong}
+              >
+                <SkipBack className='h-4 w-4' />
+              </Button>
+              {hoveredButton === 'previous' && <Tooltip text="Previous" />}
+            </div>
 
-            <Button
-              size='icon'
-              className='bg-lapsus-500 hover:bg-red-200 text-lapsus-900 rounded-full h-8 w-8'
-              onClick={togglePlay}
-              disabled={!currentSong}
-            >
-              {isPlaying ? <Pause className='h-5 w-5' /> : <Play className='h-5 w-5' />}
-            </Button>
-            <Button
-              size='icon'
-              variant='ghost'
-              className='hover:text-lapsus-500 text-lapsus-500'
-              onClick={playNext}
-              disabled={!currentSong}
-            >
-              <SkipForward className='h-4 w-4' />
-            </Button>
+            {/* Play/Pause Button */}
+            <div className="relative">
+              <Button
+                size='icon'
+                className='bg-lapsus-500 hover:bg-red-200 text-lapsus-900 rounded-full h-8 w-8'
+                onClick={togglePlay}
+                onMouseEnter={() => setHoveredButton('play')}
+                onMouseLeave={() => setHoveredButton(null)}
+                disabled={!currentSong}
+              >
+                {isPlaying ? <Pause className='h-5 w-5' /> : <Play className='h-5 w-5' />}
+              </Button>
+              {hoveredButton === 'play' && <Tooltip text={isPlaying ? "Pause" : "Play"} />}
+            </div>
+
+            {/* Next Button */}
+            <div className="relative">
+              <Button
+                size='icon'
+                variant='ghost'
+                className='hover:text-lapsus-500 text-lapsus-500'
+                onClick={playNext}
+                onMouseEnter={() => setHoveredButton('next')}
+                onMouseLeave={() => setHoveredButton(null)}
+                disabled={!currentSong}
+              >
+                <SkipForward className='h-4 w-4' />
+              </Button>
+              {hoveredButton === 'next' && <Tooltip text="Next" />}
+            </div>
+
+            {/* Repeat Button */}
             <div className="relative">
               <Button
                 size='icon'
                 variant='ghost'
                 className={`hidden sm:inline-flex ${repeatMode === 1 ? 'text-red-400' : repeatMode === 2 ? 'text-red-400 glow' : 'text-lapsus-500 hover:text-white'}`}
                 onClick={toggleRepeat}
+                onMouseEnter={() => setHoveredButton('repeat')}
+                onMouseLeave={() => setHoveredButton(null)}
                 disabled={!currentSong}
               >
                 <Repeat className='h-4 w-4' />
               </Button>
+              {hoveredButton === 'repeat' && (
+                <Tooltip text={
+                  repeatMode === 1 ? "Repeat all" 
+                  : repeatMode === 2 ? "Repeat one" 
+                  : "Repeat"
+                } />
+              )}
               {repeatMode === 2 && (
                 <span className="absolute bottom-0 right-0 text-xs text-red-400">✦</span>
               )}
@@ -150,36 +215,69 @@ export const PlaybackControls = () => {
             <div className='text-xs text-lapsus-500'>{formatTime(duration)}</div>
           </div>
         </div>
+
         {/* volume controls */}
         <div className='hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end'>
-          <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
-            <Mic2 className='h-4 w-4' />
-          </Button>
-
-          <Button
-            size='icon'
-            variant='ghost'
-            className='hover:text-white text-lapsus-500'
-            onClick={() => toggleQueue()}
-          >
-            <ListMusic className='h-4 w-4' />
-          </Button>
-
-          <div className="absolute right-0 z-50 mt-2">
-
-
+          {/* Lyrics Button */}
+          <div className="relative">
+            <Button 
+              size='icon' 
+              variant='ghost' 
+              className='hover:text-white text-lapsus-500'
+              onMouseEnter={() => setHoveredButton('lyrics')}
+              onMouseLeave={() => setHoveredButton(null)}
+            >
+              <Mic2 className='h-4 w-4' />
+            </Button>
+            {hoveredButton === 'lyrics' && <Tooltip text="Lyrics" />}
           </div>
 
+          {/* Queue Button */}
+          <div className="relative">
+            <Button
+              size='icon'
+              variant='ghost'
+              className='hover:text-white text-lapsus-500'
+              onClick={toggleQueue}
+              onMouseEnter={() => setHoveredButton('queue')}
+              onMouseLeave={() => setHoveredButton(null)}
+            >
+              <ListMusic className='h-4 w-4' />
+            </Button>
+            {hoveredButton === 'queue' && <Tooltip text="Queue" />}
+          </div>
 
-          <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
-            <Laptop2 className='h-4 w-4' />
-          </Button>
+          {/* Connect Button */}
+          <div className="relative">
+            <Button 
+              size='icon' 
+              variant='ghost' 
+              className='hover:text-white text-lapsus-500'
+              onMouseEnter={() => setHoveredButton('connect')}
+              onMouseLeave={() => setHoveredButton(null)}
+            >
+              <Laptop2 className='h-4 w-4' />
+            </Button>
+            {hoveredButton === 'connect' && <Tooltip text="Connect to a device" />}
+          </div>
 
-          <div className='flex items-center gap-2'>
-            <Button size='icon' variant='ghost' className='hover:text-white text-lapsus-500'>
-              <Volume1 className='h-4 w-4' />
+          {/* Volume Controls */}
+          <div className="relative flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={toggleMute}
+              className="hover:text-white text-lapsus-500"
+              onMouseEnter={() => setHoveredButton('mute')}
+              onMouseLeave={() => setHoveredButton(null)}
+            >
+              {getVolumeIcon()}
             </Button>
 
+
+            
+            {hoveredButton === 'mute' && <Tooltip text="Mute" />}
+            
             <Slider
               value={[volume]}
               max={100}

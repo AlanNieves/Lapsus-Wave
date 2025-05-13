@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faForwardStep } from "@fortawesome/free-solid-svg-icons";
-import { faThumbsUp, faPlus, faStar, faShareAlt, faList, faTrash, faT, faThumbTack } from '@fortawesome/free-solid-svg-icons';
+import { faForwardStep } from "@fortawesome/free-solid-svg-icons"
+import { faThumbsUp, faPlus, faStar, faShareAlt, faList } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
@@ -8,8 +8,8 @@ import { Song } from '@/types';
 import { Button } from '@/components/ui/button';
 
 
-const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string }) => {
-  const { openMenuSongId, setOpenMenuSongId, playlists, addSongToPlaylist, removeSongFromPlaylist } = usePlayerStore();
+const SongOptionsMenu = ({ song }: { song: Song; playlistId: string }) => {
+  const { openMenuSongId, setOpenMenuSongId, playlists, addSongToPlaylist } = usePlayerStore();
   const { addToQueue, addNextSong } = usePlayerStore();
   const [showPlaylistOptions, setShowPlaylistOptions] = useState(false);
 
