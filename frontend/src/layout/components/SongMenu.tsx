@@ -1,4 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faForwardStep } from "@fortawesome/free-solid-svg-icons";
+import { useState } from 'react';
 import { faThumbsUp, faPlus, faStar, faShareAlt, faList, faTrash, faT, faThumbTack } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -58,7 +60,7 @@ const SongOptionsMenu = ({ song, playlistId }: { song: Song; playlistId: string 
               {/* Opciones principales */}
               {[
                 { text: "Darle Me Gusta", icon: faThumbsUp },
-                { text: "Siguiente cancion", icon: faThumbTack, onClick: () => addNextSong(song) },
+                { text: "Siguiente cancion", icon: faForwardStep, onClick: () => addNextSong(song) },
                 { text: "Agregar a la Cola", icon: faPlus, onClick: () => addToQueue(song) },
                 { text: "Darle una Review", icon: faStar },
                 { text: "Compartir", icon: faShareAlt },

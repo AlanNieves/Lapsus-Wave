@@ -196,8 +196,10 @@ const LeftSidebar = () => {
                     )}
                   </motion.div>
                 )}
+                <motion.div className="h-8" />
               </ScrollArea>
             </motion.div>
+
           ) : showPlaylists ? (
             <motion.div
               key="playlists"
