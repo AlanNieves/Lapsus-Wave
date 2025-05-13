@@ -52,17 +52,17 @@ const UsersList = () => {
 											<AvatarFallback>{user.fullName[0]}</AvatarFallback>
 										</Avatar>
 										<div
-											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-1 ring-red-200
-                      ${
-												onlineUsers.has(user.clerkId)
-													? "bg-lapsus-1200"
-													: "bg-lapsus-400"
+											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-1 ring-neutral-800
+													${
+													onlineUsers.has(user.clerkId)
+														? "bg-green-500"
+														: "bg-neutral-500"
 											}`}
 										/>
 									</div>
 
 									<div className='flex-1 min-w-0 lg:block hidden'>
-										<span className='font-medium truncate'>
+										<span className='truncate max-w-[180px] block'>
 											{user.fullName}
 										</span>
 									</div>
