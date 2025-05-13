@@ -43,7 +43,7 @@ const LeftSidebar = () => {
     if (showQueue) {
       setShowQueue(false);
     }
-  }, [location.pathname, setShowQueue]);
+  }, [location.pathname, setShowQueue, showQueue]);
 
   // Scroll to the active song in the queue
   useEffect(() => {

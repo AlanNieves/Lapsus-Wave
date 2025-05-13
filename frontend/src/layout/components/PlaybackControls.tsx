@@ -15,15 +15,20 @@ const formatTime = (seconds: number) => {
 
 const Tooltip = ({ text }: { text: string }) => {
   return (
-    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded-md shadow-lg whitespace-nowrap transition-opacity duration-150">
+    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white rounded-md shadow-lg whitespace-nowrap transition-opacity duration-150"
+         style={{ backgroundColor: '	#9b3259' }}>
       {text}
-      <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-neutral-800 transform rotate-45" />
+      <div
+        className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 transform rotate-45"
+        style={{ backgroundColor: '#9b3259' }}
+      />
     </div>
   );
 };
 
+
 export const PlaybackControls = () => {
-  const { currentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleQueue, toggleExpandedView } = usePlayerStore();
+  const { currentSong, isPlaying, playNext, togglePlay, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleQueue, toggleExpandedView } = usePlayerStore();
   const [volume, setVolume] = useState(75);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -80,6 +85,39 @@ export const PlaybackControls = () => {
       audioRef.current.volume = isMuted ? 0 : volume / 100;
     }
   }, [volume, isMuted]);
+
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key.toLowerCase() === 'm') {
+      toggleMute();
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  /*Play-pause-keyboard*/
+  
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    const isTyping =
+      (e.target as HTMLElement)?.tagName === "INPUT" ||
+      (e.target as HTMLElement)?.tagName === "TEXTAREA";
+
+    if (isTyping) return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      togglePlay();
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [togglePlay]);
+
+
+
 
   return (
     <footer className='h-20 sm:h-24 bg-gradient-to-tl from-lapsus-1200/30 to-lapsus-900  border-x-lapsus-900 px-4'>
