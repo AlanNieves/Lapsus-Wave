@@ -114,7 +114,7 @@ const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId
                 { text: "Siguiente cancion", icon: faForwardStep, onClick: () => addNextSong(song) },
                 { text: "Agregar a la Cola", icon: faPlus, onClick: () => addToQueue(song) },
                 { text: "Darle una Review", icon: faStar },
-              ].map((item, index) => (
+              ].map((item) => (
                 <button
                   key={item.text}
                   onClick={() => {
