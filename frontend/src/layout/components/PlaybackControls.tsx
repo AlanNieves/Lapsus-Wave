@@ -13,7 +13,9 @@ const formatTime = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-const Tooltip = ({ text }: { text: string }) => {
+
+
+  const Tooltip = ({ text }: { text: string }) => {
   return (
     <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded-md shadow-lg whitespace-nowrap transition-opacity duration-150">
       {text}

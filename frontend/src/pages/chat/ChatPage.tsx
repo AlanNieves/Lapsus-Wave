@@ -51,7 +51,7 @@ const ChatPage = () => {
 				<UsersList />
 
 				{/* chat message */}
-				<div className='flex flex-col h-full'>
+				<div className='flex flex-col h-full border-l border-white/10 backdrop-blur-sm'>
 					{selectedUser ? (
 						<>
 							<ChatHeader />
