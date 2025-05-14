@@ -33,17 +33,18 @@ const LeftSidebar = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
-
+  const previousPath = useRef(location.pathname);
   // Fetch albums on component mount
   useEffect(() => {
     fetchAlbums();
   }, [fetchAlbums]);
 
   useEffect(() => {
-    if (showQueue) {
-      setShowQueue(false);
-    }
-  }, [location.pathname, setShowQueue, showQueue]);
+  if (previousPath.current !== location.pathname) {
+    setShowQueue(false);
+    previousPath.current = location.pathname;
+  }
+}, [location.pathname, setShowQueue, showQueue]);
 
   // Scroll to the active song in the queue
   useEffect(() => {
@@ -74,7 +75,7 @@ const LeftSidebar = () => {
   };
 
   // Use the original queue if shuffle is active
-  const visibleQueue = isShuffleActive ? originalQueue : queue;
+const visibleQueue = isShuffleActive ? queue : originalQueue;
 
   // Animation variants
   const containerVariants = {
