@@ -2,10 +2,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Clock, Pause, Play } from "lucide-react";
+import { Clock, Pause, Play, Shuffle } from "lucide-react";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import SongOptionsMenu from "@/layout/components/SongMenu";
+import { useState } from "react";
+
 
 export const formatDuration = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -13,10 +15,14 @@ export const formatDuration = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
+
 const AlbumPage = () => {
   const { albumId } = useParams();
   const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
-  const { currentSong, isPlaying, playAlbum, togglePlay, isMenuOpen, setIsMenuOpen } = usePlayerStore();
+  const { currentSong, isPlaying, playAlbum, togglePlay, isShuffleActive, toggleShuffle,
+  } = usePlayerStore();
+
+  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);
@@ -40,7 +46,7 @@ const AlbumPage = () => {
 
   const handleSongClick = (index: number) => {
     if (!currentAlbum) return;
-    
+
     if (currentSong?._id === currentAlbum.songs[index]._id) {
       togglePlay();
     } else {
@@ -88,6 +94,20 @@ const AlbumPage = () => {
                     <Play className="h-7 w-7 text-lapsus-500 fill-current" />
                   )}
                 </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className={`
+    w-12 h-12 
+    ${isShuffleActive ? 'text-red-400 hover:text-white hover:bg-accent' : 'text-lapsus-500 hover:text-white'}
+  `}
+                  onClick={toggleShuffle}
+                  onMouseEnter={() => setHoveredButton('shuffle')}
+                  onMouseLeave={() => setHoveredButton(null)}
+                  disabled={!currentSong}
+                >
+                  <Shuffle className="h-25 w-25" /> {/* Ícono más grande */}
+                </Button>
               </div>
 
               <div className="bg-black/20 backdrop-blur-sm">
@@ -110,7 +130,7 @@ const AlbumPage = () => {
                           onMouseLeave={() => isMenuOpen && setIsMenuOpen(false)}
                           className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
                         >
-                          <div 
+                          <div
                             className="flex items-center justify-center"
                             onClick={(e) => {
                               e.stopPropagation();

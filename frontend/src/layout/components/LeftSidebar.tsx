@@ -20,8 +20,6 @@ const LeftSidebar = () => {
     setCurrentSong,
     isPlaying,
     setIsPlaying,
-    isShuffleActive,
-    originalQueue,
     setShowQueue,
     playlists,
     showPlaylists,
@@ -73,7 +71,7 @@ const LeftSidebar = () => {
   };
 
   // Use the original queue if shuffle is active
-  const visibleQueue = isShuffleActive ? queue : originalQueue;
+  const visibleQueue = queue;
 
   // Animation variants
   const containerVariants = {
