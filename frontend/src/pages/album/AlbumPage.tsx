@@ -77,7 +77,7 @@ const AlbumPage = () => {
             </div>
 
             {/* Barra fija con controles */}
-            <div className="sticky top-0 z-50 bg-gradient-1000 from-black/80 to-transparent backdrop-blur-sm">
+            <div className="sticky top-fix z-50 bg-gradient-1000 from-black/80 to-transparent backdrop-blur-sm">
               <div className="flex items-center justify-between px-6 py-4">
                 <Button
                   onClick={handlePlayAlbum}
