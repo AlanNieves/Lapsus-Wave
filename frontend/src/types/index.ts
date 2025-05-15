@@ -42,11 +42,4 @@ export interface User {
     imageUrl: string;
 }
 
-export interface Playlist {
-    id: string;
-    name: string;
-    description?: string;
-    songs: Song[];
-    imageUrl: string;
-  }
 

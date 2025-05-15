@@ -17,10 +17,6 @@ const userSchema = new mongoose.Schema(
 			unique: true,
 		},
 
-		playlists: [{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "Playlist"
-		}],
 
 		collaborators: [{
 			type: mongoose.Schema.Types.ObjectId,
