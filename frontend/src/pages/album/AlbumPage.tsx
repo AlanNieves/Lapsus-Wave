@@ -97,8 +97,12 @@ const AlbumPage = () => {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className={`
-    w-12 h-12 
+                  className={`rounded-full
+    bg-lapsus-1200 
+    hover:bg-lapsus-1100 
+    hover:scale-105 
+    transition-all
+    w-10 h-10
     ${isShuffleActive ? 'text-red-400 hover:text-white hover:bg-accent' : 'text-lapsus-500 hover:text-white'}
   `}
                   onClick={toggleShuffle}
@@ -106,7 +110,7 @@ const AlbumPage = () => {
                   onMouseLeave={() => setHoveredButton(null)}
                   disabled={!currentSong}
                 >
-                  <Shuffle className="h-25 w-25" /> {/* Ícono más grande */}
+                  <Shuffle className="w-5 h-5 !w-5 !h-5 scale-[1.02]" /> {/* Ícono más grande */}
                 </Button>
               </div>
 

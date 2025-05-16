@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { Clock, Play, Pause } from "lucide-react";
 import { useMusicStore } from "@/stores/useMusicStore";
-
+import { Music } from "lucide-react";
 
 export const formatDuration = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -94,7 +94,7 @@ const PlaylistPage = () => {
       <div className="flex items-center gap-6 mb-6">
         <div className="relative w-48 h-48 rounded-lg bg-gradient-to-br from-lapsus-500 to-lapsus-800 flex items-center justify-center">
           <img
-            src={imageUrl || "/default-playlist.jpg"}
+            src={imageUrl}
             alt={playlist.name}
             className="w-full h-full rounded-lg object-cover"
           />
@@ -128,9 +128,13 @@ const PlaylistPage = () => {
               />
               <div className="flex gap-2">
                 <Button onClick={handleSave}>Save Changes</Button>
-                <Button variant="destructive" onClick={handleDelete}>
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={handleDelete}
+                >
                   Delete Playlist
                 </Button>
+
               </div>
             </>
           ) : (
