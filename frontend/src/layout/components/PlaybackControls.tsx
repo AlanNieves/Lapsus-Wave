@@ -94,7 +94,7 @@ export const PlaybackControls = () => {
   return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  /Play-pause-keyboard/
+  /*Play-pause-keyboard*/
   
   useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {

@@ -11,6 +11,8 @@ import QueueSkeleton from "@/components/skeletons/QueueListSkeleton";
 import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
+
+
 const LeftSidebar = () => {
   const { albums, fetchAlbums, isLoading } = useMusicStore();
   const {
@@ -27,6 +29,7 @@ const LeftSidebar = () => {
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const previousPath = useRef(location.pathname);
   // Fetch albums on component mount
   useEffect(() => {
     fetchAlbums();
