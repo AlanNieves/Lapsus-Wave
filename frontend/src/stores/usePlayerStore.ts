@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Playlist, Song } from "@/types";
+import {  Song } from "@/types";
 import toast from 'react-hot-toast';
 
 
@@ -17,16 +17,15 @@ interface PlayerStore {
   //isMenuOpen: boolean;
   openMenuSongId: string | null;
 
-  // Estado de las playlists
-  playlists: Playlist[];
+ 
+  
 
-  showPlaylists: boolean;
 
   // Acciones del reproductor
   setQueue: (queue: Song[]) => void;
   initializeQueue: (songs: Song[]) => void;
   playAlbum: (songs: Song[], startIndex?: number) => void;
-  reproducePlaylist:(songs: Song[], startIndex?: number) =>void;
+
   setCurrentSong: (song: Song | null) => void;
   togglePlay: () => void;
   playNext: () => void;
@@ -40,27 +39,14 @@ interface PlayerStore {
   setShowQueue: (show: boolean) => void;
   toggleExpandedView: () => void;
   setOpenMenuSongId: (songId: string | null) => void;
-  // Acciones de las playlists
-  createPlaylist: (name: string, description?: string) => Playlist;
-  addSongToPlaylist: (playlistId: string, song: Song) => void;
-  removeSongFromPlaylist: (playlistId: string, songId: string) => void;
-  updatePlaylist: (id: string, data: { name?: string; description?: string; imageUrl?: string }) => void;
-  deletePlaylist: (playlistId: string) => void;
-  
-  toggleShowPlaylists: () => void;
+
+
   addToQueue: (song: Song) => void;
   addNextSong : (song: Song)=> void;
 }
 
-//guardar funcion para cargar las playlists desde localstorage
-const loadPlaylists = (): Playlist[] => {
-  const playlists = localStorage.getItem("playlists");
-  return playlists ? JSON.parse(playlists) : [];
-};
 
-const savePlaylists = (playlists: Playlist[]) => {
-  localStorage.setItem("playlists", JSON.stringify(playlists));
-}
+
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
   // Estado inicial del reproductor
@@ -74,12 +60,9 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   showQueue: false,
   isExpandedViewOpen: false,
   openMenuSongId: null,
-  // Estado inicial de las playlists
-  playlists: loadPlaylists(),
-  currentPlaylist: null,
-  showPlaylists: false,
 
-  toggleShowPlaylists: () => set((state) => ({ showPlaylists: !state.showPlaylists })),
+
+  
 
   // Acciones del reproductor
   initializeQueue: (songs) => {
@@ -102,16 +85,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     });
   
   },
-  reproducePlaylist :(songs, startIndex = 0) => {
-      if(songs.length === 0) return;
-      set({
-        queue: songs,
-        originalQueue: songs,
-        currentSong: songs[startIndex],
-        currentIndex: startIndex,
-        isPlaying: true,
-      });
-  },
+
 
   setCurrentSong: (song) => {
     if (!song) return;
@@ -222,66 +196,5 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
   setOpenMenuSongId: (songId) => set({ openMenuSongId: songId }),
 
-  // Acciones de las playlists
-  createPlaylist: (name, description = "") => {
-    const newPlaylist: Playlist = {
-      id: Date.now().toString(),
-      name,
-      description,
-      songs: [],
-      imageUrl: "",
-    };
-    set((state) => {
-      const updatedPlaylists = [...state.playlists, newPlaylist];
-      savePlaylists(updatedPlaylists);
-      return { playlists: updatedPlaylists };
-    });
-    return newPlaylist;
-  },
-
-  updatePlaylist: (id, data) => {
-    set((state) => {
-      const updatedPlaylists = state.playlists.map((playlist) =>
-        playlist.id === id ? { ...playlist, ...data } : playlist
-      );
-      savePlaylists(updatedPlaylists);
-      return { playlists: updatedPlaylists };
-    });
-  },
-
-  addSongToPlaylist: (playlistId, song) => {
-    set((state) => {
-      const updatedPlaylists = state.playlists.map((playlist) =>
-        playlist.id === playlistId
-          ? { ...playlist, songs: [...playlist.songs, song] }
-          : playlist
-      );
-      savePlaylists(updatedPlaylists);
-      return { playlists: updatedPlaylists };
-    });
-  },
-
-  removeSongFromPlaylist: (playlistId, songId) => {
-    set((state) => {
-      const updatedPlaylists = state.playlists.map((playlist) =>
-        playlist.id === playlistId
-          ? { ...playlist, songs: playlist.songs.filter((s) => s._id !== songId) }
-          : playlist
-      );
-      savePlaylists(updatedPlaylists);
-      return { playlists: updatedPlaylists };
-    });
-  },
-
-  deletePlaylist: (id) => {
-    set((state) => {
-      const updatedPlaylists = state.playlists.filter((playlist) => playlist.id !== id);
-      savePlaylists(updatedPlaylists);
-      return { playlists: updatedPlaylists };
-    });
-  },
-
-
-
-  
+ 
 }));
