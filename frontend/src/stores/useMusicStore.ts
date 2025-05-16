@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
-import { Album, Playlist, Song, Stats,  } from "@/types";
+import { Album,  Song, Stats,  } from "@/types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
@@ -13,7 +13,7 @@ interface MusicStore {
 	madeForYouSongs: Song[];
 	trendingSongs: Song[];
 	stats: Stats;
-	currentPlaylist: Playlist | null;
+	
 
 	fetchAlbums: () => Promise<void>;
 	fetchAlbumById: (id: string) => Promise<void>;

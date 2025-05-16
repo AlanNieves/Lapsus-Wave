@@ -7,7 +7,7 @@ import {
   faStar,
   faShareAlt, 
   faList, 
-  faTrash,
+
   faCopy
 } from '@fortawesome/free-solid-svg-icons';
 import { 
@@ -24,13 +24,11 @@ type SongWithShare = Song & {
   shareUrl?: string;
 };
 
-const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId: string }) => {
+const SongOptionsMenu = ({ song}: { song: SongWithShare; playlistId: string }) => {
   const { 
     openMenuSongId, 
     setOpenMenuSongId, 
-    playlists, 
-    addSongToPlaylist, 
-    removeSongFromPlaylist,
+
     addToQueue, 
     addNextSong 
   } = usePlayerStore();
@@ -90,14 +88,7 @@ const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId
         </svg>
       </Button>
 
-      {playlistId && (
-        <Button
-          onClick={() => removeSongFromPlaylist(playlistId, song._id)}
-          className='text-lapsus-500 hover:text-lapsus-300'
-        >
-          <FontAwesomeIcon icon={faTrash}/>
-        </Button>
-      )}
+
 
       <AnimatePresence>
         {isMenuOpen && (
@@ -182,20 +173,7 @@ const SongOptionsMenu = ({ song, playlistId }: { song: SongWithShare; playlistId
                 <FontAwesomeIcon icon={faList} className="text-lapsus-500" />
               </button>
 
-              {showPlaylistOptions && (
-                <div className="pl-4 space-y-1">
-                  {playlists.map((playlist) => (
-                    <button
-                      key={playlist.id}
-                      className="w-full flex justify-between items-center p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
-                      onClick={() => addSongToPlaylist(playlist.id, song)}
-                    >
-                      {playlist.name}
-                      <FontAwesomeIcon icon={faPlus} className="text-lapsus-500" />
-                    </button>
-                  ))}
-                </div>
-              )}
+           
             </div>
           </motion.div>
         )}

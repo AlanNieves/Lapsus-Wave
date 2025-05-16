@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { SignedIn } from "@clerk/clerk-react";
-import { HomeIcon, Library, MessageCircle, Music, ChevronRight, Plus } from "lucide-react";
+import { HomeIcon, Library, MessageCircle, Music } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Song } from "@/types";
 import QueueSkeleton from "@/components/skeletons/QueueListSkeleton";
 import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
@@ -23,17 +23,10 @@ const LeftSidebar = () => {
     isShuffleActive,
     originalQueue,
     setShowQueue,
-    playlists,
-    showPlaylists,
-    toggleShowPlaylists,
-    createPlaylist,
-  
-    
   } = usePlayerStore();
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const navigate = useNavigate();
-  const previousPath = useRef(location.pathname);
   // Fetch albums on component mount
   useEffect(() => {
     fetchAlbums();
@@ -67,13 +60,6 @@ const LeftSidebar = () => {
     }
   };
 
-  // Handle creating a new playlist
-  const handleCreatePlaylist = () => {
-    const newPlaylist = createPlaylist("New Playlist");
-    //
-    navigate(`/playlists/${newPlaylist.id}`);
-  };
-
   // Use the original queue if shuffle is active
 const visibleQueue = isShuffleActive ? queue : originalQueue;
 
@@ -83,7 +69,7 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1, // Delay between each item's appearance
+        staggerChildren: 0.1,
       },
     },
   };
@@ -124,21 +110,15 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
 
       {/* Library/Queue section */}
       <div className="flex-1 rounded-lg bg-gradient-to-b from-lapsus-1200/30 to-lapsus-900 p-4 relative overflow-hidden">
-        <div
-          onClick={toggleShowPlaylists}
-          className={cn(
-            "flex items-center justify-between mb-4 text-lapsus-500 hover:bg-lapsus-1000 p-2 rounded-md transition-colors cursor-pointer"
-          )}
-        >
+        <div className={cn(
+          "flex items-center justify-between mb-4 text-lapsus-500 hover:bg-lapsus-1000 p-2 rounded-md transition-colors cursor-pointer"
+        )}>
           <div className="flex items-center">
             <Library className="size-5 mr-2 flex-shrink-0" />
             <span className="hidden md:inline truncate">
-              {showQueue ? "Now Playing" : showPlaylists ? "Your Playlists" : "Your Library"}
+              {showQueue ? "Now Playing" : "Your Library"}
             </span>
           </div>
-          <ChevronRight
-            className={`size-5 transition-transform ${showPlaylists ? "rotate-90" : ""}`}
-          />
         </div>
 
         <AnimatePresence mode="wait">
@@ -201,53 +181,6 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
                 <motion.div className="h-8" />
               </ScrollArea>
             </motion.div>
-
-          ) : showPlaylists ? (
-            <motion.div
-              key="playlists"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="h-full"
-            >
-              <ScrollArea className="h-[calc(100vh-220px)]">
-                <motion.div className="space-y-2 pr-2">
-                  {/* Botón para crear playlist */}
-                  <motion.button
-                    variants={itemVariants}
-                    onClick={handleCreatePlaylist}
-                    className="w-full flex items-center gap-2 p-2 text-lapsus-500 hover:bg-lapsus-900 rounded-md transition-colors"
-                  >
-                    <Plus className="size-5" />
-                    <span>Create Playlist</span>
-                  </motion.button>
-
-                  {/* Lista de playlists */}
-                  {playlists.map((playlist) => (
-                    <motion.div
-                      key={playlist.id}
-                      variants={itemVariants}
-                    >
-                      <Link
-                        to={`/playlists/${playlist.id}`}
-                        className="p-2 hover:bg-lapsus-1000 rounded-md flex items-center gap-3 group cursor-pointer"
-                      >
-                        <div className="size-12 rounded-md flex-shrink-0 bg-gradient-to-br from-lapsus-500 to-lapsus-800 flex items-center justify-center">
-                          <Library className="size-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{playlist.name}</p>
-                          <p className="text-sm text-lapsus-800 truncate">
-                            {playlist.songs.length} songs
-                          </p>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </ScrollArea>
-            </motion.div>
           ) : (
             <motion.div
               key="library"
@@ -273,7 +206,7 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
                         >
                           <img
                             src={album.imageUrl}
-                            alt="Playlist img"
+                            alt="Album cover"
                             className="size-12 rounded-md flex-shrink-0 object-cover"
                           />
                           <div className="flex-1 min-w-0">

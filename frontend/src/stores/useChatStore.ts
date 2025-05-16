@@ -153,7 +153,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	fetchMessages: async (userId: string) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axiosInstance.get(`/users/messages/${userId}`);
+			const response = await axiosInstance.get('/users/messages/${userId}');
 			set((state) => ({
 				messages: {
 					...state.messages,
@@ -165,5 +165,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		} finally {
 			set({ isLoading: false });
 		}
+		
 	},
 }));
