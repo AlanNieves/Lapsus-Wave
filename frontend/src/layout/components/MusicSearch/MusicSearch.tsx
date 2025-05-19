@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Search } from "lucide-react";
 
 interface Track {
@@ -24,6 +24,7 @@ const MusicSearch: React.FC<SearchComponentProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const [hasPressedEnter, setHasPressedEnter] = useState(false);
 
   const filteredTracks = tracks.filter(track => {
     const searchLower = searchQuery.toLowerCase();
@@ -31,9 +32,29 @@ const MusicSearch: React.FC<SearchComponentProps> = ({
   });
 
   const handleResultSelect = (track: Track) => {
-    onResultSelect(track); 
-    setSearchQuery(''); 
+    onResultSelect(track);
+    setSearchQuery('');
+    setHasPressedEnter(false);
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setHasPressedEnter(true);
+      
+      // Selección automática si hay un solo resultado
+      if (filteredTracks.length === 1) {
+        handleResultSelect(filteredTracks[0]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Selección automática al escribir si hay un único resultado y se presionó Enter
+    if (hasPressedEnter && filteredTracks.length === 1) {
+      handleResultSelect(filteredTracks[0]);
+    }
+  }, [searchQuery, hasPressedEnter]);
 
   return (
     <div className={`relative ${className}`}>
@@ -43,12 +64,13 @@ const MusicSearch: React.FC<SearchComponentProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="w-full pl-4 pr-12 py-2 text-sm bg-lapsus-1250/80 border border-lapsus-1200/50 rounded-full focus:outline-none focus:ring-2 focus:ring-lapsus-1100/30 text-white placeholder-gray-400 backdrop-blur-sm transition-all"
         />
         <Search 
           className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-lapsus-300 cursor-pointer transition-colors"
-          onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.focus()}
+          onClick={() => inputRef.current?.focus()}
           role="button"
           tabIndex={0}
         />
