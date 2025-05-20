@@ -7,9 +7,8 @@ import cors from "cors";
 import fs from "fs";
 import { createServer } from "http";
 import cron from "node-cron";
-
 import { initializeSocket } from "./lib/socket.js";
-
+import playlistRoutes from "./routes/playlist.route.js";
 import { connectDB } from "./lib/db.js";
 import userRoutes from "./routes/user.route.js";
 import adminRoutes from "./routes/admin.route.js";
@@ -69,6 +68,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
+app.use("/api/playlists", playlistRoutes);
 
 
 if (process.env.NODE_ENV === "production") {
