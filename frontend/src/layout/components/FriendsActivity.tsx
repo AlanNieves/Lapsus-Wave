@@ -1,100 +1,94 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useChatStore } from "@/stores/useChatStore";
-import { useUser } from "@clerk/clerk-react";
-import { HeadphonesIcon, Music, Users } from "lucide-react";
-import { useEffect } from "react";
+import { cn } from "@/lib/utils"; 
 
 const FriendsActivity = () => {
-	const { users, fetchUsers, onlineUsers, userActivities } = useChatStore();
-	const { user } = useUser();
+  // Misiones actualizadas con mejor UX
+  const missions = [
+    {
+      title: "🔥 DJ de Emergencia",
+      progress: 1,
+      target: 5,
+      reward: "Emblema Dorado + Shuffle Premium",
+      description: "Crea playlists para situaciones absurdas",
+      special: true
+    },
+    {
+      title: "🕵️ Detective de Letras",
+      progress: 3,
+      target: 5,
+      reward: "Insignia Sherlock Musical"
+    },
+    {
+      title: "🌍 Turista Sonoro",
+      progress: 2,
+      target: 3,
+      reward: "Pasaporte Nivel 2"
+    }
+  ];
 
-	useEffect(() => {
-		if (user) fetchUsers();
-	}, [fetchUsers, user]);
-
-	return (
-		<div className='h-full bg-gradient-to-b from-lapsus-1200/30 to-lapsus-900 rounded-lg flex flex-col'>
-			<div className='p-4 flex justify-between items-center'>
-				<div className='flex items-center gap-2'>
-					<Users className='size-5 shrink-0' />
-					<h2 className='font-semibold'>What they're listening to</h2>
-				</div>
-			</div>
-
-			{!user && <LoginPrompt />}
-
-			<ScrollArea className='flex-1'>
-				<div className='p-4 space-y-4'>
-					{users.map((user) => {
-						const activity = userActivities.get(user.clerkId);
-						const isPlaying = activity && activity !== "Idle";
-
-						return (
-							<div
-								key={user._id}
-								className='cursor-pointer hover:bg-lapsus-1000 p-3 rounded-md transition-colors group'
-							>
-								<div className='flex items-start gap-3'>
-									<div className='relative'>
-										<Avatar className='size-10 border border-transparent'>
-											<AvatarImage src={user.imageUrl} alt={user.fullName} />
-											<AvatarFallback>{user.fullName[0]}</AvatarFallback>
-										</Avatar>
-										<div
-											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-lapsus-900 
-												${onlineUsers.has(user.clerkId) ? "bg-green-500" : "bg-lapsus-1100"}
-												`}
-											aria-hidden='true'
-										/>
-									</div>
-
-									<div className='flex-1 min-w-0'>
-										<div className='flex items-center gap-2'>
-											<span className='font-medium text-sm text-lapsus-500'>{user.fullName}</span>
-											{isPlaying && <Music className='size-3.5 text-lapsus-1200 shrink-0' />}
-										</div>
-
-										{isPlaying ? (
-											<div className='mt-1'>
-												<div className='mt-1 text-sm text-lapsus-500 font-medium truncate'>
-													{activity.replace("Playing ", "").split(" by ")[0]}
-												</div>
-												<div className='text-xs text-lapsus-800 truncate'>
-													{activity.split(" by ")[1]}
-												</div>
-											</div>
-										) : (
-											<div className='mt-1 text-xs text-lapsus-800'>Idle</div>
-										)}
-									</div>
-								</div>
-							</div>
-						);
-					})}
-				</div>
-			</ScrollArea>
-		</div>
-	);
+  return (
+    <div className="rounded-lg bg-gradient-to-b from-lapsus-1200/35 to-lapsus-1200/25 p-4">
+      <h3 className="text-sm font-semibold text-lapsus-300 mb-4">Misiones Activas</h3>
+      
+      <div className="space-y-4">
+        {missions.map((mission, index) => (
+          <div 
+            key={index}
+            className={cn(
+              "p-4 rounded-md transition-colors group",
+              mission.special 
+                ? "bg-gradient-to-r from-amber-900/40 to-lapsus-1000/40 border border-amber-800/50"
+                : "bg-lapsus-1000/40 hover:bg-lapsus-1000/60"
+            )}
+          >
+            <div className="flex flex-col gap-3">
+              {/* Encabezado de misión especial */}
+              {mission.special && (
+                <div className="flex items-center gap-2 text-amber-400 text-xs font-medium mb-2">
+                  <span>🌟 MISIÓN ESTRELLA</span>
+                </div>
+              )}
+              
+              {/* Contenido principal */}
+              <div className="flex justify-between items-start">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-medium text-lapsus-200 truncate">
+                    {mission.title}
+                  </h4>
+                  {mission.description && (
+                    <p className="text-xs text-lapsus-500 mt-1 truncate">
+                      {mission.description}
+                    </p>
+                  )}
+                </div>
+                <span className="text-sm text-lapsus-500 pl-2">
+                  {mission.progress}/{mission.target}
+                </span>
+              </div>
+              
+              {/* Barra de progreso */}
+              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden mt-2">
+                <div 
+                  className="h-full bg-lapsus-500 transition-all duration-300"
+                  style={{ width: `${(mission.progress / mission.target) * 100}%` }}
+                />
+              </div>
+              
+              {/* Recompensa */}
+              <div className="flex justify-between items-center text-xs mt-2">
+                <span className="text-lapsus-400">Recompensa:</span>
+                <span className={cn(
+                  "text-lapsus-300 font-medium truncate",
+                  mission.special && "text-amber-300"
+                )}>
+                  {mission.reward}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
+
 export default FriendsActivity;
-
-const LoginPrompt = () => (
-	<div className='h-full flex flex-col items-center justify-center p-6 text-center space-y-4'>
-		<div className='relative'>
-			<div
-				className='absolute -inset-1 bg-gradient-to-b from-lapsus-1100/40 to-lapsus-1100 rounded-full blur-lg
-       opacity-75 animate-pulse'
-				aria-hidden='true'
-			/>
-			<div className='relative bg-gradient-to  rounded-full p-4'>
-				<HeadphonesIcon className='size-8 text-lapsus-500' />
-			</div>
-		</div>
-
-		<div className='space-y-2 max-w-[250px]'>
-			<h3 className='text-lg font-semibold text-lapsus-500'>See What Friends Are Playing</h3>
-			<p className='text-sm text-lapsus-800'>Login to discover what music your friends are enjoying right now</p>
-		</div>
-	</div>
-);
