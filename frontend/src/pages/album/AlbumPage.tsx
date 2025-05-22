@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useLanguageStore } from "@/stores/useLanguageStore";
+import { translations } from "@/locales";
 import { Pause, Play } from "lucide-react";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -22,6 +24,8 @@ const AlbumPage = () => {
     playAlbum, 
     togglePlay
   } = usePlayerStore();
+  const { language } = useLanguageStore();
+  const t = translations[language];
 
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);
@@ -73,13 +77,13 @@ const AlbumPage = () => {
                   className="w-[240px] h-[240px] shadow-xl rounded object-cover"
                 />
                 <div className="flex flex-col justify-end">
-                  <p className="text-sm font-medium">Álbum</p>
+                  <p className="text-sm font-medium">{t.album}</p>
                   <h1 className="text-5xl md:text-7xl font-bold my-4 text-white">
                     {currentAlbum?.title}
                   </h1>
                   <div className="flex items-center gap-2 text-sm text-zinc-100">
                     <span className="font-medium text-white">{currentAlbum?.artist}</span>
-                    <span>• {currentAlbum?.songs.length} canciones</span>
+                    <span>• {currentAlbum?.songs.length} {t.messages.toLowerCase()}</span>
                     <span>• {currentAlbum?.releaseYear}</span>
                   </div>
                 </div>
@@ -114,7 +118,7 @@ const AlbumPage = () => {
                       const index = currentAlbum?.songs.findIndex(s => s._id === track._id);
                       if (index !== undefined && index >= 0) handleSongClick(index);
                     }}
-                    placeholder="¿Qué canción buscas?"
+                    placeholder={t.searchPlaceholder || "¿Qué canción buscas?"}
                   />
                 </div>
               </div>
@@ -124,9 +128,9 @@ const AlbumPage = () => {
             <div className="bg-black/20 backdrop-blur-sm">
               <div className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-10 py-2 text-sm text-lapsus-100">
                 <div className="flex justify-end">#</div>
-                <div>Título</div>
-                <div className="flex justify-start">Fecha</div>
-                <div className="flex justify-start">Duración</div>
+                <div>{t.title || "Título"}</div>
+                <div className="flex justify-start">{t.date || "Fecha"}</div>
+                <div className="flex justify-start">{t.duration || "Duración"}</div>
               </div>
 
               <div className="px-6">

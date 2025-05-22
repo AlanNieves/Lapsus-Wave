@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search } from "lucide-react";
+import { useLanguageStore } from "@/stores/useLanguageStore";
+import { translations } from "@/locales";
 
 interface Track {
   _id: string;
@@ -19,9 +21,11 @@ interface SearchComponentProps {
 const MusicSearch: React.FC<SearchComponentProps> = ({
   tracks,
   onResultSelect,
-  placeholder = 'Buscar en el álbum...',
+  placeholder,
   className = ''
 }) => {
+  const { language } = useLanguageStore();
+  const t = translations[language];
   const [searchQuery, setSearchQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const [hasPressedEnter, setHasPressedEnter] = useState(false);
@@ -65,7 +69,7 @@ const MusicSearch: React.FC<SearchComponentProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={placeholder || t.searchPlaceholder || 'Buscar en el álbum...'}
           className="w-full pl-4 pr-12 py-2 text-sm bg-lapsus-1250/80 border border-lapsus-1200/50 rounded-full focus:outline-none focus:ring-2 focus:ring-lapsus-1100/30 text-white placeholder-gray-400 backdrop-blur-sm transition-all"
         />
         <Search 

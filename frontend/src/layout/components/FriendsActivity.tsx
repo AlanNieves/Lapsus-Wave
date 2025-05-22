@@ -1,33 +1,38 @@
 import { cn } from "@/lib/utils"; 
+import { useLanguageStore } from "@/stores/useLanguageStore";
+import { translations } from "@/locales";
 
 const FriendsActivity = () => {
-  // Misiones actualizadas con mejor UX
+  const { language } = useLanguageStore();
+  const t = translations[language];
+
+  // Misiones con soporte para traducción
   const missions = [
     {
-      title: "🔥 DJ de Emergencia",
+      title: t.mission1Title || "🔥 DJ de Emergencia",
       progress: 1,
       target: 5,
-      reward: "Emblema Dorado + Shuffle Premium",
-      description: "Crea playlists para situaciones absurdas",
+      reward: t.mission1Reward || "Emblema Dorado + Shuffle Premium",
+      description: t.mission1Description || "Crea playlists para situaciones absurdas",
       special: true
     },
     {
-      title: "🕵️ Detective de Letras",
+      title: t.mission2Title || "🕵️ Detective de Letras",
       progress: 3,
       target: 5,
-      reward: "Insignia Sherlock Musical"
+      reward: t.mission2Reward || "Insignia Sherlock Musical"
     },
     {
-      title: "🌍 Turista Sonoro",
+      title: t.mission3Title || "🌍 Turista Sonoro",
       progress: 2,
       target: 3,
-      reward: "Pasaporte Nivel 2"
+      reward: t.mission3Reward || "Pasaporte Nivel 2"
     }
   ];
 
   return (
     <div className="rounded-lg bg-gradient-to-b from-lapsus-1200/35 to-lapsus-1200/25 p-4">
-      <h3 className="text-sm font-semibold text-lapsus-300 mb-4">Misiones Activas</h3>
+      <h3 className="text-sm font-semibold text-lapsus-300 mb-4">{t.activeMissions || "Misiones Activas"}</h3>
       
       <div className="space-y-4">
         {missions.map((mission, index) => (
@@ -44,7 +49,7 @@ const FriendsActivity = () => {
               {/* Encabezado de misión especial */}
               {mission.special && (
                 <div className="flex items-center gap-2 text-amber-400 text-xs font-medium mb-2">
-                  <span>🌟 MISIÓN ESTRELLA</span>
+                  <span>{t.starMission || "🌟 MISIÓN ESTRELLA"}</span>
                 </div>
               )}
               
@@ -75,7 +80,7 @@ const FriendsActivity = () => {
               
               {/* Recompensa */}
               <div className="flex justify-between items-center text-xs mt-2">
-                <span className="text-lapsus-400">Recompensa:</span>
+                <span className="text-lapsus-400">{t.reward || "Recompensa"}:</span>
                 <span className={cn(
                   "text-lapsus-300 font-medium truncate",
                   mission.special && "text-amber-300"
