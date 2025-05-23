@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { Clock, Pause, Play, Shuffle } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect,} from "react";
 import { useParams } from "react-router-dom";
 import SongOptionsMenu from "@/layout/components/SongMenu";
 import { useState } from "react";
@@ -16,14 +16,16 @@ export const formatDuration = (seconds: number) => {
 };
 
 
+
 const AlbumPage = () => {
   const { albumId } = useParams();
   const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
   const { currentSong, isPlaying, playAlbum, togglePlay, isShuffleActive, toggleShuffle,
   } = usePlayerStore();
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
-
+  
+ 
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);
   }, [fetchAlbumById, albumId]);
@@ -45,14 +47,35 @@ const AlbumPage = () => {
   };
 
   const handleSongClick = (index: number) => {
-    if (!currentAlbum) return;
+  if (!currentAlbum) return;
 
-    if (currentSong?._id === currentAlbum.songs[index]._id) {
-      togglePlay();
-    } else {
-      playAlbum(currentAlbum.songs, index);
-    }
-  };
+  const { isShuffleActive, playAlbum } = usePlayerStore.getState();
+  const selectedSong = currentAlbum.songs[index];
+
+  if (isShuffleActive) {
+    // Generar cola aleatoria excluyendo la canción seleccionada
+    const shuffledSongs = currentAlbum.songs
+      .filter((_, i) => i !== index)
+      .sort(() => Math.random() - 0.5);
+
+    const shuffledQueue = [selectedSong, ...shuffledSongs];
+
+    // Usamos playAlbum con la cola ya mezclada
+    playAlbum(shuffledQueue, 0);
+
+    // Aseguramos que se conserve el orden original
+    usePlayerStore.setState({
+      originalQueue: currentAlbum.songs,
+      isShuffleActive: true,
+   
+    });
+
+  } else {
+    // Comportamiento normal
+    playAlbum(currentAlbum.songs, index);
+  }
+};
+
 
   return (
     <div className="h-full flex">
@@ -78,41 +101,48 @@ const AlbumPage = () => {
                     <span className="font-medium text-white">{currentAlbum?.artist}</span>
                     <span>• {currentAlbum?.songs.length} songs</span>
                     <span>• {currentAlbum?.releaseYear}</span>
-                  </div>
+                  <div className="flex items-center justify-end text-lapsus-500 text-sm font-medium bg-lapsus-900/20 px-3 py-1 rounded-full ml-auto mr-8">
+                  <Clock className="h-4 w-4 mr-1.5" />
+                  <span>Duración: {formatDuration(currentAlbum?.songs.reduce((total, song) => total + song.duration, 0) || 0)}</span>
+                </div>
                 </div>
               </div>
+            </div>
 
               <div className="px-6 pb-4 flex items-center gap-6">
                 <Button
-                  onClick={handlePlayAlbum}
-                  size="icon"
-                  className="w-14 h-14 rounded-full bg-lapsus-1200 hover:bg-lapsus-1100 hover:scale-105 transition-all"
-                >
-                  {isAlbumPlaying && isPlaying ? (
-                    <Pause className="h-7 w-7 text-lapsus-500 fill-current" />
-                  ) : (
-                    <Play className="h-7 w-7 text-lapsus-500 fill-current" />
-                  )}
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className={`rounded-full
-    bg-lapsus-1200 
-    hover:bg-lapsus-1100 
-    hover:scale-105 
-    transition-all
-    w-10 h-10
-    ${isShuffleActive ? 'text-red-400 hover:text-white hover:bg-accent' : 'text-lapsus-500 hover:text-white'}
-  `}
-                  onClick={toggleShuffle}
-                  onMouseEnter={() => setHoveredButton('shuffle')}
-                  onMouseLeave={() => setHoveredButton(null)}
-                  disabled={!currentSong}
-                >
-                  <Shuffle className="w-5 h-5 !w-5 !h-5 scale-[1.02]" /> {/* Ícono más grande */}
-                </Button>
-              </div>
+                    onClick={handlePlayAlbum}
+                    className="flex items-center gap-2 h-14 px-6 pl-5 rounded-full bg-lapsus-1200 hover:bg-lapsus-1100 hover:scale-105 transition-all shadow-xl text-lapsus-500 font-medium text-sm"
+                  >
+                    {isAlbumPlaying && isPlaying ? (
+                      <>
+                        <Pause className="h-5 w-5 fill-current" />
+                        Pausar
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-5 w-5 fill-current -mr-0.5" />
+                        Reproducir
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className={`flex items-center gap-2 h-9 px-4 pl-3 ml-1 rounded-full ${isShuffleActive
+                      ? 'text-red-400 hover:text-white hover:bg-accent'
+                      : 'text-lapsus-500 hover:text-white'
+                      } font-medium text-sm`}
+                    onClick={toggleShuffle}
+                    onMouseEnter={() => setHoveredButton('shuffle')}
+                    onMouseLeave={() => setHoveredButton(null)}
+                    disabled={!currentSong}
+                  >
+                    <Shuffle className="h-4 w-4" />
+                    Aleatorio
+                  </Button>
+                </div>
+
 
               <div className="bg-black/20 backdrop-blur-sm">
                 <div className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-10 py-2 text-sm text-lapsus-100">
@@ -131,7 +161,6 @@ const AlbumPage = () => {
                       return (
                         <div
                           key={`${song._id}-${index}`}
-                          onMouseLeave={() => isMenuOpen && setIsMenuOpen(false)}
                           className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
                         >
                           <div

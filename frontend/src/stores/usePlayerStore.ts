@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Playlist, Song } from "@/types";
+import { Playlist, Song, Album} from "@/types";
 import toast from 'react-hot-toast';
 
 
@@ -16,7 +16,7 @@ interface PlayerStore {
   isExpandedViewOpen: boolean;
   //isMenuOpen: boolean;
   openMenuSongId: string | null;
-
+  currentAlbum?: Album | null;
   // Estado de las playlists
   playlists: Playlist[];
 
@@ -50,6 +50,8 @@ interface PlayerStore {
   toggleShowPlaylists: () => void;
   addToQueue: (song: Song) => void;
   addNextSong : (song: Song)=> void;
+
+   
 }
 
 //guardar funcion para cargar las playlists desde localstorage
@@ -91,7 +93,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     });
   },
 
-  playAlbum: (songs, startIndex = 0) => {
+  playAlbum: (songs: Song[], startIndex = 0, album: Album | null = null) => {
     if (songs.length === 0) return;
     set({
       queue: songs,
@@ -99,6 +101,8 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       currentSong: songs[startIndex],
       currentIndex: startIndex,
       isPlaying: true,
+      currentAlbum: album,
+      isShuffleActive: false, 
     });
   
   },
@@ -154,19 +158,38 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   },
 
   toggleShuffle: () => {
-    const { isShuffleActive, originalQueue, currentSong } = get();
-    if (isShuffleActive) {
-      const currentSongIndex = originalQueue.findIndex((song) => song._id === currentSong?._id);
-      set({
-        queue: originalQueue,
-        currentIndex: currentSongIndex !== -1 ? currentSongIndex : 0,
-        isShuffleActive: false,
-      });
-    } else {
-      get().shuffleQueue();
-      set({ isShuffleActive: true });
-    }
-  },
+  const state = get();
+
+  if (state.isShuffleActive) {
+    const originalIndex = state.originalQueue.findIndex(
+      song => song._id === state.currentSong?._id
+    );
+
+    set({
+      queue: [...state.originalQueue],
+      currentIndex: originalIndex !== -1 ? originalIndex : 0,
+      isShuffleActive: false,
+    });
+  } else {
+    const currentIndex = state.queue.findIndex(
+      song => song._id === state.currentSong?._id
+    );
+
+    const shuffled = [...state.queue]
+      .filter((_, i) => i !== currentIndex)
+      .sort(() => Math.random() - 0.5);
+
+    const shuffledQueue = currentIndex !== -1
+      ? [state.queue[currentIndex], ...shuffled]
+      : shuffled;
+
+    set({
+      queue: shuffledQueue,
+      currentIndex: 0,
+      isShuffleActive: true,
+    });
+  }
+},
 
   shuffleQueue: () => {
     const { queue, currentSong } = get();
