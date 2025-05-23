@@ -30,8 +30,9 @@ const MusicSearch: React.FC<SearchComponentProps> = ({
     return track.title.toLowerCase().startsWith(searchLower);
   });
 
-  const handleSearchClick = () => {
-    inputRef.current?.focus();
+  const handleResultSelect = (track: Track) => {
+    onResultSelect(track); 
+    setSearchQuery(''); 
   };
 
   return (
@@ -43,11 +44,10 @@ const MusicSearch: React.FC<SearchComponentProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-4 pr-12 py-4 text-sm bg-lapsus-1250/80 border border-lapsus-1200/50 rounded-full focus:outline-none focus:ring-2 focus:ring-lapsus-1100/30 text-white placeholder-gray-400 backdrop-blur-sm transition-all"
+          className="w-full pl-4 pr-12 py-2 text-sm bg-lapsus-1250/80 border border-lapsus-1200/50 rounded-full focus:outline-none focus:ring-2 focus:ring-lapsus-1100/30 text-white placeholder-gray-400 backdrop-blur-sm transition-all"
         />
         <Search 
           className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-lapsus-300 cursor-pointer transition-colors"
-          onClick={handleSearchClick}
           onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.focus()}
           role="button"
           tabIndex={0}
@@ -61,7 +61,7 @@ const MusicSearch: React.FC<SearchComponentProps> = ({
               <div
                 key={track._id}
                 className="p-3 hover:bg-lapsus-1100/10 transition-colors cursor-pointer border-b border-lapsus-1200/20 last:border-0"
-                onClick={() => onResultSelect(track)}
+                onClick={() => handleResultSelect(track)}
               >
                 <div className="flex items-center gap-3">
                   {track.imageUrl && (

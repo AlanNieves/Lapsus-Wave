@@ -42,4 +42,8 @@ export interface User {
     imageUrl: string;
 }
 
+export interface Track {
+  _id: string;
+  title: string;
+}
 

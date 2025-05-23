@@ -4,7 +4,7 @@ import {
   faForwardStep,
   faThumbsUp, 
   faPlus, 
-  faStar, 
+  faStar,
   faShareAlt, 
   faList, 
 

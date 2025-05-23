@@ -34,16 +34,26 @@ const AlbumPage = () => {
   );
 
   const handlePlayAlbum = () => {
-    if (!currentAlbum) return;
-    isAlbumPlaying ? togglePlay() : playAlbum(currentAlbum.songs, 0);
-  };
+  if (!currentAlbum) return;
+
+  if (isAlbumPlaying) {
+    togglePlay();
+  } else {
+    playAlbum(currentAlbum.songs, 0);
+  }
+};
+
 
   const handleSongClick = (index: number) => {
-    if (!currentAlbum) return;
-    currentSong?._id === currentAlbum.songs[index]._id 
-      ? togglePlay() 
-      : playAlbum(currentAlbum.songs, index);
-  };
+  if (!currentAlbum) return;
+
+  if (currentSong?._id === currentAlbum.songs[index]._id) {
+    togglePlay();
+  } else {
+    playAlbum(currentAlbum.songs, index);
+  }
+};
+
 
   return (
     <div className="h-full flex gap-6">
