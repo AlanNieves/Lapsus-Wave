@@ -47,3 +47,12 @@ export interface Track {
   title: string;
 }
 
+export interface Playlist {
+  _id: string;
+  name: string;
+  description: string;
+  isPublic: boolean;
+  image?: string;
+  createdBy: string;
+  songs: string[];
+}
