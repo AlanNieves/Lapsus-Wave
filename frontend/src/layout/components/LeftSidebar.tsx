@@ -61,32 +61,43 @@ const LeftSidebar = () => {
   };
 
   const handleNewPlaylistKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && newPlaylistName.trim() !== "") {
-      try {
-        const token = await getToken();
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists`, {
+  if (e.key === "Enter" && newPlaylistName.trim() !== "") {
+    try {
+      const token = await getToken();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: newPlaylistName.trim(),
+          description: "",
+          isPublic: false,
+        }),
+      });
 
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: newPlaylistName.trim(),
-            description: "",
-            isPublic: false,
-          }),
-        });
+      if (!response.ok) throw new Error("Failed to create playlist");
 
-        if (!response.ok) throw new Error("Failed to create playlist");
+      const data = await response.json();
 
-        const data = await response.json();
-        navigate(`/playlists/${data._id}`);
-      } catch (err) {
-        console.error("Error creating playlist:", err);
-      }
+      // ✅ Oculta el input y limpia el nombre
+      setShowNewPlaylistInput(false);
+      setNewPlaylistName("");
+
+      // ✅ Recarga la lista de playlists desde el backend
+      await loadPlaylists();
+
+      // ✅ Redirige a la nueva playlist
+      navigate(`/playlists/${data._id}`);
+    } catch (err) {
+      console.error("Error creating playlist:", err);
     }
-  };
+  }
+};
+
+
+
 
   return (
     <div className="h-full flex flex-col gap-2">

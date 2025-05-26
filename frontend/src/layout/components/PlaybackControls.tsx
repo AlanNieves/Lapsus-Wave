@@ -17,9 +17,9 @@ const formatTime = (seconds: number) => {
 
   const Tooltip = ({ text }: { text: string }) => {
   return (
-    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded-md shadow-lg whitespace-nowrap transition-opacity duration-150">
+    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-9B3259 rounded-md shadow-lg whitespace-nowrap transition-opacity duration-150">
       {text}
-      <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-neutral-800 transform rotate-45" />
+      <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-9B3259 transform rotate-45" />
     </div>
   );
 };

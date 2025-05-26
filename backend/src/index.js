@@ -8,7 +8,7 @@ import fs from "fs";
 import { createServer } from "http";
 import cron from "node-cron";
 import { initializeSocket } from "./lib/socket.js";
-import playlistRoutes from "./routes/playlist.route.js";
+import playlistRoutes from "./routes/playlist.routes.js";
 import { connectDB } from "./lib/db.js";
 import userRoutes from "./routes/user.route.js";
 import adminRoutes from "./routes/admin.route.js";
@@ -35,10 +35,11 @@ app.use(
 
 app.use(express.json()); // to parse req.body
 app.use(clerkMiddleware()); // this will add auth to req obj => req.auth
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(
 	fileUpload({
 		useTempFiles: true,
-		tempFileDir: path.join(__dirname, "tmp"),
+		tempFileDir: "/tmp/",
 		createParentPath: true,
 		limits: {
 			fileSize: 10 * 1024 * 1024, // 10MB  max file size
