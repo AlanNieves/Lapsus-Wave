@@ -81,6 +81,39 @@ export const PlaybackControls = () => {
     }
   }, [volume, isMuted]);
 
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key.toLowerCase() === 'm') {
+      toggleMute();
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  /*Play-pause-keyboard*/
+  
+  useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    const isTyping =
+      (e.target as HTMLElement)?.tagName === "INPUT" ||
+      (e.target as HTMLElement)?.tagName === "TEXTAREA";
+
+    if (isTyping) return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      togglePlay();
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [togglePlay]);
+
+
+
+
   return (
     <footer className='h-20 sm:h-24 bg-gradient-to-tl from-lapsus-1200/30 to-lapsus-900  border-x-lapsus-900 px-4'>
       <div className='flex justify-between items-center h-full max-w-[1800px] mx-auto'>
