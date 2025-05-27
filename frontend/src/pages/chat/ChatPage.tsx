@@ -22,9 +22,9 @@ const ChatPage = () => {
 	const { user } = useUser();
 
 	const bottomRef = useRef<HTMLDivElement | null>(null);
-
-	if (!user) return null; // Si no hay usuario, no se muestra nada
 	const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
+	
+	
 
 	useEffect(() => {
 		if (user) fetchUsers();
@@ -40,7 +40,8 @@ const ChatPage = () => {
 		}
 	}, [messages, selectedUser]);
 
-
+	if (!user) return null; // Si no hay usuario, no se muestra nada
+	
 	console.log({ messages });
 
 	return (

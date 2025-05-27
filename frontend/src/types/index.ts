@@ -42,6 +42,7 @@ export interface User {
     imageUrl: string;
 }
 
+<<<<<<< HEAD
 export interface Playlist {
     id: string;
     name: string;
@@ -49,4 +50,10 @@ export interface Playlist {
     songs: Song[];
     imageUrl: string;
   }
+=======
+export interface Track {
+  _id: string;
+  title: string;
+}
+>>>>>>> new-gael-branch
 
