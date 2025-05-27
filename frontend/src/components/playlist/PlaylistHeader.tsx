@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { Play, Shuffle, Plus, Pencil, MoreVertical, Trash } from "lucide-react";
+import { Play, Shuffle, Plus, Pencil, MoreVertical } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 
 interface Playlist {
@@ -26,7 +26,6 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   const [token, setToken] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [hovering, setHovering] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const { playAlbum, toggleShuffle } = usePlayerStore();
 
@@ -35,7 +34,6 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
       try {
         const fetchedToken = await getToken();
         setToken(fetchedToken);
-
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
           headers: { Authorization: `Bearer ${fetchedToken}` },
         });
@@ -56,7 +54,6 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   const handleSave = async () => {
     try {
       if (!token) throw new Error("Token no disponible");
-
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
         method: "PATCH",
         headers: {
@@ -76,25 +73,6 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
     }
   };
 
-  const handleDelete = async () => {
-    if (!token) return;
-    const confirmDelete = window.confirm("¿Seguro que quieres eliminar esta playlist?");
-    if (!confirmDelete) return;
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) throw new Error("Error al eliminar playlist");
-
-      window.location.href = "/"; // o redirige a la lista principal
-    } catch (err) {
-      console.error("❌ Error al eliminar la playlist:", err);
-    }
-  };
-
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !token) return;
@@ -105,9 +83,7 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}/cover`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -129,9 +105,12 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
 
   if (!playlist || !token) return <div className="text-white p-6">Cargando...</div>;
 
-  const fullImageUrl = playlist.coverImage?.startsWith("http")
+  const fullImageUrl = playlist.coverImage
+  ? playlist.coverImage.startsWith("http")
     ? playlist.coverImage
-    : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`;
+    : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
+  : "/default-playlist-cover.png";
+
 
   return (
     <div
@@ -148,7 +127,7 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
           <img
             src={fullImageUrl || "https://via.placeholder.com/200"}
             alt="Playlist cover"
-            className="w-48 h-48 object-cover rounded-lg shadow-lg"
+            className="!w-48 !h-48 !aspect-square !object-cover rounded-lg shadow-lg"
           />
           {hovering && (
             <button
@@ -167,8 +146,8 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
           />
         </div>
 
-        <div className="text-white flex flex-col gap-2 w-full">
-          <div className="flex justify-between items-start">
+        <div className="text-white flex flex-col gap-2 flex-1">
+          <div className="flex justify-between items-center">
             {isEditing ? (
               <input
                 value={newName}
@@ -183,23 +162,9 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
                 {playlist.name}
               </h1>
             )}
-
-            {/* Menú de opciones */}
-            <div className="relative">
-              <button onClick={() => setMenuOpen(!menuOpen)} className="p-1 text-white hover:bg-black/40 rounded-full">
-                <MoreVertical size={20} />
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-black text-white rounded shadow-lg z-20">
-                  <button
-                    onClick={handleDelete}
-                    className="flex items-center w-full px-4 py-2 hover:bg-red-700"
-                  >
-                    <Trash size={16} className="mr-2" /> Eliminar playlist
-                  </button>
-                </div>
-              )}
-            </div>
+            <button className="text-white hover:text-zinc-300">
+              <MoreVertical />
+            </button>
           </div>
 
           {isEditingDesc ? (
@@ -218,10 +183,7 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
               autoFocus
             />
           ) : (
-            <p
-              className="text-sm text-zinc-300 cursor-pointer"
-              onClick={() => setIsEditingDesc(true)}
-            >
+            <p className="text-sm text-zinc-300 cursor-pointer" onClick={() => setIsEditingDesc(true)}>
               {playlist.description || "Haz clic para añadir una descripción..."}
             </p>
           )}

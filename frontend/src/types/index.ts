@@ -50,9 +50,10 @@ export interface Track {
 export interface Playlist {
   _id: string;
   name: string;
-  description: string;
-  isPublic: boolean;
-  image?: string;
-  createdBy: string;
-  songs: string[];
+  description?: string;
+  isPublic?: boolean;
+  createdBy?: string;
+  coverImage?: string; // ✅ Esta línea es la clave
+  songs?: any[];
 }
+
