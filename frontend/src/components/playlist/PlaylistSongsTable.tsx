@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
-
-interface Song {
-  _id: string;
-  title: string;
-  artist: string;
-  album: string;
-  createdAt: string;
-  duration: number;
-}
+import { Play, Pause } from "lucide-react";
+import { usePlayerStore } from "@/stores/usePlayerStore";
+import { Song } from "@/types";
 
 const formatDuration = (seconds: number) => {
   const min = Math.floor(seconds / 60);
@@ -19,7 +13,15 @@ const formatDuration = (seconds: number) => {
 const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const { getToken } = useAuth();
+  const {
+    currentSong,
+    isPlaying,
+    playAlbum,
+    togglePlay,
+  } = usePlayerStore();
 
   useEffect(() => {
     const fetchPlaylist = async () => {
@@ -47,9 +49,16 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
     song.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handlePlayPause = (song: Song, index: number) => {
+    if (!currentSong || currentSong._id !== song._id) {
+      playAlbum(filteredSongs, index);
+    } else {
+      togglePlay();
+    }
+  };
+
   return (
     <div className="text-white p-6">
-      {/* Input de búsqueda */}
       <div className="mb-4">
         <input
           type="text"
@@ -79,19 +88,35 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
               </td>
             </tr>
           ) : (
-            filteredSongs.map((song, index) => (
-              <tr
-                key={song._id}
-                className="border-b border-zinc-800 hover:bg-zinc-800 transition"
-              >
-                <td className="py-2">{index + 1}</td>
-                <td className="py-2">{song.title}</td>
-                <td className="py-2">{song.artist}</td>
-                <td className="py-2">{song.album}</td>
-                <td className="py-2">{new Date(song.createdAt).toLocaleDateString()}</td>
-                <td className="py-2">{formatDuration(song.duration)}</td>
-              </tr>
-            ))
+            filteredSongs.map((song, index) => {
+              const isHovered = hoveredIndex === index;
+              const isCurrent = currentSong?._id === song._id;
+
+              return (
+                <tr
+                  key={song._id}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  className="border-b border-zinc-800 hover:bg-zinc-800 transition cursor-pointer"
+                  onClick={() => handlePlayPause(song, index)}
+                >
+                  <td className="py-2 w-8">
+                    {isCurrent ? (
+                      isPlaying ? <Pause size={18} /> : <Play size={18} />
+                    ) : isHovered ? (
+                      <Play size={18} />
+                    ) : (
+                      index + 1
+                    )}
+                  </td>
+                  <td className="py-2">{song.title}</td>
+                  <td className="py-2">{song.artist}</td>
+                  <td className="py-2">{song.albumId}</td>
+                  <td className="py-2">{new Date(song.createdAt).toLocaleDateString()}</td>
+                  <td className="py-2">{formatDuration(song.duration)}</td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>

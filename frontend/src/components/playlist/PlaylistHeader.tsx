@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
+import { Play, Shuffle, Plus, Pencil, MoreVertical, Trash } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 
 interface Playlist {
@@ -24,8 +25,10 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   const { getToken } = useAuth();
   const [token, setToken] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [hovering, setHovering] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const { setQueue: setPlayerQueue, setCurrentSong } = usePlayerStore();
+  const { playAlbum, toggleShuffle } = usePlayerStore();
 
   useEffect(() => {
     const fetchTokenAndPlaylist = async () => {
@@ -34,13 +37,10 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
         setToken(fetchedToken);
 
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
-          headers: {
-            Authorization: `Bearer ${fetchedToken}`,
-          },
+          headers: { Authorization: `Bearer ${fetchedToken}` },
         });
 
         if (!res.ok) throw new Error("No se pudo cargar la playlist");
-
         const data = await res.json();
         setPlaylist(data);
         setNewName(data.name);
@@ -67,13 +67,31 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
       });
 
       if (!res.ok) throw new Error("Error al actualizar");
-
       const updated = await res.json();
       setPlaylist(updated);
       setIsEditing(false);
       setIsEditingDesc(false);
     } catch (err) {
       console.error("🛑 Error guardando cambios:", err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!token) return;
+    const confirmDelete = window.confirm("¿Seguro que quieres eliminar esta playlist?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Error al eliminar playlist");
+
+      window.location.href = "/"; // o redirige a la lista principal
+    } catch (err) {
+      console.error("❌ Error al eliminar la playlist:", err);
     }
   };
 
@@ -94,7 +112,6 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
       });
 
       if (!res.ok) throw new Error("Error al subir imagen");
-
       const updated = await res.json();
       setPlaylist(updated);
     } catch (err) {
@@ -103,18 +120,11 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   };
 
   const handlePlay = () => {
-    if (playlist?.songs?.length) {
-      setPlayerQueue(playlist.songs);
-      setCurrentSong(playlist.songs[0]);
-    }
+    if (playlist && playlist.songs.length > 0) playAlbum(playlist.songs);
   };
 
-  const handleRandom = () => {
-    if (playlist?.songs?.length) {
-      const randomIndex = Math.floor(Math.random() * playlist.songs.length);
-      setPlayerQueue(playlist.songs);
-      setCurrentSong(playlist.songs[randomIndex]);
-    }
+  const handleShuffle = () => {
+    toggleShuffle();
   };
 
   if (!playlist || !token) return <div className="text-white p-6">Cargando...</div>;
@@ -130,18 +140,24 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
     >
       <div className="absolute inset-0 backdrop-blur-sm bg-black/40" />
       <div className="relative z-10 flex items-center gap-6 h-full px-6">
-        <div className="relative">
+        <div
+          className="relative"
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+        >
           <img
             src={fullImageUrl || "https://via.placeholder.com/200"}
             alt="Playlist cover"
             className="w-48 h-48 object-cover rounded-lg shadow-lg"
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-1 text-xs rounded"
-          >
-            Cambiar
-          </button>
+          {hovering && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-2 right-2 bg-black/70 text-white p-1 rounded-full"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
           <input
             type="file"
             accept="image/*"
@@ -151,21 +167,40 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
           />
         </div>
 
-        <div className="text-white">
-          {isEditing ? (
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onBlur={handleSave}
-              onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              className="text-4xl font-bold bg-transparent border-b border-white outline-none text-white"
-              autoFocus
-            />
-          ) : (
-            <h1 className="text-4xl font-bold cursor-pointer" onClick={() => setIsEditing(true)}>
-              {playlist.name}
-            </h1>
-          )}
+        <div className="text-white flex flex-col gap-2 w-full">
+          <div className="flex justify-between items-start">
+            {isEditing ? (
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onBlur={handleSave}
+                onKeyDown={(e) => e.key === "Enter" && handleSave()}
+                className="text-4xl font-bold bg-transparent border-b border-white outline-none text-white"
+                autoFocus
+              />
+            ) : (
+              <h1 className="text-4xl font-bold cursor-pointer" onClick={() => setIsEditing(true)}>
+                {playlist.name}
+              </h1>
+            )}
+
+            {/* Menú de opciones */}
+            <div className="relative">
+              <button onClick={() => setMenuOpen(!menuOpen)} className="p-1 text-white hover:bg-black/40 rounded-full">
+                <MoreVertical size={20} />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-black text-white rounded shadow-lg z-20">
+                  <button
+                    onClick={handleDelete}
+                    className="flex items-center w-full px-4 py-2 hover:bg-red-700"
+                  >
+                    <Trash size={16} className="mr-2" /> Eliminar playlist
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
 
           {isEditingDesc ? (
             <textarea
@@ -191,22 +226,19 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
             </p>
           )}
 
-          <p className="mt-2 text-sm">
-            {(playlist.songs?.length || 0)} canciones · {(playlist.songs?.length || 0) * 3}:00 min
+          <p className="text-sm">
+            {playlist.songs?.length || 0} canciones · {(playlist.songs?.length || 0) * 3}:00 min
           </p>
 
-          <div className="mt-4 flex gap-4">
-            <button onClick={handlePlay} className="bg-pink-700 px-4 py-2 rounded text-white">
-              Play
+          <div className="flex gap-4 mt-2">
+            <button onClick={handlePlay} className="bg-pink-700 text-white p-3 rounded-full">
+              <Play size={18} />
             </button>
-            <button onClick={handleRandom} className="bg-pink-700 px-4 py-2 rounded text-white">
-              Random
+            <button onClick={handleShuffle} className="bg-pink-700 text-white p-3 rounded-full">
+              <Shuffle size={18} />
             </button>
-            <button
-              onClick={onOpenAddSongModal}
-              className="bg-pink-700 px-4 py-2 rounded text-white"
-            >
-              + Añadir canción
+            <button onClick={onOpenAddSongModal} className="bg-pink-700 text-white p-3 rounded-full">
+              <Plus size={18} />
             </button>
           </div>
         </div>

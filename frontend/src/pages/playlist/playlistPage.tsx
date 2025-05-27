@@ -10,7 +10,6 @@ const PlaylistPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [playlistVersion, setPlaylistVersion] = useState(0); // para recargar canciones
 
-  // Verificación defensiva
   if (!id) return <div className="text-white p-6">Playlist no encontrada</div>;
 
   return (
@@ -21,7 +20,6 @@ const PlaylistPage = () => {
             playlistId={id}
             onOpenAddSongModal={() => setIsModalOpen(true)}
           />
-
 
           {isModalOpen && (
             <AddSongToPlaylist
@@ -34,7 +32,14 @@ const PlaylistPage = () => {
             />
           )}
 
-          <PlaylistSongsTable key={playlistVersion} playlistId={id} />
+          {/* ✅ Scroll estilizado oscuro */}
+          <div
+            className="overflow-y-auto px-6 scrollbar scrollbar-thumb-pink-900 scrollbar-track-transparent"
+            style={{ maxHeight: "calc(100vh - 350px)" }}
+          >
+            <PlaylistSongsTable key={playlistVersion} playlistId={id} />
+          </div>
+
         </div>
       </SignedIn>
 
