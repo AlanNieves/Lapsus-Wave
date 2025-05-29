@@ -297,38 +297,7 @@ export const PlaybackControls = () => {
             {hoveredButton === 'connect' && <Tooltip text="Connect to a device" />}
           </div>
 
-          {/* Volume Controls */}
-          <div className="relative flex items-center gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={toggleMute}
-              className="hover:text-white text-lapsus-500"
-              onMouseEnter={() => setHoveredButton('mute')}
-              onMouseLeave={() => setHoveredButton(null)}
-            >
-              {getVolumeIcon()}
-            </Button>
-            {hoveredButton === 'queue' && <Tooltip text={t.queue || "Queue"} />}
-          </div>
-
-
-            
-            {hoveredButton === 'mute' && <Tooltip text="Mute" />}
-            
-          {/* Connect Button */}
-          <div className="relative">
-            <Button 
-              size='icon' 
-              variant='ghost' 
-              className='hover:text-white text-lapsus-500'
-              onMouseEnter={() => setHoveredButton('connect')}
-              onMouseLeave={() => setHoveredButton(null)}
-            >
-              <Laptop2 className='h-4 w-4' />
-            </Button>
-            {hoveredButton === 'connect' && <Tooltip text={t.connect || "Connect to a device"} />}
-          </div>
+          
 
           {/* Volume Controls */}
           <div className="relative flex items-center gap-2">
