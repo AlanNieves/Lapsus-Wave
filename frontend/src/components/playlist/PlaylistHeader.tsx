@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { Play, Shuffle, Plus, Pencil, MoreVertical } from "lucide-react";
+import { Play, Shuffle, Plus, Pencil, MoreVertical, Trash } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useNavigate } from "react-router-dom";
 
 interface Playlist {
   _id: string;
@@ -26,6 +27,9 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   const [token, setToken] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [hovering, setHovering] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
 
   const { playAlbum, toggleShuffle } = usePlayerStore();
 
@@ -50,6 +54,16 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
 
     fetchTokenAndPlaylist();
   }, [playlistId, getToken]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSave = async () => {
     try {
@@ -103,19 +117,35 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
     toggleShuffle();
   };
 
+  const handleDeletePlaylist = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("No se pudo eliminar");
+
+      navigate("/");
+    } catch (error) {
+      console.error("Error al eliminar la playlist:", error);
+    }
+  };
+
   if (!playlist || !token) return <div className="text-white p-6">Cargando...</div>;
 
   const fullImageUrl = playlist.coverImage
-  ? playlist.coverImage.startsWith("http")
-    ? playlist.coverImage
-    : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
-  : "/default-playlist-cover.png";
-
+    ? playlist.coverImage.startsWith("http")
+      ? playlist.coverImage
+      : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
+    : "/default-playlist-cover.png";
 
   return (
     <div
       className="relative w-full h-[350px] bg-cover bg-center"
-      style={{ backgroundImage: `url(${fullImageUrl || "https://via.placeholder.com/600"})` }}
+      style={{ backgroundImage: `url(${fullImageUrl})` }}
     >
       <div className="absolute inset-0 backdrop-blur-sm bg-black/40" />
       <div className="relative z-10 flex items-center gap-6 h-full px-6">
@@ -125,9 +155,9 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
           onMouseLeave={() => setHovering(false)}
         >
           <img
-            src={fullImageUrl || "https://via.placeholder.com/200"}
+            src={fullImageUrl}
             alt="Playlist cover"
-            className="!w-48 !h-48 !aspect-square !object-cover rounded-lg shadow-lg"
+            className="w-48 h-48 object-cover rounded-lg shadow-lg"
           />
           {hovering && (
             <button
@@ -162,9 +192,27 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
                 {playlist.name}
               </h1>
             )}
-            <button className="text-white hover:text-zinc-300">
-              <MoreVertical />
-            </button>
+
+            {/* Menu de opciones */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu((prev) => !prev)}
+                className="text-white hover:text-zinc-300"
+              >
+                <MoreVertical />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 mt-2 w-40 bg-zinc-800 text-white rounded shadow-md z-50">
+                  <button
+                    onClick={handleDeletePlaylist}
+                    className="w-full px-4 py-2 text-left hover:bg-zinc-700 flex items-center gap-2"
+                  >
+                    <Trash size={16} />
+                    Eliminar Playlist
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {isEditingDesc ? (
