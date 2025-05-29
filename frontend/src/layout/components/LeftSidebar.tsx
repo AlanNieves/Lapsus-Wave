@@ -11,6 +11,8 @@ import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { useLoadPlaylists } from "@/hooks/useLoadPlaylists";
+import { FolderOpen } from "lucide-react"; // o usa Folder si prefieres cerrado
+
 
 const LeftSidebar = () => {
   const { albums, fetchAlbums, isLoading } = useMusicStore();
@@ -26,6 +28,7 @@ const LeftSidebar = () => {
 
   const [showNewPlaylistInput, setShowNewPlaylistInput] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [showPlaylists, setShowPlaylists] = useState(true); // nuevo estado
 
   useEffect(() => {
     fetchAlbums();
@@ -88,9 +91,15 @@ const LeftSidebar = () => {
     <div className="h-full flex flex-col gap-2">
       <div className="rounded-lg bg-gradient-to-b from-lapsus-1200/35 to-lapsus-1200/35 p-4">
         <div className="space-y-2">
-          <Link to="/" className={cn("w-full justify-start text-lapsus-500 truncate hover:bg-lapsus-1000 p-2 rounded-md transition-colors flex items-center gap-2")}> <HomeIcon className="size-5 flex-shrink-0" /> <span className="truncate">Home</span> </Link>
+          <Link to="/" className={cn("w-full justify-start text-lapsus-500 truncate hover:bg-lapsus-1000 p-2 rounded-md transition-colors flex items-center gap-2")}>
+            <HomeIcon className="size-5 flex-shrink-0" />
+            <span className="truncate">Home</span>
+          </Link>
           <SignedIn>
-            <Link to="/chat" className={cn("w-full justify-start text-lapsus-500 hover:bg-lapsus-1000 p-2 rounded-md transition-colors flex items-center gap-2")}> <MessageCircle className="size-5 flex-shrink-0" /> <span className="truncate">Messages</span> </Link>
+            <Link to="/chat" className={cn("w-full justify-start text-lapsus-500 hover:bg-lapsus-1000 p-2 rounded-md transition-colors flex items-center gap-2")}>
+              <MessageCircle className="size-5 flex-shrink-0" />
+              <span className="truncate">Messages</span>
+            </Link>
           </SignedIn>
         </div>
       </div>
@@ -124,6 +133,7 @@ const LeftSidebar = () => {
                   <PlaylistSkeleton />
                 ) : (
                   <motion.div className="space-y-2 pr-2">
+                    {/* Álbumes */}
                     {albums.map((album, index) => (
                       <motion.div key={`${album._id}-${index}`} variants={itemVariants}>
                         <Link to={`/albums/${album._id}`} className="p-2 hover:bg-lapsus-1000 rounded-md flex items-center gap-3 group cursor-pointer">
@@ -136,13 +146,27 @@ const LeftSidebar = () => {
                       </motion.div>
                     ))}
 
-                    {playlists.map((playlist) => {
-                      const imageUrl = playlist.coverImage
-                      ? playlist.coverImage.startsWith("http")
-                        ? playlist.coverImage
-                        : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
-                      : "/default-playlist-cover.png";
+                    {/* Toggle de Playlists */}
+                    <div
+                      onClick={() => setShowPlaylists((prev) => !prev)}
+                      className="flex items-center justify-between mb-2 p-2 rounded-md text-lapsus-500 hover:bg-lapsus-1000 cursor-pointer transition"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FolderOpen className="size-5 flex-shrink-0" />
+                        <span className="truncate">Playlists</span>
+                      </div>
+                      <span className="text-sm">{showPlaylists ? "−" : "+"}</span>
+                    </div>
 
+
+
+                    {/* Playlists */}
+                    {showPlaylists && playlists.map((playlist) => {
+                      const imageUrl = playlist.coverImage
+                        ? playlist.coverImage.startsWith("http")
+                          ? playlist.coverImage
+                          : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
+                        : "/default-playlist-cover.png";
 
                       return (
                         <Link
@@ -155,7 +179,6 @@ const LeftSidebar = () => {
                             alt="Playlist cover"
                             className="w-12 h-12 aspect-square object-cover rounded-md flex-shrink-0"
                           />
-
                           <div className="flex-1 min-w-0">
                             <p className="font-medium truncate">{playlist.name}</p>
                             <p className="text-sm text-zinc-400 truncate">Playlist</p>
@@ -164,6 +187,7 @@ const LeftSidebar = () => {
                       );
                     })}
 
+                    {/* Input para nueva playlist */}
                     {showNewPlaylistInput && (
                       <div className="px-2 pb-2">
                         <input
