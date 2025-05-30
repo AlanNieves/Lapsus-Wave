@@ -8,6 +8,7 @@ export interface Song {
     duration: number;
     createdAt: string;
     updatedAt: string;
+    artistId: string;
 }
 
 export interface Album {
@@ -54,6 +55,7 @@ export interface Playlist {
   isPublic?: boolean;
   createdBy?: string;
   coverImage?: string; // ✅ Esta línea es la clave
+  artistId: string;
   songs?: any[];
 }
 
