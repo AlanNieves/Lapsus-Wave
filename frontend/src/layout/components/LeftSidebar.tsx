@@ -18,7 +18,7 @@ const LeftSidebar = () => {
   const { albums, fetchAlbums, isLoading } = useMusicStore();
   const { playlists } = usePlaylistStore();
   const { showQueue, setShowQueue } = usePlayerStore();
-
+  
   const location = useLocation();
   const previousPath = useRef(location.pathname);
   const navigate = useNavigate();
@@ -32,7 +32,10 @@ const LeftSidebar = () => {
 
   useEffect(() => {
     fetchAlbums();
-    loadPlaylists();
+  }, []);
+
+useEffect(() => {
+    loadPlaylists(); // ✅ Ejecutar carga al montar
   }, []);
 
   useEffect(() => {
@@ -161,32 +164,32 @@ const LeftSidebar = () => {
 
 
                     {/* Playlists */}
-                    {showPlaylists && playlists.map((playlist) => {
-                      const imageUrl = playlist.coverImage
-                        ? playlist.coverImage.startsWith("http")
-                          ? playlist.coverImage
-                          : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
-                        : "/default-playlist-cover.png";
 
-                      return (
-                        <Link
-                          key={playlist._id}
-                          to={`/playlists/${playlist._id}`}
-                          className="p-2 hover:bg-lapsus-1000 rounded-md flex items-center gap-3 group cursor-pointer"
-                        >
-                          <img
-                            src={imageUrl}
-                            alt="Playlist cover"
-                            className="w-12 h-12 aspect-square object-cover rounded-md flex-shrink-0"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{playlist.name}</p>
-                            <p className="text-sm text-zinc-400 truncate">Playlist</p>
-                          </div>
-                        </Link>
-                      );
-                    })}
+{showPlaylists && Array.isArray(playlists) && playlists.map((playlist) => {
+  const imageUrl = playlist.coverImage
+    ? playlist.coverImage.startsWith("http")
+      ? playlist.coverImage
+      : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
+    : "/default-playlist-cover.png";
 
+  return (
+    <Link
+      key={playlist._id}
+      to={`/playlists/${playlist._id}`}
+      className="p-2 hover:bg-lapsus-1000 rounded-md flex items-center gap-3 group cursor-pointer"
+    >
+      <img
+        src={imageUrl}
+        alt="Playlist cover"
+        className="w-12 h-12 aspect-square object-cover rounded-md flex-shrink-0"
+      />
+      <div className="flex-1 min-w-0">
+        <p className="font-medium truncate">{playlist.name}</p>
+        <p className="text-sm text-zinc-400 truncate">Playlist</p>
+      </div>
+    </Link>
+  );
+})}
                     {/* Input para nueva playlist */}
                     {showNewPlaylistInput && (
                       <div className="px-2 pb-2">
