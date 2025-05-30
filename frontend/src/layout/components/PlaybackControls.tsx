@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
+import { ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-
-
+import { useLanguageStore } from "@/stores/useLanguageStore";
+import { translations } from "@/locales"; 
+import CastButton from "./CastButton"; // Import CastButton component
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -13,9 +13,7 @@ const formatTime = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
-
-
-  const Tooltip = ({ text }: { text: string }) => {
+const Tooltip = ({ text }: { text: string }) => {
   return (
     <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 text-xs font-medium text-white bg-neutral-800 rounded-md shadow-lg whitespace-nowrap transition-opacity duration-150">
       {text}
@@ -31,6 +29,11 @@ export const PlaybackControls = () => {
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [hoveredButton, setHoveredButton] = useState<null | 'shuffle' | 'previous' | 'play' | 'next' | 'repeat' | 'queue' | 'lyrics' | 'mute' | 'connect'>(null);
+
+  // Idioma
+  const { language } = useLanguageStore();
+  const t = translations[language];
+
   useEffect(() => {
     audioRef.current = document.querySelector("audio");
 
@@ -157,7 +160,7 @@ export const PlaybackControls = () => {
               >
                 <Shuffle className='h-4 w-4' />
               </Button>
-              {hoveredButton === 'shuffle' && <Tooltip text="Enable shuffle" />}
+              {hoveredButton === 'shuffle' && <Tooltip text={t.shuffle || "Enable shuffle"} />}
             </div>
 
             {/* Previous Button */}
@@ -173,7 +176,7 @@ export const PlaybackControls = () => {
               >
                 <SkipBack className='h-4 w-4' />
               </Button>
-              {hoveredButton === 'previous' && <Tooltip text="Previous" />}
+              {hoveredButton === 'previous' && <Tooltip text={t.previous || "Previous"} />}
             </div>
 
             {/* Play/Pause Button */}
@@ -188,7 +191,7 @@ export const PlaybackControls = () => {
               >
                 {isPlaying ? <Pause className='h-5 w-5' /> : <Play className='h-5 w-5' />}
               </Button>
-              {hoveredButton === 'play' && <Tooltip text={isPlaying ? "Pause" : "Play"} />}
+              {hoveredButton === 'play' && <Tooltip text={isPlaying ? (t.pause || "Pause") : (t.play || "Play")} />}
             </div>
 
             {/* Next Button */}
@@ -204,7 +207,7 @@ export const PlaybackControls = () => {
               >
                 <SkipForward className='h-4 w-4' />
               </Button>
-              {hoveredButton === 'next' && <Tooltip text="Next" />}
+              {hoveredButton === 'next' && <Tooltip text={t.next || "Next"} />}
             </div>
 
             {/* Repeat Button */}
@@ -222,9 +225,9 @@ export const PlaybackControls = () => {
               </Button>
               {hoveredButton === 'repeat' && (
                 <Tooltip text={
-                  repeatMode === 1 ? "Repeat all" 
-                  : repeatMode === 2 ? "Repeat one" 
-                  : "Repeat"
+                  repeatMode === 1 ? (t.repeatAll || "Repeat all")
+                  : repeatMode === 2 ? (t.repeatOne || "Repeat one")
+                  : (t.repeat || "Repeat")
                 } />
               )}
               {repeatMode === 2 && (
@@ -262,7 +265,7 @@ export const PlaybackControls = () => {
             >
               <Mic2 className='h-4 w-4' />
             </Button>
-            {hoveredButton === 'lyrics' && <Tooltip text="Lyrics" />}
+            {hoveredButton === 'lyrics' && <Tooltip text={t.lyrics || "Lyrics"} />}
           </div>
 
           {/* Queue Button */}
@@ -277,21 +280,16 @@ export const PlaybackControls = () => {
             >
               <ListMusic className='h-4 w-4' />
             </Button>
-            {hoveredButton === 'queue' && <Tooltip text="Queue" />}
+            {hoveredButton === 'queue' && <Tooltip text={t.queue || "Queue"} />}
           </div>
 
           {/* Connect Button */}
           <div className="relative">
-            <Button 
-              size='icon' 
-              variant='ghost' 
-              className='hover:text-white text-lapsus-500'
-              onMouseEnter={() => setHoveredButton('connect')}
-              onMouseLeave={() => setHoveredButton(null)}
-            >
-              <Laptop2 className='h-4 w-4' />
-            </Button>
-            {hoveredButton === 'connect' && <Tooltip text="Connect to a device" />}
+            <CastButton
+              mediaUrl={currentSong?.audioUrl || ''}
+              title={currentSong?.title}
+            />
+            {hoveredButton === 'connect' && <Tooltip text={t.connect || "Connect to a device"} />}
           </div>
 
           {/* Volume Controls */}
@@ -306,11 +304,7 @@ export const PlaybackControls = () => {
             >
               {getVolumeIcon()}
             </Button>
-
-
-            
-            {hoveredButton === 'mute' && <Tooltip text="Mute" />}
-            
+            {hoveredButton === 'mute' && <Tooltip text={t.mute || "Mute"} />}
             <Slider
               value={[volume]}
               max={100}

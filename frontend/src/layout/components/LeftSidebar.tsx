@@ -2,16 +2,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useLanguageStore } from "@/stores/useLanguageStore";
+import { translations } from "@/locales";
 import { SignedIn } from "@clerk/clerk-react";
-import { HomeIcon, Library, MessageCircle, Music } from "lucide-react";
+import { HomeIcon, Library, MessageCircle, Music, Globe } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Song } from "@/types";
 import QueueSkeleton from "@/components/skeletons/QueueListSkeleton";
 import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import { motion, AnimatePresence } from "framer-motion";
-
-
+import { Button } from "@/components/ui/button"; 
+import { Tooltip } from "@/components/ui/tooltip";
 
 const LeftSidebar = () => {
   const { albums, fetchAlbums, isLoading } = useMusicStore();
@@ -26,23 +28,25 @@ const LeftSidebar = () => {
     originalQueue,
     setShowQueue,
   } = usePlayerStore();
+  const { language, toggleLanguage } = useLanguageStore();
+  const t = translations[language];
+  
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const previousPath = useRef(location.pathname);
-  // Fetch albums on component mount
+
   useEffect(() => {
     fetchAlbums();
   }, [fetchAlbums]);
 
   useEffect(() => {
-  if (previousPath.current !== location.pathname) {
-    setShowQueue(false);
-    previousPath.current = location.pathname;
-  }
-}, [location.pathname, setShowQueue, showQueue]);
+    if (previousPath.current !== location.pathname) {
+      setShowQueue(false);
+      previousPath.current = location.pathname;
+    }
+  }, [location.pathname, setShowQueue, showQueue]);
 
-  // Scroll to the active song in the queue
   useEffect(() => {
     if (scrollRef.current && currentSong) {
       const activeItem = scrollRef.current.querySelector(".active-song");
@@ -55,7 +59,6 @@ const LeftSidebar = () => {
     }
   }, [currentSong, showQueue]);
 
-  // Handle song click
   const handleSongClick = (song: Song) => {
     setCurrentSong(song);
     if (!isPlaying) {
@@ -63,10 +66,8 @@ const LeftSidebar = () => {
     }
   };
 
-  // Use the original queue if shuffle is active
-const visibleQueue = isShuffleActive ? queue : originalQueue;
+  const visibleQueue = isShuffleActive ? queue : originalQueue;
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -94,7 +95,7 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
             )}
           >
             <HomeIcon className="size-5 flex-shrink-0" />
-            <span className="truncate">Home</span>
+            <span className="truncate">{t.home}</span>
           </Link>
 
           <SignedIn>
@@ -105,7 +106,7 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
               )}
             >
               <MessageCircle className="size-5 flex-shrink-0" />
-              <span className="truncate">Messages</span>
+              <span className="truncate">{t.messages}</span>
             </Link>
           </SignedIn>
         </div>
@@ -119,7 +120,7 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
           <div className="flex items-center">
             <Library className="size-5 mr-2 flex-shrink-0" />
             <span className="hidden md:inline truncate">
-              {showQueue ? "Now Playing" : "Your Library"}
+              {showQueue ? t.nowPlaying : t.library}
             </span>
           </div>
         </div>
@@ -176,7 +177,7 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
                         variants={itemVariants}
                         className="text-center text-lapsus-800 py-4"
                       >
-                        Queue is empty
+                        {t.queueEmpty}
                       </motion.div>
                     )}
                   </motion.div>
@@ -215,7 +216,7 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
                           <div className="flex-1 min-w-0">
                             <p className="font-medium truncate">{album.title}</p>
                             <p className="text-sm text-zinc-400 truncate">
-                              Album • {album.artist}
+                              {t.album} • {album.artist}
                             </p>
                           </div>
                         </Link>
@@ -228,6 +229,22 @@ const visibleQueue = isShuffleActive ? queue : originalQueue;
           )}
         </AnimatePresence>
       </div>
+
+      {/* Language toggle button */}
+      <Tooltip
+        text={language === 'en' ? "Cambiar a español" : "Change to English"}
+        position="top"
+      >
+        <Button
+          size="icon"
+          variant="ghost"
+          className="hover:text-white text-lapsus-500 w-full"
+          onClick={toggleLanguage}
+        >
+          <Globe className="h-4 w-4" />
+          <span className="ml-2">{language === 'en' ? 'ES' : 'EN'}</span>
+        </Button>
+      </Tooltip>
     </div>
   );
 };
