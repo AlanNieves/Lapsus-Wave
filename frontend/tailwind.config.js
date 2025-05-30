@@ -13,11 +13,6 @@ export default {
           "0%": { opacity: 1, transform: "scale(1)" },
           "100%": { opacity: 0, transform: "scale(0.95)" },
         },
-        animation: {
-          bounce: "bounce 1s infinite",
-          "fade-out": "fade-out 0.3s ease-out",
-          "audio-wave": "audio-wave 1s infinite",
-        },
         smoke: {
           "0%": {
             opacity: 0,
@@ -31,23 +26,22 @@ export default {
           },
         },
       },
-
-	  transform: {
-		'rotate-x-10': 'rotateX(10deg)',
-		'translate-z-10': 'translateZ(10px)',
-	  },
-	  boxShadow: {
-		'3d': '0 10px 20px rgba(0, 0, 0, 0.2)',
-	  },
-
-	  animation:{
-		smoke: "soke 0.5s ease-out forwards",
-	  },
-
+      animation: {
+        bounce: "bounce 1s infinite",
+        "fade-out": "fade-out 0.3s ease-out",
+        smoke: "smoke 0.5s ease-out forwards",
+        "audio-wave": "audio-wave 1s infinite",
+      },
+      transform: {
+        'rotate-x-10': 'rotateX(10deg)',
+        'translate-z-10': 'translateZ(10px)',
+      },
+      boxShadow: {
+        '3d': '0 10px 20px rgba(0, 0, 0, 0.2)',
+      },
       corePlugins: {
         preflight: false,
       },
-
       fontFamily: {
         sans: ["Segoe UI", "sans-serif"],
       },
@@ -115,5 +109,8 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("tailwind-scrollbar"),
+  ],
 };

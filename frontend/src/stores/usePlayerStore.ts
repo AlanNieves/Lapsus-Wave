@@ -54,15 +54,25 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   openMenuSongId: null,
   currentTime: 0, // Valor inicial
 
-  // Acciones existentes (se mantienen igual)
+  
   initializeQueue: (songs) => {
-    set({
-      queue: songs,
-      originalQueue: songs,
-      currentSong: get().currentSong || songs[0],
-      currentIndex: get().currentIndex === -1 ? 0 : get().currentIndex,
-    });
-  },
+  const { queue } = get();
+
+  const isSameQueue =
+    queue.length === songs.length &&
+    queue.every((song, i) => song._id === songs[i]._id);
+
+  if (isSameQueue) return;
+
+  set({
+    queue: songs,
+    originalQueue: songs,
+    currentSong: get().currentSong || songs[0],
+    currentIndex: get().currentIndex === -1 ? 0 : get().currentIndex,
+  });
+},
+
+
 
   playAlbum: (songs, startIndex = 0) => {
     if (songs.length === 0) return;
