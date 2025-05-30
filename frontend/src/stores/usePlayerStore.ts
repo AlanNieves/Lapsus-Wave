@@ -1,10 +1,9 @@
 import { create } from "zustand";
-import {  Song } from "@/types";
+import { Song } from "@/types";
 import toast from 'react-hot-toast';
 
-
 interface PlayerStore {
-  // Estado del reproductor
+  // Estado existente
   currentSong: Song | null;
   isPlaying: boolean;
   queue: Song[];
@@ -14,18 +13,13 @@ interface PlayerStore {
   repeatMode: number;
   showQueue: boolean;
   isExpandedViewOpen: boolean;
-  //isMenuOpen: boolean;
   openMenuSongId: string | null;
+  currentTime: number; // Nueva propiedad
 
- 
-  
-
-
-  // Acciones del reproductor
+  // Acciones existentes
   setQueue: (queue: Song[]) => void;
   initializeQueue: (songs: Song[]) => void;
   playAlbum: (songs: Song[], startIndex?: number) => void;
-
   setCurrentSong: (song: Song | null) => void;
   togglePlay: () => void;
   playNext: () => void;
@@ -39,17 +33,15 @@ interface PlayerStore {
   setShowQueue: (show: boolean) => void;
   toggleExpandedView: () => void;
   setOpenMenuSongId: (songId: string | null) => void;
-
-
   addToQueue: (song: Song) => void;
-  addNextSong : (song: Song)=> void;
+  addNextSong: (song: Song) => void;
+
+  // Nueva acción para Chromecast
+  setCurrentTime: (time: number) => void;
 }
 
-
-
-
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
-  // Estado inicial del reproductor
+  // Estado inicial (actualizado)
   currentSong: null,
   isPlaying: false,
   queue: [],
@@ -60,11 +52,9 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   showQueue: false,
   isExpandedViewOpen: false,
   openMenuSongId: null,
-
+  currentTime: 0, // Valor inicial
 
   
-
-  // Acciones del reproductor 
   initializeQueue: (songs) => {
   const { queue } = get();
 
@@ -93,9 +83,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       currentIndex: startIndex,
       isPlaying: true,
     });
-  
   },
-
 
   setCurrentSong: (song) => {
     if (!song) return;
@@ -179,6 +167,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       set({ currentSong: queue[0], currentIndex: 0 });
     }
   },
+
   addToQueue: (song) => {
     set((state) => {
       const newQueue = [...state.queue, song];
@@ -187,16 +176,12 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   },
 
   addNextSong: (song) => {
-  const { queue, currentIndex } = get();
-  // Insertar la canción en la posición siguiente
-  const newQueue = [...queue];
-  newQueue.splice(currentIndex + 1, 0, song);
-  // Solo actualiza la cola, NO cambia la canción actual
-  set({
-    queue: newQueue,
-  });
-  toast.success('Canción añadida a continuación');
-},
+    const { queue, currentIndex } = get();
+    const newQueue = [...queue];
+    newQueue.splice(currentIndex + 1, 0, song);
+    set({ queue: newQueue });
+    toast.success('Canción añadida a continuación');
+  },
 
   toggleQueue: () => set((state) => ({ showQueue: !state.showQueue })),
 
@@ -206,5 +191,6 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
   setOpenMenuSongId: (songId) => set({ openMenuSongId: songId }),
 
- 
+  // Nueva acción para Chromecast
+  setCurrentTime: (time: number) => set({ currentTime: time }),
 }));
