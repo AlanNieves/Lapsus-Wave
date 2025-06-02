@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -24,15 +25,9 @@ type SongWithShare = Song & {
   shareUrl?: string;
 };
 
-const SongOptionsMenu = ({ song}: { song: SongWithShare; playlistId: string }) => {
-  const { 
-    openMenuSongId, 
-    setOpenMenuSongId, 
-
-    addToQueue, 
-    addNextSong 
-  } = usePlayerStore();
-  
+const SongOptionsMenu = ({ song }: { song: Song; playlistId: string }) => {
+  const { openMenuSongId, setOpenMenuSongId, playlists, addSongToPlaylist } = usePlayerStore();
+  const { addToQueue, addNextSong } = usePlayerStore();
   const [showPlaylistOptions, setShowPlaylistOptions] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const isMenuOpen = openMenuSongId === song._id;

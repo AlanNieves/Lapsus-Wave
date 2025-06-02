@@ -2,9 +2,13 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Pause, Play } from "lucide-react";
-import { useEffect } from "react";
+import { Clock, Pause, Play, Shuffle } from "lucide-react";
+import { useEffect,} from "react";
 import { useParams } from "react-router-dom";
+import SongOptionsMenu from "@/layout/components/SongMenu";
+import { useState } from "react";
+import { useLanguageStore } from "@/stores/useLanguageStore";
+import { translations } from "@/locales";
 import MusicSearch from "@/layout/components/MusicSearch/MusicSearch";
 
 export const formatDuration = (seconds: number) => {
@@ -13,15 +17,17 @@ export const formatDuration = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
 
+
+
 const AlbumPage = () => {
   const { albumId } = useParams();
   const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
-  const { 
-    currentSong, 
-    isPlaying, 
-    playAlbum, 
-    togglePlay
+  const { currentSong, isPlaying, playAlbum, togglePlay, isShuffleActive, toggleShuffle,
   } = usePlayerStore();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
+  const { language } = useLanguageStore();
+  const t = translations[language];
 
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);
@@ -36,99 +42,156 @@ const AlbumPage = () => {
   const handlePlayAlbum = () => {
   if (!currentAlbum) return;
 
-  if (isAlbumPlaying) {
-    togglePlay();
-  } else {
-    playAlbum(currentAlbum.songs, 0);
-  }
-};
-
+    if (isAlbumPlaying) {
+      togglePlay();
+    } else {
+      playAlbum(currentAlbum.songs, 0);
+    }
+  };
 
   const handleSongClick = (index: number) => {
   if (!currentAlbum) return;
 
-  if (currentSong?._id === currentAlbum.songs[index]._id) {
-    togglePlay();
+  const { isShuffleActive, playAlbum } = usePlayerStore.getState();
+  const selectedSong = currentAlbum.songs[index];
+
+  if (isShuffleActive) {
+    // Generar cola aleatoria excluyendo la canción seleccionada
+    const shuffledSongs = currentAlbum.songs
+      .filter((_, i) => i !== index)
+      .sort(() => Math.random() - 0.5);
+
+    const shuffledQueue = [selectedSong, ...shuffledSongs];
+
+    // Usamos playAlbum con la cola ya mezclada
+    playAlbum(shuffledQueue, 0);
+
+    // Aseguramos que se conserve el orden original
+    usePlayerStore.setState({
+      originalQueue: currentAlbum.songs,
+      isShuffleActive: true,
+   
+    });
+
   } else {
+    // Comportamiento normal
     playAlbum(currentAlbum.songs, index);
   }
 };
 
 
-  return (
-    <div className="h-full flex gap-6">
-      <div className="flex-1 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000 to-lapsus-1000 -z-10" />
-        <ScrollArea className="h-full rounded-md">
-          <div className="relative min-h-full">
-            {/* Fondo gradiente */}
-            <div className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000 to-red-1000 pointer-events-none" />
-
-            {/* Encabezado del álbum */}
-            <div className="relative z-10 pt-6 px-6 bg-lapsus-1000">
-              <div className="flex gap-6 pb-8">
-                <img
-                  src={currentAlbum?.imageUrl}
-                  alt={currentAlbum?.title}
-                  className="w-[240px] h-[240px] shadow-xl rounded object-cover"
-                />
-                <div className="flex flex-col justify-end">
-                  <p className="text-sm font-medium">Álbum</p>
-                  <h1 className="text-5xl md:text-7xl font-bold my-4 text-white">
-                    {currentAlbum?.title}
-                  </h1>
-                  <div className="flex items-center gap-2 text-sm text-zinc-100">
-                    <span className="font-medium text-white">{currentAlbum?.artist}</span>
-                    <span>• {currentAlbum?.songs.length} canciones</span>
-                    <span>• {currentAlbum?.releaseYear}</span>
-                  </div>
+return (
+  <div className="h-full flex">
+    <div className="flex-1">
+      <ScrollArea className="h-full rounded-md">
+        <div className="relative min-h-full">
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000 to-red-1000 pointer-events-none"
+            aria-hidden="true"
+          />
+          <div className="relative z-10">
+            <div className="flex p-6 gap-6 pb-8">
+              <img
+                src={currentAlbum?.imageUrl}
+                alt={currentAlbum?.title}
+                className="w-[240px] h-[240px] shadow-xl rounded object-cover"
+              />
+              <div className="flex flex-col justify-end">
+                <p className="text-sm font-medium">{t.album}</p>
+                <h1 className="text-5xl md:text-7xl font-bold my-4 text-white">
+                  {currentAlbum?.title}
+                </h1>
+                <div className="flex items-center gap-2 text-sm text-zinc-100">
+                  <span className="font-medium text-white">{currentAlbum?.artist}</span>
+                  <span>• {currentAlbum?.songs.length} {t.messages.toLowerCase()}</span>
+                  <span>• {currentAlbum?.releaseYear}</span>
+                </div>
+                <div className="flex items-center justify-end text-lapsus-500 text-sm font-medium bg-lapsus-900/20 px-3 py-1 rounded-full ml-auto mr-8 mt-2">
+                  <Clock className="h-4 w-4 mr-1.5" />
+                  <span>
+                    Duración:{" "}
+                    {formatDuration(
+                      currentAlbum?.songs.reduce((total, song) => total + song.duration, 0) || 0
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Barra fija con controles */}
+            {/* Botones y búsqueda reorganizados */}
             <div className="sticky top-fix z-50 bg-gradient-1000 from-black/80 to-transparent backdrop-blur-sm">
               <div className="flex items-center justify-between px-6 py-4">
-                <Button
-                  onClick={handlePlayAlbum}
-                  size="icon"
-                  className="w-14 h-14 rounded-full bg-lapsus-1200 hover:bg-lapsus-1100 hover:scale-105 transition-all shadow-xl"
-                >
-                  {isAlbumPlaying && isPlaying ? (
-                    <Pause className="h-7 w-7 text-lapsus-500 fill-current" />
-                  ) : (
-                    <Play className="h-7 w-7 text-lapsus-500 fill-current" />
-                  )}
-                </Button>
+                
+                {/* Izquierda: botones */}
+                <div className="flex items-center gap-4">
+                  <Button
+                    onClick={handlePlayAlbum}
+                    className="flex items-center gap-2 h-9 px-6 pl-5 rounded-full bg-lapsus-1200 hover:bg-lapsus-1100 transition-all shadow text-lapsus-500 font-medium text-sm"
+                  >
+                    {isAlbumPlaying && isPlaying ? (
+                      <>
+                        <Pause className="h-5 w-5 fill-current" />
+                        Pausar
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-5 w-5 fill-current" />
+                        Reproducir
+                      </>
+                    )}
+                  </Button>
 
-                <div className="w-[300px] mr-6">
+                  <Button
+                    variant="ghost"
+                    className={`flex items-center gap-2 h-9 px-4 pl-3 rounded-full ${
+                      isShuffleActive
+                        ? "text-red-400 hover:text-white hover:bg-accent"
+                        : "text-lapsus-500 hover:text-white"
+                    } font-medium text-sm`}
+                    onClick={toggleShuffle}
+                    onMouseEnter={() => setHoveredButton("shuffle")}
+                    onMouseLeave={() => setHoveredButton(null)}
+                    disabled={!currentSong}
+                  >
+                    <Shuffle className="h-4 w-4" />
+                    Aleatorio
+                  </Button>
+                </div>
+
+                {/* Derecha: búsqueda */}
+                <div className="w-[300px]">
                   <MusicSearch
-                    tracks={currentAlbum?.songs.map(song => ({
-                      _id: song._id,
-                      title: song.title,
-                      artist: song.artist,
-                      duration: formatDuration(song.duration),
-                      imageUrl: song.imageUrl
-                    })) || []}
+                    tracks={
+                      currentAlbum?.songs.map((song) => ({
+                        _id: song._id,
+                        title: song.title,
+                        artist: song.artist,
+                        duration: formatDuration(song.duration),
+                        imageUrl: song.imageUrl,
+                      })) || []
+                    }
                     onResultSelect={(track) => {
-                      const index = currentAlbum?.songs.findIndex(s => s._id === track._id);
+                      const index = currentAlbum?.songs.findIndex((s) => s._id === track._id);
                       if (index !== undefined && index >= 0) handleSongClick(index);
                     }}
-                    placeholder="¿Qué canción buscas?"
+                    placeholder={t.searchPlaceholder || "¿Qué canción buscas?"}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Lista de canciones */}
+            {/* Encabezado de la tabla */}
             <div className="bg-black/20 backdrop-blur-sm">
-              <div className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-10 py-2 text-sm text-lapsus-100">
-                <div className="flex justify-end">#</div>
-                <div>Título</div>
-                <div className="flex justify-start">Fecha</div>
-                <div className="flex justify-start">Duración</div>
+              <div className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-10 py-2 text-sm text-lapsus-100">
+                <div className="flex justify-end -translate-x-[3px]">#</div>
+                <div>Title</div>
+                <div className="flex justify-start -translate-x-[28px]">Added Date</div>
+                <div className="flex justify-start -translate-x-[35px]">
+                  <Clock className="h-4 w-4" />
+                </div>
               </div>
 
+              {/* Lista de canciones */}
               <div className="px-6">
                 <div className="space-y-2 py-4">
                   {currentAlbum?.songs.map((song, index) => {
@@ -136,9 +199,9 @@ const AlbumPage = () => {
                     return (
                       <div
                         key={`${song._id}-${index}`}
-                        className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
+                        className="grid grid-cols-[16px_4fr_2fr_1fr_auto] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
                       >
-                        <div 
+                        <div
                           className="flex items-center justify-center"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -163,20 +226,26 @@ const AlbumPage = () => {
                           <img
                             src={song.imageUrl}
                             alt={song.title}
-                            className="size-10 rounded-sm"
+                            className="size-10"
                           />
                           <div>
                             <div className="font-medium text-lapsus-500">
                               {song.title}
                             </div>
-                            <div className="text-lapsus-400">{song.artist}</div>
+                            <div>{song.artist}</div>
                           </div>
                         </div>
-                        <div className="flex items-center text-lapsus-400">
+                        <div className="flex items-center">
                           {song.createdAt.split("T")[0]}
                         </div>
-                        <div className="flex items-center text-lapsus-400">
+                        <div className="flex items-center">
                           {formatDuration(song.duration)}
+                        </div>
+                        <div
+                          className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <SongOptionsMenu song={song} playlistId={""} />
                         </div>
                       </div>
                     );
@@ -185,10 +254,10 @@ const AlbumPage = () => {
               </div>
             </div>
           </div>
-        </ScrollArea>
-      </div>
+        </div>
+      </ScrollArea>
     </div>
-  );
-};
-
+  </div>
+);
+}
 export default AlbumPage;
