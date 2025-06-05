@@ -1,28 +1,27 @@
-import { Router } from "express";
+/*import express from "express";
 import {
-    createPlaylist,
-    getUserPlaylists,
-    getPlaylistById,
-    addSongToPlaylist,
-    removeSongFromPlaylist,
-    deletePlaylist,
-    updatePlaylist,
+  getUserPlaylists,
+  createPlaylist,
+  addSongToPlaylist,
+  deletePlaylist,
+  getPlaylistById,
+  updatePlaylist,
+  updateCoverImage,
 } from "../controller/playlist.controller.js";
-import  { protectRoute } from "../middleware/auth.middleware.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
 
-const router = Router();
+const router = express.Router();
 
-//all the routes are protected
-router.use(protectRoute);
+router.get("/:id", protectRoute, getPlaylistById);
+router.patch("/:id", protectRoute, updatePlaylist);
+router.patch("/:id/cover", protectRoute, updateCoverImage);
 
-router.post("/", createPlaylist);
-router.get("/", getUserPlaylists);
-router.get("/:id", getPlaylistById);
-router.put("/:id", updatePlaylist);
-router.delete("/:id", deletePlaylist);
+// ✅ ESTA ES LA RUTA QUE NECESITAS
+router.patch("/:playlistId/add-song", protectRoute, addSongToPlaylist);
 
-//routes to manage the songs in the playlist
-router.post("/:playlistId/songs/:songId", addSongToPlaylist);
-router.delete("/:playlistId/songs/:songId", removeSongFromPlaylist);
+router.delete("/:id", protectRoute, deletePlaylist);
+router.get("/", protectRoute, getUserPlaylists);
+router.post("/", protectRoute, createPlaylist);
 
 export default router;
+*/

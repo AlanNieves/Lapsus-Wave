@@ -1,5 +1,8 @@
 import { Playlist } from "../models/playlist.model.js";
 import { Song } from "../models/song.model.js";
+import mongoose from "mongoose"; 
+import path from "path";
+import fs from "fs";
 
 export const createPlaylist = async (req, res, next) => {
   try {
@@ -54,62 +57,21 @@ export const getPlaylistById = async (req, res, next) => {
 
 export const addSongToPlaylist = async (req, res, next) => {
   try {
-    const { playlistId, songId } = req.params;
+    const { playlistId } = req.params;
+    const { songId } = req.body;
     const userId = req.user._id;
 
-    // Verificar que la playlist existe y pertenece al usuario
-    const playlist = await Playlist.findOne({
-      _id: playlistId,
-      createdBy: userId,
-    });
+    const playlist = await Playlist.findOne({ _id: playlistId, createdBy: userId });
+    if (!playlist) return res.status(404).json({ message: "Playlist no encontrada" });
 
-    if (!playlist) {
-      return res.status(404).json({ message: "Playlist no encontrada o no tienes permisos" });
-    }
-
-    // Verificar que la canción existe
     const song = await Song.findById(songId);
-    if (!song) {
-      return res.status(404).json({ message: "Canción no encontrada" });
-    }
+    if (!song) return res.status(404).json({ message: "Canción no encontrada" });
 
-    // Evitar duplicados
     if (playlist.songs.includes(songId)) {
       return res.status(400).json({ message: "La canción ya está en la playlist" });
     }
 
-    // Añadir la canción
     playlist.songs.push(songId);
-    await playlist.save();
-
-    res.json(playlist);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const removeSongFromPlaylist = async (req, res, next) => {
-  try {
-    const { playlistId, songId } = req.params;
-    const userId = req.user._id;
-
-    const playlist = await Playlist.findOne({
-      _id: playlistId,
-      createdBy: userId,
-    });
-
-    if (!playlist) {
-      return res.status(404).json({ message: "Playlist no encontrada o no tienes permisos" });
-    }
-
-    // Verificar que la canción está en la playlist
-    const songIndex = playlist.songs.indexOf(songId);
-    if (songIndex === -1) {
-      return res.status(404).json({ message: "La canción no está en esta playlist" });
-    }
-
-    // Remover la canción
-    playlist.songs.splice(songIndex, 1);
     await playlist.save();
 
     res.json(playlist);
@@ -138,22 +100,60 @@ export const deletePlaylist = async (req, res, next) => {
   }
 };
 
-export const updatePlaylist = async (req, res, next) => {
+export const updateCoverImage = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
-    const { name, description, isPublic, coverImage } = req.body;
+
+    if (!req.files || !req.files.cover) {
+      return res.status(400).json({ message: "No se subió ninguna imagen." });
+    }
+
+    const cover = req.files.cover;
+    const ext = path.extname(cover.name);
+    const filename = `cover_${id}_${Date.now()}${ext}`;
+    const uploadPath = path.join(process.cwd(), "uploads", filename);
+
+    await cover.mv(uploadPath);
 
     const playlist = await Playlist.findOneAndUpdate(
       { _id: id, createdBy: userId },
-      { name, description, isPublic, coverImage },
-      { new: true, runValidators: true }
+      { coverImage: filename },
+      { new: true }
     );
 
     if (!playlist) {
       return res.status(404).json({ message: "Playlist no encontrada o no tienes permisos" });
     }
 
+    res.json(playlist);
+  } catch (error) {
+    console.error("❌ Error en updateCoverImage:", error);
+    next(error);
+  }
+};
+
+export const updatePlaylist = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const { name, description, isPublic } = req.body;
+
+    const playlist = await Playlist.findById(id);
+
+    if (!playlist) {
+      return res.status(404).json({ message: "Playlist no encontrada" });
+    }
+
+    if (String(playlist.createdBy) !== String(userId)) {
+      return res.status(403).json({ message: "No tienes permisos para editar esta playlist" });
+    }
+
+    if (name !== undefined) playlist.name = name;
+    if (description !== undefined) playlist.description = description;
+    if (isPublic !== undefined) playlist.isPublic = isPublic;
+
+    await playlist.save();
     res.json(playlist);
   } catch (error) {
     next(error);

@@ -4,7 +4,8 @@ import FeaturedGridSkeleton from "@/components/skeletons/FeaturedGridSkeleton";
 import PlayButton from "./PlayButton";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { MouseEvent } from "react";
-import { Song } from "@/types"; // Importación correcta desde types/index
+import { Song } from "@/types";
+import { Link } from "react-router-dom"; // 👈 Importación añadida
 
 const FeaturedSection = () => {
   const { isLoading, featuredSongs, error } = useMusicStore();
@@ -38,7 +39,13 @@ const FeaturedSection = () => {
           />
           <div className='truncate flex-1 p-4'>
             <p className='font-medium truncate'>{song.title}</p>
-            <p className='text-sm text-lapsus-500 truncate'>{song.artist}</p>
+            <Link
+              to={`/artist/${song.artistId}`}
+              className='text-sm text-lapsus-500 hover:underline'
+              onClick={(e) => e.stopPropagation()} // 👈 evita conflicto con onClick general
+            >
+              {song.artist}
+            </Link>
           </div>
           <PlayButton 
             song={song}
