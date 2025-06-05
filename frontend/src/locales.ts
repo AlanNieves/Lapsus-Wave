@@ -37,6 +37,7 @@ export const translations = {
     connect: "Connect to a device",
     mute: "Mute",
     typeMessage: "Type a message",
+    songs: "Songs",
   },
   es: {
     home: "Inicio",
@@ -75,5 +76,6 @@ export const translations = {
     connect: "Conectar a un dispositivo",
     mute: "Silenciar",
     typeMessage: "Escribe un mensaje",
+    songs: "Canciones",
   },
 };

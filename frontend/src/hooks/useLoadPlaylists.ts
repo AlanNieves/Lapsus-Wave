@@ -13,10 +13,21 @@ export const useLoadPlaylists = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       const data = await res.json();
-      setPlaylists(data);
+
+      // ✅ Asegurarse que lo que llega es un array
+      const playlists = Array.isArray(data) ? data : data.playlists;
+
+      if (Array.isArray(playlists)) {
+        setPlaylists(playlists);
+      } else {
+        console.error("❌ El backend no devolvió un array válido:", data);
+        setPlaylists([]); // evitar crasheo
+      }
     } catch (err) {
       console.error("Error loading playlists:", err);
+      setPlaylists([]); // fallback seguro
     }
   };
 

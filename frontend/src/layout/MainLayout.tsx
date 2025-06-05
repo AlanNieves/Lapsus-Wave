@@ -1,7 +1,6 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Outlet, useLocation } from "react-router-dom";
 import LeftSidebar from "./components/LeftSidebar";
-import FriendsActivity from "./components/FriendsActivity";
 import AudioPlayer from "./components/AudioPlayer";
 import { PlaybackControls } from "./components/PlaybackControls";
 import { useEffect, useState } from "react";
@@ -30,9 +29,14 @@ const MainLayout = () => {
 				<AudioPlayer />
 
 				{/* left sidebar */}
-				<ResizablePanel defaultSize={20} minSize={isMobile ? 0 : 10} maxSize={30}>
+				<ResizablePanel
+					defaultSize={12} // Más delgado por defecto
+					minSize={isMobile ? 0 : 15} // Límite mínimo más pequeño
+					maxSize={18} // Límite máximo reducido para evitar expansión exagerada
+				>
 					<LeftSidebar />
 				</ResizablePanel>
+
 
 				<ResizableHandle className='w-2 bg-black rounded-lg transition-colors' />
 
@@ -41,15 +45,7 @@ const MainLayout = () => {
 					<Outlet />
 				</ResizablePanel>
 
-				{/* ocultar FriendsActivity si es vista de playlist */}
-				{!isMobile && !isPlaylistView && (
-					<>
-						<ResizableHandle className='w-2 bg-black rounded-lg transition-colors' />
-						<ResizablePanel defaultSize={20} minSize={0} maxSize={25} collapsedSize={0}>
-							<FriendsActivity />
-						</ResizablePanel>
-					</>
-				)}
+
 			</ResizablePanelGroup>
 
 			<PlaybackControls />
