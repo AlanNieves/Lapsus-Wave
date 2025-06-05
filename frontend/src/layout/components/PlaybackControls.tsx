@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
+import { ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLanguageStore } from "@/stores/useLanguageStore";
-import { translations } from "@/locales";
+import { translations } from "@/locales"; 
+import CastButton from "./CastButton"; // Import CastButton component
 
 
 const formatTime = (seconds: number) => {
@@ -285,16 +286,11 @@ export const PlaybackControls = () => {
 
           {/* Connect Button */}
           <div className="relative">
-            <Button 
-              size='icon' 
-              variant='ghost' 
-              className='hover:text-white text-lapsus-500'
-              onMouseEnter={() => setHoveredButton('connect')}
-              onMouseLeave={() => setHoveredButton(null)}
-            >
-              <Laptop2 className='h-4 w-4' />
-            </Button>
-            {hoveredButton === 'connect' && <Tooltip text="Connect to a device" />}
+            <CastButton
+              mediaUrl={currentSong?.audioUrl || ''}
+              title={currentSong?.title}
+            />
+            {hoveredButton === 'connect' && <Tooltip text={t.connect || "Connect to a device"} />}
           </div>
 
           
