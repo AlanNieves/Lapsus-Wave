@@ -31,6 +31,8 @@ const PORT = process.env.PORT;
 const httpServer = createServer(app);
 initializeSocket(httpServer);
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // CORS
 app.use(
   cors({
@@ -46,7 +48,7 @@ app.use(express.json());
 app.use(clerkMiddleware());
 
 // Archivos estáticos
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use(
   fileUpload({
     useTempFiles: true,
