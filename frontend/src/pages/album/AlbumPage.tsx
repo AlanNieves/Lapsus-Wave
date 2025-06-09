@@ -4,13 +4,13 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useLanguageStore } from "@/stores/useLanguageStore";
 import { translations } from "@/locales";
-import { Pause, Play } from "lucide-react";
-import { useEffect } from "react";
+import {Pause, Play} from "lucide-react";
+import { useEffect } from "react";    
 import { useParams, Link } from "react-router-dom";
 import MusicSearch from "@/layout/components/MusicSearch/MusicSearch";
 
 export const formatDuration = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
+  const minutes = Math.floor(seconds / 60); 
   const remainingSeconds = seconds % 60;
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };

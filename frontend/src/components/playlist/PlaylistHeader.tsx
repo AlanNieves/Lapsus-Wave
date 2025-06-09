@@ -1,15 +1,19 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { Play, Shuffle, Plus, Pencil, MoreVertical, Trash } from "lucide-react";
+import { Play, Shuffle, Plus, Pencil, MoreVertical, Trash, Check } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useNavigate } from "react-router-dom";
+import { usePlaylistStore } from "@/stores/usePlaylistStore";
+import { motion } from "framer-motion";
+import type { Song } from "@/types";
+
 
 interface Playlist {
   _id: string;
   name: string;
   description: string;
   coverImage?: string;
-  songs: any[];
+  songs: Song[];
 }
 
 interface PlaylistHeaderProps {
@@ -28,9 +32,10 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [hovering, setHovering] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-
+  const { updatePlaylistCover } = usePlaylistStore();
   const { playAlbum, toggleShuffle } = usePlayerStore();
 
   useEffect(() => {
@@ -104,6 +109,9 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
       if (!res.ok) throw new Error("Error al subir imagen");
       const updated = await res.json();
       setPlaylist(updated);
+      updatePlaylistCover(playlistId, updated.coverImage);
+      setUploadSuccess(true);
+      setTimeout(() => setUploadSuccess(false), 2000);
     } catch (err) {
       console.error("❌ Error subiendo imagen:", err);
     }
@@ -142,6 +150,11 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
       : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
     : "/default-playlist-cover.png";
 
+  const totalDuration = playlist.songs.reduce((acc, song) => acc + song.duration, 0);
+  const minutes = Math.floor(totalDuration / 60);
+  const seconds = Math.floor(totalDuration % 60).toString().padStart(2, "0");
+  const formattedDuration = `${minutes}:${seconds}`;
+
   return (
     <div
       className="relative w-full h-[350px] bg-cover bg-center"
@@ -162,7 +175,7 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
           {hovering && (
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-2 right-2 bg-black/70 text-white p-1 rounded-full"
+              className="absolute bottom-2 right-2 text-white p-1 rounded-full"
             >
               <Pencil size={16} />
             </button>
@@ -174,6 +187,13 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
             onChange={handleImageChange}
             className="hidden"
           />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={uploadSuccess ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            className="absolute bottom-2 left-2 bg-green-600 text-white rounded-full p-1"
+          >
+            <Check size={14} />
+          </motion.div>
         </div>
 
         <div className="text-white flex flex-col gap-2 flex-1">
@@ -193,7 +213,6 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
               </h1>
             )}
 
-            {/* Menu de opciones */}
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setShowMenu((prev) => !prev)}
@@ -232,22 +251,22 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
             />
           ) : (
             <p className="text-sm text-zinc-300 cursor-pointer" onClick={() => setIsEditingDesc(true)}>
-              {playlist.description || "Haz clic para añadir una descripción..."}
+              {playlist.description || "para añadir una descripción..."}
             </p>
           )}
 
           <p className="text-sm">
-            {playlist.songs?.length || 0} canciones · {(playlist.songs?.length || 0) * 3}:00 min
+            {playlist.songs?.length || 0} canciones · {formattedDuration} min
           </p>
 
           <div className="flex gap-4 mt-2">
-            <button onClick={handlePlay} className="bg-pink-700 text-white p-3 rounded-full">
+            <button onClick={handlePlay} className="bg-transparent text-white p-3 rounded-full">
               <Play size={18} />
             </button>
-            <button onClick={handleShuffle} className="bg-pink-700 text-white p-3 rounded-full">
+            <button onClick={handleShuffle} className="bg-transparent text-white p-3 rounded-full">
               <Shuffle size={18} />
             </button>
-            <button onClick={onOpenAddSongModal} className="bg-pink-700 text-white p-3 rounded-full">
+            <button onClick={onOpenAddSongModal} className="bg-transparent text-white p-3 rounded-full">
               <Plus size={18} />
             </button>
           </div>

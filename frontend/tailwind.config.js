@@ -4,9 +4,23 @@ export default {
   theme: {
     extend: {
       keyframes: {
+        fluidMotion: {
+          "0%": {
+            backgroundPosition: "0% 50%",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
+          },
+          "100%": {
+            backgroundPosition: "0% 50%",
+          },
+        },
+        gradientMove: {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
         bounce: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-5px)" },
+          300: "300% 300%",
         },
         "fade-out": {
           "0%": { opacity: 1, transform: "scale(1)" },
@@ -24,19 +38,42 @@ export default {
             filter: "blur(0)",
           },
         },
+        waveMotion: {
+          "0%, 100%": {
+            backgroundPosition: "0% 50%",
+            transform: "scale(1)",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
+            transform: "scale(1.1)",
+          },
+        },
+        lightFlicker: {
+          "0%, 100%": { opacity: 0.2 },
+          "25%": { opacity: 0.4 },
+          "50%": { opacity: 0.1 },
+          "75%": { opacity: 0.3 },
+        },
       },
       animation: {
+        fuild: "fluidMotion 12s ease-in-out infinite",
         bounce: "bounce 1s infinite",
         "fade-out": "fade-out 0.3s ease-out",
         smoke: "smoke 0.5s ease-out forwards",
         "audio-wave": "audio-wave 1s infinite",
+        gradient: "gradientMove 10s ease infinite",
+        waves: "waveMotion 15s ease-in-out infinite",
+        lightRain: "lightFlicker 8s ease-in-out infinite",
+      },
+      backgroundSize: {
+        '300':'300% 300%',
       },
       transform: {
-        'rotate-x-10': 'rotateX(10deg)',
-        'translate-z-10': 'translateZ(10px)',
+        "rotate-x-10": "rotateX(10deg)",
+        "translate-z-10": "translateZ(10px)",
       },
       boxShadow: {
-        '3d': '0 10px 20px rgba(0, 0, 0, 0.2)',
+        "3d": "0 10px 20px rgba(0, 0, 0, 0.2)",
       },
       corePlugins: {
         preflight: false,
@@ -108,8 +145,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    require("tailwind-scrollbar"),
-  ],
+  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
 };
