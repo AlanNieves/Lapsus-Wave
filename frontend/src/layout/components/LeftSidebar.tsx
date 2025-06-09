@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import {
   Home,
   MessageCircle,
@@ -5,30 +6,14 @@ import {
   Star,
   Library,
   ListMusic,
-  Search,
+  Search as SearchIcon,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/stores/useSearchStore";
 
-// ScrollArea con scrollbar a la izquierda y diseño oscuro
-const ScrollArea = ({ children }: { children: React.ReactNode }) => (
-  <div
-    className="overflow-y-auto h-full w-full scrollbar-thin scrollbar-thumb-[#18181b] scrollbar-track-[#111112] hover:scrollbar-thumb-[#232336] transition-colors duration-200"
-    style={{
-      scrollbarColor: "#18181b #111112",
-      scrollbarWidth: "thin",
-      borderRadius: "1rem",
-      direction: "rtl", // Invierte el scroll
-    }}
-  >
-    <div style={{ direction: "ltr" }}>{children}</div>
-  </div>
-);
-
 const navItems = [
   { name: "Home", icon: Home, path: "/" },
-  { name: "Search", icon: Search, path: "/search" },
   { name: "Messages", icon: MessageCircle, path: "/chat" },
   { name: "Profile", icon: User, path: "/profile" },
   { name: "Reviews", icon: Star, path: "/reviews" },
@@ -46,78 +31,194 @@ const LeftSidebar = () => {
     return location.pathname.startsWith(path);
   };
 
+  // Componente de búsqueda animado integrado
+  const AnimatedSearchButton = () => {
+    const targetRef = useRef<HTMLInputElement>(null);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const [inputValue, setInputValue] = useState("");
+    const showSearchInput = isHovered || isFocused;
+
+    useEffect(() => {
+      if (showSearchInput && targetRef.current) {
+        targetRef.current.focus();
+      }
+    }, [showSearchInput]);
+
+    useEffect(() => {
+      // Si el input no tiene texto y pierde hover/focus, se oculta
+      if (!showSearchInput && !targetRef.current?.value) {
+        setTimeout(() => setInputValue(""), 200); // limpia el input suavemente
+      }
+    }, [showSearchInput]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (targetRef.current?.value) {
+        setSearchTerm(targetRef.current.value);
+        setShowSearch(true);
+        navigate("/universal-search");
+      }
+      setIsHovered(false);
+      setIsFocused(false);
+    };
+
+    const handleBlur = () => {
+      setIsFocused(false);
+      // Si no hay texto, oculta el input
+      if (!targetRef.current?.value) {
+        setIsHovered(false);
+      }
+    };
+
+    return (
+      <form
+        onSubmit={handleSubmit}
+        className={cn(
+          "relative w-full h-11 md:h-14 flex flex-col items-center justify-center",
+          "transition-all duration-500 group"
+        )}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          // Si no hay texto, oculta el input
+          if (!targetRef.current?.value) setIsFocused(false);
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={handleBlur}
+      >
+        <div
+          className={cn(
+            "absolute inset-0 flex items-center justify-center",
+            "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
+            showSearchInput
+              ? "before:opacity-0"
+              : "group-hover:before:bg-purple-100/5"
+          )}
+        />
+
+        <div className="z-10 flex flex-col items-center justify-center w-full h-full">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <input
+              ref={targetRef}
+              type="text"
+              placeholder="Buscar..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className={cn(
+                "absolute w-full h-full bg-black/20 backdrop-blur-md",
+                "rounded-full border border-lapsus-500 px-4 pr-10",
+                "text-white outline-none transition-all duration-500",
+                "placeholder:text-white/50",
+                showSearchInput
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-50 pointer-events-none"
+              )}
+            />
+
+            {/* Botón de búsqueda o enviar */}
+            {showSearchInput ? (
+              <button
+                type="submit"
+                className={cn(
+                  "absolute right-3 z-20 flex items-center justify-center w-5 h-5",
+                  "transition-colors duration-300 text-lapsus-500"
+                )}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={cn(
+                  "z-20 flex items-center justify-center w-5 h-5",
+                  "transition-colors duration-300 text-white"
+                )}
+              >
+                <SearchIcon className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          <span
+            className={cn(
+              "text-[11px] text-center hidden lg:block font-medium mt-0.5",
+              "transition-opacity duration-300",
+              showSearchInput ? "opacity-0" : "opacity-100"
+            )}
+          >
+            Search
+          </span>
+        </div>
+      </form>
+    );
+  };
+
   return (
     <aside className="w-full h-full relative flex items-center justify-center p-2 bg-gradient-to-b from-[#18181b] to-black backdrop-blur-md">
-      {/* Contenedor efecto cristal con scroll */}
+      {/* Contenedor efecto cristal */}
       <div className="w-full h-full rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center">
-        <ScrollArea>
-          <div className="space-y-4 flex flex-col items-center">
-            {navItems.map((item) => {
-              const active = isActive(item.path);
+        <nav className="flex flex-col items-center w-full h-full justify-center gap-4 py-6">
+          {navItems.map((item) => {
+            const active = isActive(item.path);
 
-              // Si es el botón de Search, navega a /universal-search
-              if (item.name === "Search") {
-                return (
-                  <button
-                    key={item.name}
-                    className="w-full group"
-                    onClick={() => navigate("/universal-search")}
-                    type="button"
-                  >
-                    <div
-                      className={cn(
-                        "relative flex flex-col items-center justify-center w-full h-16 transition-all duration-600 cursor-pointer",
-                        "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
-                        active
-                          ? "before:bg-pink-200/20"
-                          : "group-hover:before:bg-purple-100/5"
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "z-10 flex flex-col items-center justify-center w-full h-full text-white",
-                          active && "text-lapsus-500"
-                        )}
-                      >
-                        <item.icon className="w-5 h-5 mb-1" />
-                        <span className="text-xs text-center hidden lg:block">
-                          {item.name}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              }
-
-              // Resto de los items igual
-              return (
-                <Link to={item.path} key={item.name} className="w-full group">
+            return (
+              <Link
+                to={item.path}
+                key={item.name}
+                className="w-full group flex items-center justify-center"
+              >
+                <div
+                  className={cn(
+                    "relative flex flex-col items-center justify-center w-full h-11 md:h-14 transition-all duration-600 cursor-pointer",
+                    "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
+                    active
+                      ? "before:bg-pink-200/20"
+                      : "group-hover:before:bg-purple-100/5"
+                  )}
+                >
                   <div
                     className={cn(
-                      "relative flex flex-col items-center justify-center w-full h-16 transition-all duration-600 cursor-pointer",
-                      "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
-                      active
-                        ? "before:bg-pink-200/20"
-                        : "group-hover:before:bg-purple-100/5"
+                      "z-10 flex flex-col items-center justify-center w-full h-full text-white",
+                      active && "text-lapsus-500"
                     )}
                   >
-                    <div
-                      className={cn(
-                        "z-10 flex flex-col items-center justify-center w-full h-full text-white",
-                        active && "text-lapsus-500"
-                      )}
-                    >
-                      <item.icon className="w-5 h-5 mb-1" />
-                      <span className="text-xs text-center hidden lg:block">
-                        {item.name}
-                      </span>
-                    </div>
+                    <item.icon className="w-4 h-4 mb-0.5" />
+                    <span className="text-[11px] text-center hidden lg:block font-medium">
+                      {item.name}
+                    </span>
                   </div>
-                </Link>
-              );
-            })}
+                </div>
+              </Link>
+            );
+          })}
+
+          {/* Botón de búsqueda animado - mantiene su posición original */}
+          <div className="w-full group flex items-center justify-center">
+            <div
+              className={cn(
+                "relative flex flex-col items-center justify-center w-full h-11 md:h-14 transition-all duration-600",
+                "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
+                "group-hover:before:bg-purple-100/5"
+              )}
+            >
+              <AnimatedSearchButton />
+            </div>
           </div>
-        </ScrollArea>
+        </nav>
       </div>
     </aside>
   );

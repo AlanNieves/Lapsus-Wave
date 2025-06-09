@@ -13,7 +13,6 @@ const HomePage = () => {
     fetchFeaturedSongs,
     fetchMadeForYouSongs,
     fetchTrendingSongs,
-    songs,
     fetchSongs,
     isLoading,
     madeForYouSongs,

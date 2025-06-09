@@ -63,7 +63,8 @@ const UniversalSearch: React.FC<UniversalSearchProps> = ({
   }, [showSearch, setShowSearch, setSearchTerm]);
 
   const filtered = data.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item.artist?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
