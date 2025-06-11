@@ -6,7 +6,7 @@ import MainLayout from "./layout/MainLayout";
 import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
-import PlaylistPage from "./pages/playlist/playlistPage";
+import PlaylistPage from "@/pages/playlist/playlistPage";
 import ArtistPage from "./pages/artist/ArtistPage";
 import { useEffect } from "react";
 import { loadCastSdk } from "@/utils/cast";
