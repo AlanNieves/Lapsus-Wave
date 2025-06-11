@@ -29,4 +29,17 @@ router.post("/verify-email", verifyEmail);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
+// ✅ Registro / inicio / cierre de sesión
+router.post("/signup", signup);
+router.post("/login", login);
+router.post("/google", loginWithGoogle);
+router.post("/logout", logout);
+
+// ✅ Verificación de correo
+router.post("/verify-email", verifyEmail);
+
+// ✅ Recuperación y reinicio de contraseña
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
+
 export default router;
