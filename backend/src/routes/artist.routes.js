@@ -1,11 +1,12 @@
 import express from "express";
 import { getArtistById, createArtist } from "../controller/artist.controller.js";
-import { protectRoute } from "../middleware/auth.middleware.js";
+import { verifyToken } from "../middleware/verifyToken.js";
+
 
 
 const router = express.Router();
 
-router.get("/:id", protectRoute, getArtistById);
-router.post("/", protectRoute, createArtist);
+router.get("/:id", verifyToken, getArtistById);
+router.post("/", verifyToken, createArtist);
 
 export default router;

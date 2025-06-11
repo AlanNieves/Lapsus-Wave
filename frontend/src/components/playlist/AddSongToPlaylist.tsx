@@ -1,5 +1,6 @@
+import { useAuthStore } from "@/stores/useAuthStore";
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { axiosInstance } from "@/lib/axios";
 
 interface Song {
   _id: string;
@@ -16,20 +17,14 @@ interface AddSongToPlaylistProps {
 const AddSongToPlaylist = ({ playlistId, onClose, onSongAdded }: AddSongToPlaylistProps) => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
-  const { getToken } = useAuth();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const fetchSongs = async () => {
       try {
         setLoading(true);
-        const token = await getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/songs`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        setSongs(data);
+        const res = await axiosInstance.get("/songs");
+        setSongs(res.data);
       } catch (error) {
         console.error("❌ Error al obtener canciones:", error);
       } finally {
@@ -37,29 +32,22 @@ const AddSongToPlaylist = ({ playlistId, onClose, onSongAdded }: AddSongToPlayli
       }
     };
 
-    fetchSongs();
-  }, [getToken]);
+    if (user) {
+      fetchSongs();
+    }
+  }, [user]);
 
   const handleAddSong = async (songId: string) => {
     try {
-      const token = await getToken();
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}/add-song`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ songId }),
-        }
-      );
+      const res = await axiosInstance.patch(`/playlists/${playlistId}/add-song`, {
+        songId,
+      });
 
-      if (!res.ok) throw new Error("No se pudo agregar la canción");
+      if (res.status !== 200) throw new Error("No se pudo agregar la canción");
 
-      const updated = await res.json();
-      onSongAdded(updated); // ✅ Pasamos la playlist actualizada al padre
-      onClose(); // ✅ Opcional: cerrar el modal al agregar canción
+      const updated = res.data;
+      onSongAdded(updated);
+      onClose();
     } catch (error) {
       console.error("❌ Error agregando canción:", error);
     }

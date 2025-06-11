@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { checkAdmin, createAlbum, createSong, deleteAlbum, deleteSong } from "../controller/admin.controller.js";
-import { protectRoute, requireAdmin } from "../middleware/auth.middleware.js";
+import { verifyToken } from "../middleware/verifyToken.js";
+import { requireAdmin } from "../middleware/requireAdmin.js";
 
 const router = Router();
 
-router.use(protectRoute, requireAdmin);
+router.use(verifyToken, requireAdmin);
 
 router.get("/check", checkAdmin);
 
