@@ -1,12 +1,10 @@
-// backend/src/index.js
-
 import express from "express";
 import dotenv from "dotenv";
-import { clerkMiddleware } from "@clerk/express";
 import fileUpload from "express-fileupload";
 import path from "path";
 import cors from "cors";
 import fs from "fs";
+import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import cron from "node-cron";
 
@@ -26,29 +24,29 @@ dotenv.config();
 
 const __dirname = path.resolve();
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 const httpServer = createServer(app);
 initializeSocket(httpServer);
 
+// 🧁 Servir archivos subidos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// CORS
+// 🛡️ CORS
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL, // o 5173 si usas Vite
     credentials: true,
   })
 );
 
-// Middleware para leer JSON
+// 🍪 Parsear cookies
+app.use(cookieParser());
+
+// 🧠 Parsear JSON
 app.use(express.json());
 
-// Clerk: DEBE IR ANTES DE LAS RUTAS
-app.use(clerkMiddleware());
-
-// Archivos estáticos
-
+// 📁 Subidas de archivos
 app.use(
   fileUpload({
     useTempFiles: true,
@@ -60,17 +58,17 @@ app.use(
   })
 );
 
-// Rutas protegidas
+// 🔁 Rutas API
 app.use("/api/artists", artistRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes); // ← Aquí ya entra tu sistema MERN
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
 app.use("/api/playlists", playlistRoutes);
 
-// Limpieza de archivos temporales cada hora
+// 🧹 Limpieza de temporales
 const tempDir = path.join(process.cwd(), "tmp");
 cron.schedule("0 * * * *", () => {
   if (fs.existsSync(tempDir)) {
@@ -83,7 +81,7 @@ cron.schedule("0 * * * *", () => {
   }
 });
 
-// Producción: servir frontend
+// 🌍 Servir frontend en producción
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
   app.get("*", (req, res) => {
@@ -91,15 +89,21 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Manejador de errores
+// 🧨 Manejador global de errores
 app.use((err, req, res, next) => {
   res.status(500).json({
-    message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message,
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Internal server error"
+        : err.message,
   });
 });
 
-// Iniciar servidor
+console.log("Entorno:", process.env.NODE_ENV);
+console.log("Frontend permitido:", process.env.CLIENT_URL);
+
+// 🚀 Iniciar servidor
 httpServer.listen(PORT, () => {
-  console.log("Server is running on port " + PORT);
+  console.log("Servidor corriendo en el puerto " + PORT);
   connectDB();
 });

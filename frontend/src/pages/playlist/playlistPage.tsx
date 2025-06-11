@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
+
 import PlaylistHeader from "@/components/playlist/PlaylistHeader";
 import PlaylistSongsTable from "@/components/playlist/PlaylistSongsTable";
 import AddSongToPlaylist from "@/components/playlist/AddSongToPlaylist";
@@ -14,7 +14,7 @@ const PlaylistPage = () => {
 
   return (
     <>
-      <SignedIn>
+      
         <div className="flex flex-col h-full">
           <PlaylistHeader
             playlistId={id}
@@ -41,11 +41,9 @@ const PlaylistPage = () => {
           </div>
 
         </div>
-      </SignedIn>
+     
 
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
+      
     </>
   );
 };

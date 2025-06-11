@@ -30,7 +30,7 @@ const LeftSidebar = () => {
   return (
     <aside className="w-full h-full relative flex items-center justify-center p-2 bg-gradient-to-b from-lapsus-1200/35 to-black backdrop-blur-md ">
       {/* Contenedor efecto cristal */}
-      <div className="w-full h-auto rounded-2xl bg-black/10 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center space-y-4">
+      <div className="w-full h-full rounded-2xl bg-black/10 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center space-y-4" style={{display: "grid"}}>
         {navItems.map((item) => {
           const active = isActive(item.path);
 
