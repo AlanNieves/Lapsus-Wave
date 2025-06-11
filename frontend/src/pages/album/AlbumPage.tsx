@@ -34,6 +34,7 @@ const AlbumPage = () => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const { language } = useLanguageStore();
   const t = translations[language];
+  const { isShuffleActive, toggleShuffle } = usePlayerStore(); 
 
   useEffect(() => {
     if (albumId) fetchAlbumById(albumId);

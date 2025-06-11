@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { loadCastSdk } from "@/utils/cast";
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
-
+import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
 function App() {
     useEffect(() => {
         loadCastSdk()
@@ -40,6 +40,7 @@ function App() {
 					<Route path='/albums/:albumId' element={<AlbumPage />} />
 					<Route path="/playlists/:id" element={<PlaylistPage />} />
 					<Route path="/artist/:artistId" element={<ArtistPage />} />
+                    <Route path="/playlists" element={<AllPlaylistsPage />} />
 
 					<Route path='*' element={<NotFoundPage />} />
 					

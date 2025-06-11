@@ -5,6 +5,10 @@ export default {
   theme: {
     extend: {
       keyframes: {
+        softGlow: {
+          '0%': { opacity: '0.7', textShadow: '0 0 2px #fff, 0 0 4px #ff8db2' },
+          '100%': { opacity: '1', textShadow: '0 0 4px #fff, 0 0 6px #ff8db2' },
+        },
         bounce: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
@@ -27,6 +31,7 @@ export default {
         },
       },
       animation: {
+        softGlow: 'softGlow 2s ease-in-out infinite alternate',
         bounce: "bounce 1s infinite",
         "fade-out": "fade-out 0.3s ease-out",
         smoke: "smoke 0.5s ease-out forwards",

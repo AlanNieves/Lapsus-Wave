@@ -5,6 +5,7 @@ import {  Song, Album} from "@/types";
 import toast from 'react-hot-toast';
 
 interface PlayerStore {
+  
   // Estado existente
   currentSong: Song | null;
   isPlaying: boolean;
@@ -104,6 +105,8 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       currentIndex: songIndex !== -1 ? songIndex : get().currentIndex,
     });
   },
+
+
 
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
 

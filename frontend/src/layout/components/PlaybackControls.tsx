@@ -4,8 +4,17 @@ import { usePlayerStore } from "@/stores/usePlayerStore";
 import { ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLanguageStore } from "@/stores/useLanguageStore";
-import { translations } from "@/locales"; 
+import { translations } from "@/locales";
 import CastButton from "./CastButton"; // Import CastButton component
+import React, { useMemo } from "react";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+} from "@/components/ui/dialog";
+
+
+
 
 
 const formatTime = (seconds: number) => {
@@ -23,18 +32,45 @@ const Tooltip = ({ text }: { text: string }) => {
   );
 };
 
+
+
 export const PlaybackControls = () => {
-  const { currentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleQueue, toggleExpandedView } = usePlayerStore();
+  const { currentSong, setCurrentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleExpandedView } = usePlayerStore();
   const [volume, setVolume] = useState(75);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [hoveredButton, setHoveredButton] = useState<null | 'shuffle' | 'previous' | 'play' | 'next' | 'repeat' | 'queue' | 'lyrics' | 'mute' | 'connect'>(null);
 
+  // Aquí extraemos el estado y funciones para la cola y popover
+  const queue = usePlayerStore((state) => state.queue);
+  
+
   // Idioma
   const { language } = useLanguageStore();
   const t = translations[language];
 
+
+ const rotatedQueue = useMemo(() => {
+  if (!queue.length || !currentSong) return queue;
+
+  const currentIndex = queue.findIndex(song => song._id === currentSong._id);
+
+  if (currentIndex === -1) {
+    // currentSong no está en la cola, así que la mostramos arriba + la cola original
+    return [currentSong, ...queue];
+  }
+
+  // Rotamos la cola para empezar desde currentSong
+  return [
+    ...queue.slice(currentIndex),
+    ...queue.slice(0, currentIndex),
+  ];
+}, [queue, currentSong]);
+
+
+  // O el contenido JSX que quieras renderizar
+  
   useEffect(() => {
     audioRef.current = document.querySelector("audio");
 
@@ -68,54 +104,54 @@ export const PlaybackControls = () => {
 
 
 
-  /*Codigo para el Mute*/ 
+  /*Codigo para el Mute*/
   const [isMuted, setIsMuted] = useState(false);
 
-    const toggleMute = () => {
+  const toggleMute = () => {
     setIsMuted((prev) => !prev);
   };
 
-    const getVolumeIcon = () => {
-      if (isMuted || volume === 0) return <VolumeX />;
-      if (volume < 34) return <Volume />;
-      if (volume < 67) return <Volume1 />;
-      return <Volume2 />;
-    };
-    useEffect(() => {
+  const getVolumeIcon = () => {
+    if (isMuted || volume === 0) return <VolumeX />;
+    if (volume < 34) return <Volume />;
+    if (volume < 67) return <Volume1 />;
+    return <Volume2 />;
+  };
+  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume / 100;
     }
   }, [volume, isMuted]);
 
   useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key.toLowerCase() === 'm') {
-      toggleMute();
-    }
-  };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'm') {
+        toggleMute();
+      }
+    };
 
-  window.addEventListener('keydown', handleKeyDown);
-  return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   /*Play-pause-keyboard*/
-  
+
   useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    const isTyping =
-      (e.target as HTMLElement)?.tagName === "INPUT" ||
-      (e.target as HTMLElement)?.tagName === "TEXTAREA";
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isTyping =
+        (e.target as HTMLElement)?.tagName === "INPUT" ||
+        (e.target as HTMLElement)?.tagName === "TEXTAREA";
 
-    if (isTyping) return;
-    if (e.code === "Space") {
-      e.preventDefault();
-      togglePlay();
-    }
-  };
+      if (isTyping) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        togglePlay();
+      }
+    };
 
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [togglePlay]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [togglePlay]);
 
 
   return (
@@ -136,7 +172,7 @@ export const PlaybackControls = () => {
                   {currentSong.title}
                 </div>
                 <div className='text-sm text-lapsus-800 truncate hover:underline cursor-pointer'
-                onClick={toggleExpandedView}
+                  onClick={toggleExpandedView}
                 >
                   {currentSong.artist}
                 </div>
@@ -227,8 +263,8 @@ export const PlaybackControls = () => {
               {hoveredButton === 'repeat' && (
                 <Tooltip text={
                   repeatMode === 1 ? (t.repeatAll || "Repeat all")
-                  : repeatMode === 2 ? (t.repeatOne || "Repeat one")
-                  : (t.repeat || "Repeat")
+                    : repeatMode === 2 ? (t.repeatOne || "Repeat one")
+                      : (t.repeat || "Repeat")
                 } />
               )}
               {repeatMode === 2 && (
@@ -257,9 +293,9 @@ export const PlaybackControls = () => {
         <div className='hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end'>
           {/* Lyrics Button */}
           <div className="relative">
-            <Button 
-              size='icon' 
-              variant='ghost' 
+            <Button
+              size='icon'
+              variant='ghost'
               className='hover:text-white text-lapsus-500'
               onMouseEnter={() => setHoveredButton('lyrics')}
               onMouseLeave={() => setHoveredButton(null)}
@@ -270,19 +306,48 @@ export const PlaybackControls = () => {
           </div>
 
           {/* Queue Button */}
-          <div className="relative">
-            <Button
-              size='icon'
-              variant='ghost'
-              className='hover:text-white text-lapsus-500'
-              onClick={toggleQueue}
-              onMouseEnter={() => setHoveredButton('queue')}
-              onMouseLeave={() => setHoveredButton(null)}
-            >
-              <ListMusic className='h-4 w-4' />
-            </Button>
-            {hoveredButton === 'queue' && <Tooltip text="Queue" />}
-          </div>
+           <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="hover:text-white text-lapsus-500"
+            onMouseEnter={() => setHoveredButton("queue")}
+            onMouseLeave={() => setHoveredButton(null)}
+          >
+            <ListMusic className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+        {hoveredButton === "queue" && <Tooltip text="Queue" />}
+
+        <DialogContent className="bg-lapsus-900 border border-lapsus-700 max-w-sm">
+          <h4 className="text-sm font-medium text-lapsus-300 mb-2">Queue</h4>
+          {queue.length > 0 ? (
+            <ul className="space-y-2 max-h-[400px] overflow-y-auto">
+              
+              {rotatedQueue.map((song) => (
+                <li
+                  key={song._id}
+                  className="flex items-center gap-3 cursor-pointer hover:bg-lapsus-800/40 p-2 rounded-md transition"
+                  onClick={() => setCurrentSong(song)}
+                >
+                  <img
+                    src={song.imageUrl}
+                    alt={song.title}
+                    className="w-10 h-10 rounded-md object-cover"
+                  />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium truncate">{song.title}</span>
+                    <span className="text-xs text-lapsus-500 truncate">{song.artist}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-lapsus-500">No songs in queue</p>
+          )}
+        </DialogContent>
+      </Dialog>
 
           {/* Connect Button */}
           <div className="relative">
@@ -293,7 +358,7 @@ export const PlaybackControls = () => {
             {hoveredButton === 'connect' && <Tooltip text={t.connect || "Connect to a device"} />}
           </div>
 
-          
+
 
           {/* Volume Controls */}
           <div className="relative flex items-center gap-2">

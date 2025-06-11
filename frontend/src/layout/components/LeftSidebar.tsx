@@ -11,8 +11,8 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { name: "Home", icon: Home, path: "/home" },
-  { name: "Messages", icon: MessageCircle, path: "/messages" },
+  { name: "Home", icon: Home, path: "/" },
+  { name: "Messages", icon: MessageCircle, path: "/chat" },
   { name: "Profile", icon: User, path: "/profile" },
   { name: "Admin Dashboard", icon: BarChart, path: "/admin" },
   { name: "Reviews", icon: Star, path: "/reviews" },
@@ -24,10 +24,13 @@ const navItems = [
 
 const LeftSidebar = () => {
   const location = useLocation();
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+    if(path === "/") return location.pathname === "/";
+    return location.pathname.startsWith(path);
+  }
 
   return (
-    <aside className="w-full h-full relative flex items-center justify-center p-2 bg-gradient-to-b from-[#2b1035] to-black backdrop-blur-md ">
+    <aside className="w-full h-full relative flex items-center justify-center p-2 bg-gradient-to-b from-lapsus-1200/35 to-black backdrop-blur-md ">
       {/* Contenedor efecto cristal */}
       <div className="w-full h-auto rounded-2xl bg-black/10 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center space-y-4">
         {navItems.map((item) => {

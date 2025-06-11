@@ -38,7 +38,6 @@ export const ExpandedPlayerView = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(75);
-
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [hoveredButton, setHoveredButton] = useState<null | 'shuffle' | 'previous' | 'play' | 'next' | 'repeat' | 'queue' | 'lyrics' | 'mute' | 'connect'>(null);
@@ -86,7 +85,6 @@ export const ExpandedPlayerView = () => {
     return <Volume2 className="h-4 w-4" />;
   };
 
-  // Actualizar la fecha y la hora cada segundo
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDateTime(new Date());
@@ -97,7 +95,6 @@ export const ExpandedPlayerView = () => {
 
   if (!currentSong) return null;
 
-  // Formatear la fecha y la hora
   const formattedDate = currentDateTime.toLocaleDateString("es-ES", {
     day: "numeric",
     month: "long",
@@ -116,20 +113,25 @@ export const ExpandedPlayerView = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-lapsus-900"
-          onClick={toggleExpandedView} // Cerrar al hacer clic fuera
+          onClick={toggleExpandedView}
         >
-          {/* Fecha y hora (arriba a la izquierda) */}
-          <div className="absolute top-4 left-4 text-lapsus-500 text-sm">
-            <p>{formattedDate}</p>
-            <p>{formattedTime}</p>
+          {/* Fecha y hora */}
+          <div className="absolute top-4 left-4 text-lapsus-400 text-sm font-mono tracking-wider backdrop-blur-md px-2 py-1 rounded-md shadow-md border border-lapsus-800/30">
+            <p className="animate-pulse">{formattedDate}</p>
+            <p className="animate-pulse">{formattedTime}</p>
           </div>
-
-          {/* LAPSUS INNOVATIONS (arriba a la derecha) */}
-          <div className="absolute top-4 right-4 text-lapsus-500 text-sm font-semibold">
+          <div className="absolute top-4 right-4 text-lapsus-500 text-sm font-semibold animate-softGlow">
             LAPSUS INNOVATIONS
           </div>
+          {/* Efecto de texto acuático */}
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.03 }}
+            transition={{ duration: 2 }}
+          >
+          </motion.div>
 
-          {/* Efecto de luz pulsante alrededor de la carátula */}
           <motion.div
             initial={{ opacity: 0.5, scale: 1 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -144,10 +146,47 @@ export const ExpandedPlayerView = () => {
               background: `radial-gradient(circle, rgba(164, 77, 121, 0.3) 0%, rgba(164, 77, 121, 0) 70%)`,
             }}
           />
+          
+      {/* SVG para el filtro tipo agua */}
+      <svg className="hidden">
+        <filter id="water" x="0%" y="0%" width="100%" height="100%">
+          <feTurbulence
+            type="turbulence"
+            baseFrequency="0.01 0.02"
+            numOctaves="2"
+            result="turbulence"
+            seed="8"
+          >
+            <animate
+              attributeName="baseFrequency"
+              dur="20s"
+              values="0.01 0.02; 0.02 0.01; 0.01 0.02"
+              repeatCount="indefinite"
+            />
+          </feTurbulence>
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="turbulence"
+            scale="20"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
 
-          {/* Contenido centrado */}
+      {/* Texto "LAPSUS" con efecto agua */}
+      <div className="absolute z-0 inset-0 flex items-center justify-center pointer-events-none">
+        <h1
+          className="text-[10rem] font-bold text-lapsus-900 opacity-10 mix-blend-overlay blur-sm select-none"
+          style={{ filter: "url(#water)" }}
+        >
+          LAPSUS
+        </h1>
+      </div>
+
+
+          {/* Contenido principal */}
           <div className="flex flex-col items-center gap-4 z-10 mt-20">
-            {/* Carátula del álbum */}
             <motion.img
               src={currentSong.imageUrl}
               alt={currentSong.title}
@@ -162,22 +201,19 @@ export const ExpandedPlayerView = () => {
               }}
             />
 
-            {/* Nombre de la canción y artista */}
             <div className="text-center">
               <h2 className="text-2xl font-bold">{currentSong.title}</h2>
               <p className="text-lapsus-500">{currentSong.artist}</p>
             </div>
-           
-            
-
-
           </div>
+
+          {/* Controles de reproducción reorganizados */}
           <footer className="w-full h-full px-6 py-8 bg-lapsus-900">
-              <div className="flex flex-col justify-center items-center gap-8 h-full w-full">
-<div className="flex w-full items-center justify-center gap-6">
-                {/* Controles de reproducción */}
-                <div className="flex items-center gap-6 flex-wrap justify-center">
-                  {/* Shuffle Button */}
+            <div className="flex flex-col justify-center items-center gap-8 h-full w-full">
+              {/* Controles principales */}
+              <div className="flex w-full items-center justify-center gap-6">
+                {/* Grupo izquierdo */}
+                <div className="flex items-center gap-6">
                   <div className="relative">
                     <Button
                       size="icon"
@@ -193,12 +229,11 @@ export const ExpandedPlayerView = () => {
                     {hoveredButton === 'shuffle' && <Tooltip text="Enable shuffle" />}
                   </div>
 
-                  {/* Previous Button */}
                   <div className="relative">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="hover:text-lapsus-500 text-lapsus-500"
+                      className="text-lapsus-500 hover:text-white"
                       onClick={playPrevious}
                       onMouseEnter={() => setHoveredButton('previous')}
                       onMouseLeave={() => setHoveredButton(null)}
@@ -208,28 +243,36 @@ export const ExpandedPlayerView = () => {
                     </Button>
                     {hoveredButton === 'previous' && <Tooltip text="Previous" />}
                   </div>
+                </div>
 
-                  {/* Play/Pause Button */}
+                {/* Botón central Play/Pause */}
+                <div className="mx-4">
                   <div className="relative">
                     <Button
                       size="icon"
-                      className="bg-lapsus-500 hover:bg-red-200 text-lapsus-900 rounded-full h-10 w-10"
+                      className="bg-lapsus-500 hover:bg-lapsus-400 text-lapsus-900 rounded-full h-12 w-12 shadow-lg transition-transform hover:scale-105"
                       onClick={togglePlay}
                       onMouseEnter={() => setHoveredButton('play')}
                       onMouseLeave={() => setHoveredButton(null)}
                       disabled={!currentSong}
                     >
-                      {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+                      {isPlaying ? (
+                        <Pause className="h-6 w-6 fill-current" />
+                      ) : (
+                        <Play className="h-6 w-6 fill-current ml-0.5" />
+                      )}
                     </Button>
                     {hoveredButton === 'play' && <Tooltip text={isPlaying ? "Pause" : "Play"} />}
                   </div>
+                </div>
 
-                  {/* Next Button */}
+                {/* Grupo derecho */}
+                <div className="flex items-center gap-6">
                   <div className="relative">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="hover:text-lapsus-500 text-lapsus-500"
+                      className="text-lapsus-500 hover:text-white"
                       onClick={playNext}
                       onMouseEnter={() => setHoveredButton('next')}
                       onMouseLeave={() => setHoveredButton(null)}
@@ -240,12 +283,11 @@ export const ExpandedPlayerView = () => {
                     {hoveredButton === 'next' && <Tooltip text="Next" />}
                   </div>
 
-                  {/* Repeat Button */}
                   <div className="relative">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className={`${repeatMode === 1 ? 'text-red-400' : repeatMode === 2 ? 'text-red-400 glow' : 'text-lapsus-500 hover:text-white'}`}
+                      className={`${repeatMode === 1 ? 'text-red-400' : repeatMode === 2 ? 'text-red-400' : 'text-lapsus-500 hover:text-white'}`}
                       onClick={toggleRepeat}
                       onMouseEnter={() => setHoveredButton('repeat')}
                       onMouseLeave={() => setHoveredButton(null)}
@@ -260,60 +302,55 @@ export const ExpandedPlayerView = () => {
                             : "Repeat"
                       } />
                     )}
-                    {repeatMode === 2 && (
-                      <span className="absolute bottom-0 right-0 text-xs text-red-400">✦</span>
-                    )}
-                    {repeatMode === 1 && (
-                      <span className="absolute bottom-0 right-0 text-xs text-red-400">•</span>
-                    )}
                   </div>
-                  </div>
-                  {/* Controles de volumen */}
-                <div className="flex items-center gap-4">
-                  <div className="relative flex items-center gap-2">
+                </div>
+              </div>
+
+              {/* Barra de progreso */}
+              <div className="flex items-center gap-4 w-full max-w-4xl px-4">
+                <div className="text-xs text-lapsus-500 w-10 text-right">{formatTime(currentTime)}</div>
+                <Slider
+                  value={[currentTime]}
+                  max={duration || 100}
+                  step={1}
+                  className="flex-grow hover:cursor-grab active:cursor-grabbing"
+                  onValueChange={handleSeek}
+                />
+                <div className="text-xs text-lapsus-500 w-10">{formatTime(duration)}</div>
+              </div>
+
+              {/* Controles de volumen */}
+              <div className="flex justify-center w-full max-w-md">
+                <div className="flex items-center gap-3 w-full">
+                  <div className="relative">
                     <Button
                       size="icon"
                       variant="ghost"
+                      className="text-lapsus-500 hover:text-white"
                       onClick={toggleMute}
-                      className="hover:text-white text-lapsus-500"
                       onMouseEnter={() => setHoveredButton('mute')}
                       onMouseLeave={() => setHoveredButton(null)}
                     >
                       {getVolumeIcon()}
                     </Button>
-                    {hoveredButton === 'mute' && <Tooltip text="Mute" />}
-                    <Slider
-                      value={[volume]}
-                      max={100}
-                      step={1}
-                      className="w-32 hover:cursor-grab active:cursor-grabbing"
-                      onValueChange={(value) => {
-                        setVolume(value[0]);
-                        if (audioRef.current) {
-                          audioRef.current.volume = value[0] / 100;
-                        }
-                      }}
-                    />
+                    {hoveredButton === 'mute' && <Tooltip text={volume === 0 ? "Unmute" : "Mute"} />}
                   </div>
-                </div>
-                </div>
-
-                {/* Barra de progreso */}
-                <div className="flex items-center gap-4 w-full max-w-4xl px-4">
-                  <div className="text-xs text-lapsus-500 w-10 text-right">{formatTime(currentTime)}</div>
                   <Slider
-                    value={[currentTime]}
-                    max={duration || 100}
+                    value={[volume]}
+                    max={100}
                     step={1}
-                    className="flex-grow hover:cursor-grab active:cursor-grabbing"
-                    onValueChange={handleSeek}
+                    className="w-full hover:cursor-grab active:cursor-grabbing"
+                    onValueChange={(value) => {
+                      setVolume(value[0]);
+                      if (audioRef.current) {
+                        audioRef.current.volume = value[0] / 100;
+                      }
+                    }}
                   />
-                  <div className="text-xs text-lapsus-500 w-10">{formatTime(duration)}</div>
                 </div>
-
-                
               </div>
-            </footer>
+            </div>
+          </footer>
         </motion.div>
       )}
     </AnimatePresence>
