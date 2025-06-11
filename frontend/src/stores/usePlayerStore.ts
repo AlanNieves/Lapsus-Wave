@@ -41,7 +41,6 @@ interface PlayerStore {
 }
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
-  // Estado inicial (actualizado)
   currentSong: null,
   isPlaying: false,
   queue: [],

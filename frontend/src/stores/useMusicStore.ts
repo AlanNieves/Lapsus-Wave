@@ -1,12 +1,12 @@
 import { axiosInstance } from "@/lib/axios";
-import { Album, Playlist, Song, Stats } from "@/types";
+import { Album, Playlist, Song, Stats} from "@/types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
 
 interface MusicStore {
-	songs: Song[];
-	albums: Album[];
+	songs: any[];
+	albums: any[];
 	isLoading: boolean;
 	error: string | null;
 	currentAlbum: Album | null;
@@ -15,7 +15,7 @@ interface MusicStore {
 	trendingSongs: Song[];
 	stats: Stats;
 	playlists: Playlist[];
-	
+	artists: any[]; // 🔽 Agregado aquí
 	
 
 	fetchAlbums: () => Promise<void>;
@@ -25,6 +25,7 @@ interface MusicStore {
 	fetchTrendingSongs: () => Promise<void>;
 	fetchStats: () => Promise<void>;
 	fetchSongs: () => Promise<void>;
+	fetchArtists: () => Promise<void>; // 🔽 Agregado aquí
 	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
 }
@@ -46,6 +47,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	},
 	currentPlaylist: null,
 	playlists: [],
+	artists: [], // 🔽 Agregado aquí
 
 	deleteSong: async (id) => {
 		set({ isLoading: true, error: null });
@@ -168,4 +170,24 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set({ isLoading: false });
 		}
 	},
+
+	fetchArtists: async () => { // 🔽 Agregado aquí
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get("/artists");
+			console.log("🧑‍🎤 fetchArtists:", response.data);
+			set({ artists: response.data });
+		} catch (error: any) {
+			set({ error: error.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
 }));
+
+export interface Artist {
+  _id: string;
+  name: string;
+  image: string;
+  followers?: number;
+}

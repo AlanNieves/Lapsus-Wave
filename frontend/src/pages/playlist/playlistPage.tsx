@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useMusicStore } from "@/stores/useMusicStore";
 import { useAuth } from "@clerk/clerk-react";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
-import { usePlayerStore } from "@/stores/usePlayerStore";
 import { Song } from "@/types";
 import { toast } from "react-hot-toast";
 import { Plus, Search, Save } from "lucide-react";
@@ -105,10 +104,8 @@ const PlaylistPage = () => {
   const isCreating = !playlistId;
 
   // Stores
-  const { songs } = useMusicStore();
   const { getToken } = useAuth();
   const { currentPlaylist, fetchPlaylistById } = usePlaylistStore();
-  const { setHideRightSidebar } = usePlayerStore();
 
   // Estados del formulario
   const [formData, setFormData] = useState({
@@ -125,7 +122,6 @@ const PlaylistPage = () => {
   useEffect(() => {
     if (playlistId && playlistId !== "new") {
       fetchPlaylistById(playlistId);
-      setHideRightSidebar(true);
     }
     
     if (isEditMode && currentPlaylist) {
@@ -138,8 +134,7 @@ const PlaylistPage = () => {
       });
     }
 
-    return () => setHideRightSidebar(false);
-  }, [playlistId, currentPlaylist, fetchPlaylistById, setHideRightSidebar, isEditMode]);
+  }, [playlistId, currentPlaylist, fetchPlaylistById, isEditMode]);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

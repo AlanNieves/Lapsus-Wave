@@ -1,5 +1,14 @@
 import { Artist } from "../models/artist.model.js";
 
+export const getAllArtists = async (req, res, next) => {
+  try {
+    const artists = await Artist.find();
+    res.json(artists);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getArtistById = async (req, res, next) => {
   try {
     const artist = await Artist.findById(req.params.id);

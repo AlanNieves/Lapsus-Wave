@@ -12,6 +12,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/stores/useSearchStore";
 
+
 const navItems = [
   { name: "Home", icon: Home, path: "/" },
   { name: "Messages", icon: MessageCircle, path: "/chat" },
@@ -23,8 +24,6 @@ const navItems = [
 
 const LeftSidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { setShowSearch, setSearchTerm } = useSearchStore();
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -37,7 +36,12 @@ const LeftSidebar = () => {
     const [isHovered, setIsHovered] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [inputValue, setInputValue] = useState("");
-    const showSearchInput = isHovered || isFocused;
+
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { setShowSearch, setSearchTerm } = useSearchStore();
+
+    const showSearchInput = isHovered || isFocused || inputValue.length > 0;
 
     useEffect(() => {
       if (showSearchInput && targetRef.current) {
@@ -46,34 +50,32 @@ const LeftSidebar = () => {
     }, [showSearchInput]);
 
     useEffect(() => {
-      // Si el input no tiene texto y pierde hover/focus, se oculta
       if (!showSearchInput && !targetRef.current?.value) {
-        setTimeout(() => setInputValue(""), 200); // limpia el input suavemente
+        setTimeout(() => setInputValue(""), 200);
       }
     }, [showSearchInput]);
 
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (targetRef.current?.value) {
-        setSearchTerm(targetRef.current.value);
-        setShowSearch(true);
-        navigate("/universal-search");
-      }
-      setIsHovered(false);
-      setIsFocused(false);
-    };
-
     const handleBlur = () => {
       setIsFocused(false);
-      // Si no hay texto, oculta el input
       if (!targetRef.current?.value) {
         setIsHovered(false);
       }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setInputValue(value);
+      setSearchTerm(value);          // ✅ actualiza en tiempo real
+      setShowSearch(true);
+
+      // ✅ Solo navegar una vez
+      if (location.pathname !== "/universal-search") {
+        navigate("/universal-search");
+      }
+    };
+
     return (
       <form
-        onSubmit={handleSubmit}
         className={cn(
           "relative w-full h-11 md:h-14 flex flex-col items-center justify-center",
           "transition-all duration-500 group"
@@ -81,19 +83,17 @@ const LeftSidebar = () => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
           setIsHovered(false);
-          // Si no hay texto, oculta el input
           if (!targetRef.current?.value) setIsFocused(false);
         }}
         onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
+        onSubmit={(e) => e.preventDefault()} // evita Enter
       >
         <div
           className={cn(
             "absolute inset-0 flex items-center justify-center",
             "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
-            showSearchInput
-              ? "before:opacity-0"
-              : "group-hover:before:bg-purple-100/5"
+            showSearchInput ? "before:opacity-0" : "group-hover:before:bg-purple-100/5"
           )}
         />
 
@@ -104,7 +104,7 @@ const LeftSidebar = () => {
               type="text"
               placeholder="Buscar..."
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={handleChange}
               className={cn(
                 "absolute w-full h-full bg-black/20 backdrop-blur-md",
                 "rounded-full border border-lapsus-500 px-4 pr-10",
@@ -116,15 +116,9 @@ const LeftSidebar = () => {
               )}
             />
 
-            {/* Botón de búsqueda o enviar */}
+            {/* Icono flecha a la derecha */}
             {showSearchInput ? (
-              <button
-                type="submit"
-                className={cn(
-                  "absolute right-3 z-20 flex items-center justify-center w-5 h-5",
-                  "transition-colors duration-300 text-lapsus-500"
-                )}
-              >
+              <div className="absolute right-3 z-20 flex items-center justify-center text-lapsus-500">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -139,14 +133,11 @@ const LeftSidebar = () => {
                     d="M14 5l7 7m0 0l-7 7m7-7H3"
                   />
                 </svg>
-              </button>
+              </div>
             ) : (
               <button
                 type="button"
-                className={cn(
-                  "z-20 flex items-center justify-center w-5 h-5",
-                  "transition-colors duration-300 text-white"
-                )}
+                className="z-20 flex items-center justify-center w-5 h-5 text-white"
               >
                 <SearchIcon className="w-5 h-5" />
               </button>
@@ -225,3 +216,4 @@ const LeftSidebar = () => {
 };
 
 export default LeftSidebar;
+
