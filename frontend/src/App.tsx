@@ -14,15 +14,25 @@ import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
 import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
 import LoginPage from "./pages/login/LoginPage";
+import UniversalSearch from "@/components/UniversalSearch";
+import { useMusicStore } from "@/stores/useMusicStore";
+
 function App() {
-    useEffect(() => {
-        loadCastSdk()
-        .then(() => console.log("Chromecast SDK cargado correctamente"))
-        .catch(error => {
-            console.log("No se pudo inicializar Chromecast. Esto es normal si no hay soporte para Chromecast.");
-            console.error("Error al inicializar Chromecast:", error);
-        });
-    }, []);
+  useEffect(() => {
+    loadCastSdk()
+      .then(() => console.log("Chromecast SDK cargado correctamente"))
+      .catch(error => {
+        console.log("No se pudo inicializar Chromecast. Esto es normal si no hay soporte para Chromecast.");
+        console.error("Error al inicializar Chromecast:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    const { fetchSongs, fetchAlbums, fetchArtists } = useMusicStore.getState();
+    fetchSongs();
+    fetchAlbums();
+    fetchArtists();
+  }, []);
 
     return (
         <>
@@ -35,6 +45,7 @@ function App() {
             
                 <Route path='/admin' element={<AdminPage />} />
 
+
                 <Route path="/signup" element={<SignupPage />} />
 
 				<Route element={<MainLayout />}>
@@ -45,6 +56,8 @@ function App() {
 					<Route path="/artist/:artistId" element={<ArtistPage />} />
                     <Route path="/playlists" element={<AllPlaylistsPage />} />
                     <Route path="/complete-profile" element={<CompleteProfilePage />} />
+					<Route path="/universal-search" element={<UniversalSearch />} />
+
 					<Route path='*' element={<NotFoundPage />} />
 					
 				</Route>
