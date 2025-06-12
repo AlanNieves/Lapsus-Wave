@@ -164,16 +164,21 @@ const LeftSidebar = () => {
   return (
     <aside className="w-full h-full relative flex items-center justify-center p-2 bg-gradient-to-b from-[#18181b] to-black backdrop-blur-md">
       {/* Contenedor efecto cristal */}
-      <div className="w-full h-full rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center">
-        <nav className="flex flex-col items-center w-full h-full justify-center gap-4 py-6">
-          {navItems.map((item) => {
-            const active = isActive(item.path);
+      <div className="w-full h-full rounded-2xl bg-black/10 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center space-y-4" style={{display: "grid"}}>
+        {navItems.map((item) => {
+          const active = isActive(item.path);
 
-            return (
-              <Link
-                to={item.path}
-                key={item.name}
-                className="w-full group flex items-center justify-center"
+          return (
+            <Link to={item.path} key={item.name} className="w-full group">
+              <div
+                className={cn(
+                  "relative flex flex-col items-center justify-center w-full h-16 transition-all duration-600 cursor-pointer",
+                  "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
+                  active
+                    ? "before:bg-pink-200/30"
+                    : "group-hover:before:bg-purple-100/10"
+                )}
+
               >
                 <div
                   className={cn(

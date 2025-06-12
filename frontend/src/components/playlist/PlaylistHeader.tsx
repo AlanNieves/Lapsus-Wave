@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { useAuth } from "@clerk/clerk-react";
 import { Play, Shuffle, Plus, Pencil, MoreVertical, Trash, Check } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useNavigate } from "react-router-dom";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { motion } from "framer-motion";
 import type { Song } from "@/types";
-
+import { useAuthStore } from "@/stores/useAuthStore";
+import { axiosInstance } from "@/lib/axios";
 
 interface Playlist {
   _id: string;
@@ -27,8 +27,6 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const { getToken } = useAuth();
-  const [token, setToken] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [hovering, setHovering] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -37,18 +35,13 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
   const navigate = useNavigate();
   const { updatePlaylistCover } = usePlaylistStore();
   const { playAlbum, toggleShuffle } = usePlayerStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    const fetchTokenAndPlaylist = async () => {
+    const fetchPlaylist = async () => {
       try {
-        const fetchedToken = await getToken();
-        setToken(fetchedToken);
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
-          headers: { Authorization: `Bearer ${fetchedToken}` },
-        });
-
-        if (!res.ok) throw new Error("No se pudo cargar la playlist");
-        const data = await res.json();
+        const res = await axiosInstance.get(`/playlists/${playlistId}`);
+        const data = res.data;
         setPlaylist(data);
         setNewName(data.name);
         setNewDescription(data.description || "");
@@ -57,8 +50,10 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
       }
     };
 
-    fetchTokenAndPlaylist();
-  }, [playlistId, getToken]);
+    if (user) {
+      fetchPlaylist();
+    }
+  }, [playlistId, user]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -72,18 +67,11 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
 
   const handleSave = async () => {
     try {
-      if (!token) throw new Error("Token no disponible");
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: newName, description: newDescription }),
+      const res = await axiosInstance.patch(`/playlists/${playlistId}`, {
+        name: newName,
+        description: newDescription,
       });
-
-      if (!res.ok) throw new Error("Error al actualizar");
-      const updated = await res.json();
+      const updated = res.data;
       setPlaylist(updated);
       setIsEditing(false);
       setIsEditingDesc(false);
@@ -94,20 +82,14 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !token) return;
+    if (!file) return;
 
     const formData = new FormData();
     formData.append("cover", file);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}/cover`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Error al subir imagen");
-      const updated = await res.json();
+      const res = await axiosInstance.patch(`/playlists/${playlistId}/cover`, formData);
+      const updated = res.data;
       setPlaylist(updated);
       updatePlaylistCover(playlistId, updated.coverImage);
       setUploadSuccess(true);
@@ -127,22 +109,14 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
 
   const handleDeletePlaylist = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("No se pudo eliminar");
-
+      await axiosInstance.delete(`/playlists/${playlistId}`);
       navigate("/");
     } catch (error) {
       console.error("Error al eliminar la playlist:", error);
     }
   };
 
-  if (!playlist || !token) return <div className="text-white p-6">Cargando...</div>;
+  if (!playlist) return <div className="text-white p-6">Cargando...</div>;
 
   const fullImageUrl = playlist.coverImage
     ? playlist.coverImage.startsWith("http")
@@ -250,7 +224,10 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
               autoFocus
             />
           ) : (
-            <p className="text-sm text-zinc-300 cursor-pointer" onClick={() => setIsEditingDesc(true)}>
+            <p
+              className="text-sm text-zinc-300 cursor-pointer"
+              onClick={() => setIsEditingDesc(true)}
+            >
               {playlist.description || "para añadir una descripción..."}
             </p>
           )}

@@ -1,18 +1,19 @@
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
-import AuthCallbackPage from "./pages/auth-callback/AuthCallbackPage";
-import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react";
+import CompleteProfilePage from "./pages/completeProfile/CompleteProfilePage";
+import SignupPage from "./pages/signup/SignupPage";
 import MainLayout from "./layout/MainLayout";
 import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
-import PlaylistPage from "./pages/playlist/PlaylistPage"
+import PlaylistPage from "./pages/playlist/PlaylistPage";
 import ArtistPage from "./pages/artist/ArtistPage";
 import { useEffect } from "react";
 import { loadCastSdk } from "@/utils/cast";
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
 import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
+import LoginPage from "./pages/login/LoginPage";
 import UniversalSearch from "@/components/UniversalSearch";
 import { useMusicStore } from "@/stores/useMusicStore";
 
@@ -33,16 +34,19 @@ function App() {
     fetchArtists();
   }, []);
 
-  return (
-    <>
-      <Routes>
-        <Route
-          path='/sso-callback'
-          element={<AuthenticateWithRedirectCallback signUpForceRedirectUrl={"/auth-callback"} />}
-        />
-        <Route path='/auth-callback' element={<AuthCallbackPage />} />
-        <Route path='/admin' element={<AdminPage />} />
+    return (
+        <>
+            <Routes>
+                <Route
+                    path='/login'
+                    element={<LoginPage />}
+                    
+                />
+            
+                <Route path='/admin' element={<AdminPage />} />
 
+
+                <Route path="/signup" element={<SignupPage />} />
 
 				<Route element={<MainLayout />}>
 					<Route path='/' element={<HomePage />} />
@@ -51,6 +55,7 @@ function App() {
 					<Route path="/playlists/:id" element={<PlaylistPage />} />
 					<Route path="/artist/:artistId" element={<ArtistPage />} />
                     <Route path="/playlists" element={<AllPlaylistsPage />} />
+                    <Route path="/complete-profile" element={<CompleteProfilePage />} />
 					<Route path="/universal-search" element={<UniversalSearch />} />
 
 					<Route path='*' element={<NotFoundPage />} />

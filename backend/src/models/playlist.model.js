@@ -29,7 +29,8 @@ const playlistSchema = new mongoose.Schema(
       },
     ],
     createdBy: {
-      type: String, // Usamos el userId de Clerk como referencia
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Ahora referenciamos al modelo User
       required: true,
     },
   },

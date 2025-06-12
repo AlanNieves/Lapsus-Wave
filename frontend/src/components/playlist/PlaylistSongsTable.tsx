@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
 import { Play, Pause } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { Song } from "@/types";
+import { axiosInstance } from "@/lib/axios";
 
 const formatDuration = (seconds: number) => {
   const min = Math.floor(seconds / 60);
@@ -15,7 +15,6 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const { getToken } = useAuth();
   const {
     currentSong,
     isPlaying,
@@ -26,16 +25,8 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
   useEffect(() => {
     const fetchPlaylist = async () => {
       try {
-        const token = await getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/playlists/${playlistId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error("No autorizado");
-
-        const data = await res.json();
+        const res = await axiosInstance.get(`/playlists/${playlistId}`);
+        const data = res.data;
         setSongs(data.songs || []);
       } catch (err) {
         console.error("Error al cargar canciones:", err);
@@ -43,7 +34,7 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
     };
 
     fetchPlaylist();
-  }, [playlistId, getToken]);
+  }, [playlistId]);
 
   const filteredSongs = songs.filter((song) =>
     song.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -73,11 +64,11 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
         <thead>
           <tr className="text-left border-b border-zinc-700">
             <th className="pb-2">#</th>
-            <th className="pb-2">Name</th>
-            <th className="pb-2">Artist</th>
-            <th className="pb-2">Album</th>
-            <th className="pb-2">Date</th>
-            <th className="pb-2">Length</th>
+            <th className="pb-2">Nombre</th>
+            <th className="pb-2">Artista</th>
+            <th className="pb-2">Álbum</th>
+            <th className="pb-2">Fecha</th>
+            <th className="pb-2">Duración</th>
           </tr>
         </thead>
         <tbody>
