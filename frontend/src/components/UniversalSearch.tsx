@@ -14,13 +14,13 @@ const UniversalSearch = () => {
     artists,
     fetchArtists,
   } = useMusicStore();
+
   const { searchTerm } = useSearchStore();
   const { currentSong, isPlaying, setCurrentSong, togglePlay } = usePlayerStore();
   const navigate = useNavigate();
   const [showPlaceholder, setShowPlaceholder] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // ✅ CORRECTO: hook dentro del componente
   useEffect(() => {
     fetchArtists();
   }, [fetchArtists]);
@@ -64,10 +64,9 @@ const UniversalSearch = () => {
       song.artist.toLowerCase().includes(lowerSearch)
   );
 
-  const filteredArtists =
-    artists?.filter((artist) =>
-      artist.name.toLowerCase().includes(lowerSearch)
-    ) || [];
+  const filteredArtists = artists?.filter((artist) =>
+    artist.name.toLowerCase().includes(lowerSearch)
+  ) || [];
 
   const handleSongPlay = (song: any) => {
     if (currentSong?._id === song._id) {
@@ -80,37 +79,30 @@ const UniversalSearch = () => {
 
   return (
     <div className="p-6 md:p-10 space-y-16 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-lapsus-500 scrollbar-track-transparent">
+
       {/* CANCIONES */}
       <section>
         <h2 className="text-white text-2xl font-bold mb-6">Canciones</h2>
-        <div className="divide-y divide-white/10 rounded-lg overflow-hidden border border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
           {filteredSongs.length > 0 ? (
-            filteredSongs.map((song) => {
+            filteredSongs.map((song: any) => {
               const isCurrentSong = currentSong?._id === song._id;
               const isPlayingCurrent = isCurrentSong && isPlaying;
               return (
                 <div
                   key={song._id}
-                  className="flex justify-between items-center p-4 bg-lapsus-1250 hover:bg-lapsus-1200 transition"
+                  className="flex flex-col items-center bg-lapsus-1250 hover:bg-lapsus-1200 transition rounded-xl p-3 cursor-pointer"
                 >
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="relative w-full flex justify-center mb-3">
                     <img
                       src={song.imageUrl}
                       alt={song.title}
-                      className="w-12 h-12 object-cover rounded-md"
+                      className="object-cover rounded-lg w-28 h-28 max-w-[128px] max-h-[128px] shadow"
                     />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium truncate">
-                        {song.title}
-                      </p>
-                      <p className="text-lapsus-400 text-sm truncate">
-                        {song.artist}
-                      </p>
-                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-10 w-10 rounded-full text-lapsus-500 hover:text-white"
+                      className="absolute bottom-2 right-2 h-9 w-9 rounded-full text-lapsus-500 hover:text-white bg-black/60"
                       onClick={() => handleSongPlay(song)}
                     >
                       {isPlayingCurrent ? (
@@ -120,11 +112,15 @@ const UniversalSearch = () => {
                       )}
                     </Button>
                   </div>
+                  <div className="w-full">
+                    <p className="text-white font-medium truncate">{song.title}</p>
+                    <p className="text-lapsus-400 text-sm truncate">{song.artist}</p>
+                  </div>
                 </div>
               );
             })
           ) : (
-            <p className="text-lapsus-500 p-4">No se encontraron canciones.</p>
+            <p className="text-lapsus-500 col-span-full p-4">No se encontraron canciones.</p>
           )}
         </div>
       </section>
@@ -141,9 +137,10 @@ const UniversalSearch = () => {
               >
                 <div className="w-24 h-24 mb-3 rounded-full overflow-hidden border-2 border-lapsus-500">
                   <img
-                    src={artist.image}
+                    src={artist.image || "/fallback-artist.jpg"}
                     alt={artist.name}
                     className="object-cover w-full h-full"
+                    style={{ maxWidth: "119.89px", maxHeight: "119.89px" }}
                   />
                 </div>
                 <p className="text-white font-medium">{artist.name}</p>
@@ -170,6 +167,7 @@ const UniversalSearch = () => {
                   src={album.imageUrl}
                   alt={album.title}
                   className="rounded-md w-full aspect-square object-cover mb-3"
+                  style={{ maxWidth: "119.89px", maxHeight: "119.89px" }}
                 />
                 <h3 className="text-white font-semibold truncate">{album.title}</h3>
                 <p className="text-lapsus-400 text-sm truncate">{album.artist}</p>

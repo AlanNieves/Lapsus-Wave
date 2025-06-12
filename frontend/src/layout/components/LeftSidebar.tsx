@@ -65,12 +65,15 @@ const LeftSidebar = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setInputValue(value);
-      setSearchTerm(value);          // ✅ actualiza en tiempo real
+      setSearchTerm(value);
       setShowSearch(true);
 
-      // ✅ Solo navegar una vez
-      if (location.pathname !== "/universal-search") {
-        navigate("/universal-search");
+      // Solo navegar si NO estamos ya en /universal-search y hay texto
+      if (value.trim() !== "" && location.pathname !== "/universal-search") {
+        // Usa un pequeño timeout para dejar que el input procese el cambio antes de navegar
+        setTimeout(() => {
+          navigate("/universal-search");
+        }, 50);
       }
     };
 
