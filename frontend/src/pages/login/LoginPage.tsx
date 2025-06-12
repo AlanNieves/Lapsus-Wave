@@ -8,9 +8,11 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <h1 className="text-2xl font-semibold text-white">Inicia sesión</h1>
+    <div className="min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-black via-zinc-900 to-zinc-950">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl flex flex-col items-center">
+        <h1 className="text-3xl font-bold text-white mb-2">Bienvenido a <span className="text-violet-400">Lapsus</span></h1>
+        <p className="text-zinc-300 mb-6">Inicia sesión para continuar</p>
+
         <GoogleLogin
           onSuccess={async (credentialResponse) => {
             try {
@@ -26,10 +28,19 @@ const LoginPage = () => {
           }}
           onError={() => toast.error("Falló la autenticación con Google")}
           useOneTap={false}
-          theme="outline"
-          text="signin_with"
+          theme="filled_black"
+          text="continue_with"
           shape="pill"
         />
+
+        <div className="text-zinc-400 my-6">— o —</div>
+
+        <button
+          className="w-full bg-white text-black py-2 rounded-full hover:bg-zinc-200 transition font-semibold"
+          onClick={() => navigate("/signup")}
+        >
+          Crear cuenta con Lapsus
+        </button>
       </div>
     </div>
   );
