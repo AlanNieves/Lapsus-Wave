@@ -9,20 +9,20 @@ import {
   updateCoverImage,
 } from "../controller/playlist.controller.js";
 
-import { protectRoute } from "../middleware/auth.middleware.js";
+import {verifyToken} from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-router.get("/:id", protectRoute, getPlaylistById);
-router.patch("/:id", protectRoute, updatePlaylist);
+router.get("/:id", verifyToken, getPlaylistById);
+router.patch("/:id", verifyToken, updatePlaylist);
 
 // ✅ CAMBIADO: antes decía :id/add-song — ahora :playlistId/add-song
-router.patch("/:playlistId/add-song", protectRoute, addSongToPlaylist);
+router.patch("/:playlistId/add-song", verifyToken, addSongToPlaylist);
 
-router.patch("/:id/cover", protectRoute, updateCoverImage);
-router.delete("/:id", protectRoute, deletePlaylist);
-router.get("/", protectRoute, getUserPlaylists);
-router.post("/", protectRoute, createPlaylist);
+router.patch("/:id/cover", verifyToken, updateCoverImage);
+router.delete("/:id", verifyToken, deletePlaylist);
+router.get("/", verifyToken, getUserPlaylists);
+router.post("/", verifyToken, createPlaylist);
 
 // Ruta de prueba opcional
 router.get("/test/:id", (req, res) => {

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+
 import { Play, Heart } from "lucide-react";
+import { axiosInstance } from "@/lib/axios";
 
 interface Artist {
   _id: string;
@@ -20,32 +21,17 @@ interface Song {
 
 const ArtistPage = () => {
   const { artistId } = useParams();
-  const { getToken } = useAuth();
-
   const [artist, setArtist] = useState<Artist | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
-  
+
   useEffect(() => {
     const fetchArtistData = async () => {
-      const token = await getToken();
       try {
-        const resArtist = await fetch(`/api/artists/${artistId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const resArtist = await axiosInstance.get(`/artists/${artistId}`);
+        const resSongs = await axiosInstance.get(`/songs/by-artist/${artistId}`);
 
-        if (!resArtist.ok) {
-          throw new Error("No se pudo cargar el artista");
-        }
-
-        const resSongs = await fetch(`/api/songs/by-artist/${artistId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const artistData = await resArtist.json();
-        const songsData = await resSongs.json();
-
-        setArtist(artistData);
-        setSongs(songsData);
+        setArtist(resArtist.data);
+        setSongs(resSongs.data);
       } catch (error) {
         console.error("Error loading artist page:", error);
       }

@@ -15,14 +15,13 @@ const UsersList = () => {
 		chatOrder,
 	} = useChatStore();
 
-	// Lista combinada: prioriza el orden de chatOrder y añade el resto al final
 	const sortedUsers = useMemo(() => {
 		const chatOrderSet = new Set(chatOrder);
 		const orderedUsers = chatOrder
-			.map((id) => users.find((u) => u.clerkId === id))
-			.filter((u): u is User => Boolean(u))
+			.map((id) => users.find((u) => u._id === id))
+			.filter((u): u is User => Boolean(u));
 
-		const remainingUsers = users.filter((u) => !chatOrderSet.has(u.clerkId));
+		const remainingUsers = users.filter((u) => !chatOrderSet.has(u._id));
 		return [...orderedUsers, ...remainingUsers];
 	}, [chatOrder, users]);
 
@@ -41,7 +40,7 @@ const UsersList = () => {
 									className={`flex items-center justify-center lg:justify-start gap-3 p-3 
                     rounded-lg cursor-pointer transition-colors
                     ${
-											selectedUser?.clerkId === user.clerkId
+											selectedUser?._id === user._id
 												? "bg-lapsus-1000"
 												: "hover:bg-lapsus-1000"
 										}`}
@@ -54,7 +53,7 @@ const UsersList = () => {
 										<div
 											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-1 ring-neutral-800
 													${
-													onlineUsers.has(user.clerkId)
+													onlineUsers.has(user._id)
 														? "bg-green-500"
 														: "bg-neutral-500"
 											}`}

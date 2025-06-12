@@ -1,5 +1,5 @@
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import LeftSidebar from "./components/LeftSidebar";
 import AudioPlayer from "./components/AudioPlayer";
 import { PlaybackControls } from "./components/PlaybackControls";
@@ -8,7 +8,7 @@ import ExpandedPlayerView from "./components/ExpandedPlayerView";
 
 const MainLayout = () => {
 	const [isMobile, setIsMobile] = useState(false);
-	const location = useLocation();
+	//const location = useLocation();
 
 	useEffect(() => {
 		const checkMobile = () => {
@@ -21,7 +21,7 @@ const MainLayout = () => {
 	}, []);
 
 	// Detectamos si estamos en la ruta de playlist individual
-	const isPlaylistView = location.pathname.startsWith("/playlists/");
+	//const isPlaylistView = location.pathname.startsWith("/playlists/");
 
 	return (
 		<div className='h-screen bg-black text-white flex flex-col'>
