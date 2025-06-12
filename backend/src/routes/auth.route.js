@@ -7,7 +7,8 @@ import {
 	forgotPassword,
 	resetPassword,
 	checkAuth,
-    loginWithGoogle
+    loginWithGoogle,
+	completeProfile
 } from "../controller/auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -29,17 +30,7 @@ router.post("/verify-email", verifyEmail);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
-// ✅ Registro / inicio / cierre de sesión
-router.post("/signup", signup);
-router.post("/login", login);
-router.post("/google", loginWithGoogle);
-router.post("/logout", logout);
+router.post("/complete-profile", verifyToken, completeProfile);
 
-// ✅ Verificación de correo
-router.post("/verify-email", verifyEmail);
-
-// ✅ Recuperación y reinicio de contraseña
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password/:token", resetPassword);
 
 export default router;

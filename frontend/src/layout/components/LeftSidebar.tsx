@@ -2,19 +2,19 @@ import {
   Home,
   MessageCircle,
   User,
-  BarChart,
   Star,
   Library,
   ListMusic,
+  Search,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useSearchStore } from "@/stores/useSearchStore";
 
 const navItems = [
   { name: "Home", icon: Home, path: "/" },
   { name: "Messages", icon: MessageCircle, path: "/chat" },
   { name: "Profile", icon: User, path: "/profile" },
-  { name: "Admin Dashboard", icon: BarChart, path: "/admin" },
   { name: "Reviews", icon: Star, path: "/reviews" },
   { name: "Your Library", icon: Library, path: "/library" },
   { name: "Playlists", icon: ListMusic, path: "/playlists" },
@@ -22,13 +22,16 @@ const navItems = [
 
 const LeftSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { setShowSearch, setSearchTerm } = useSearchStore();
+
   const isActive = (path: string) => {
-    if(path === "/") return location.pathname === "/";
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
-  }
+  };
 
   return (
-    <aside className="w-full h-full relative flex items-center justify-center p-2 bg-gradient-to-b from-lapsus-1200/35 to-black backdrop-blur-md ">
+    <aside className="w-full h-full relative flex items-center justify-center p-2 bg-gradient-to-b from-lapsus-1200/35 to-black backdrop-blur-md">
       {/* Contenedor efecto cristal */}
       <div className="w-full h-full rounded-2xl bg-black/10 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center space-y-4" style={{display: "grid"}}>
         {navItems.map((item) => {
@@ -60,6 +63,18 @@ const LeftSidebar = () => {
             </Link>
           );
         })}
+
+        {/* Botón de búsqueda */}
+        <button
+          onClick={() => {
+            setShowSearch(true);
+            setSearchTerm("");
+            navigate("/");
+          }}
+          className="w-full h-16 flex items-center justify-center text-white hover:text-lapsus-500 transition"
+        >
+          <Search className="w-5 h-5" />
+        </button>
       </div>
     </aside>
   );
