@@ -2,55 +2,37 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useState } from "react";
 
 const LoginPage = () => {
-  const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
+  const { loginWithGoogle } = useAuthStore();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    const credential = credentialResponse?.credential;
-    if (!credential) return toast.error("Token de Google inválido");
-
-    setLoading(true);
-    try {
-      await loginWithGoogle(credential);
-      toast.success("Sesión iniciada");
-      navigate("/");
-    } catch (err) {
-      toast.error("Error al iniciar sesión con Google");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/40">
-      <div className="bg-white/10 border border-white/20 backdrop-blur-2xl shadow-xl rounded-2xl p-10 w-full max-w-md text-center">
-        <h1 className="text-3xl font-semibold text-white mb-6">Iniciar sesión</h1>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <h1 className="text-2xl font-semibold text-white">Inicia sesión</h1>
+        <GoogleLogin
+          onSuccess={async (credentialResponse) => {
+            try {
+              const credential = credentialResponse.credential;
+              if (!credential) throw new Error("Token inválido");
 
-        <div className="mb-6">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => toast.error("Error al iniciar con Google")}
-          />
-        </div>
-
-        <p className="text-white text-sm mb-2">¿No tienes cuenta?</p>
-        <button
-          onClick={() => navigate("/register")}
-          className="mt-2 px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md transition duration-200 backdrop-blur-sm"
-        >
-          Registrarse en Lapsus Wave
-        </button>
+              await loginWithGoogle(credential);
+              toast.success("Sesión iniciada");
+              navigate("/");
+            } catch (error) {
+              toast.error("Error al iniciar sesión con Google");
+            }
+          }}
+          onError={() => toast.error("Falló la autenticación con Google")}
+          useOneTap={false}
+          theme="outline"
+          text="signin_with"
+          shape="pill"
+        />
       </div>
     </div>
   );
 };
 
-<<<<<<< HEAD
 export default LoginPage;
-=======
-export default LoginPage;
->>>>>>> 46a697b5dd65c6b10b5e1926daf29f6622536fad

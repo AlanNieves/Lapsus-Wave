@@ -15,7 +15,7 @@ interface AuthState {
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: (credentials: string) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -25,7 +25,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true });
-      const res = await axiosInstance.get("/auth/check-auth");
+      const res = await axiosInstance.get("/auth/check-auth", {
+        withCredentials: true,
+      });
       set({ user: res.data.user, isLoading: false });
     } catch {
       set({ user: null, isLoading: false });
@@ -33,32 +35,40 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    await axiosInstance.post("/auth/logout");
+    await axiosInstance.post("/auth/logout", null, {
+      withCredentials: true,
+    });
     set({ user: null });
   },
 
   login: async (email: string, password: string) => {
-  try {
-    set({ isLoading: true });
-    const res = await axiosInstance.post("/auth/login", { email, password });
-    set({ user: res.data.user, isLoading: false });
-  } catch (error) {
-    console.error("Error al iniciar sesión", error);
-    set({ isLoading: false });
-  }
-},
+    try {
+      set({ isLoading: true });
+      const res = await axiosInstance.post(
+        "/auth/login",
+        { email, password },
+        { withCredentials: true }
+      );
+      set({ user: res.data.user, isLoading: false });
+    } catch (error) {
+      console.error("Error al iniciar sesión", error);
+      set({ isLoading: false });
+    }
+  },
 
-loginWithGoogle: async (credential: string) => {
-  try {
-    set({ isLoading: true });
-    const res = await axiosInstance.post("/auth/google", { credential }, { withCredentials: true });
-    set({ user: res.data.user, isLoading: false });
-  } catch (error) {
-    console.error("Error al iniciar sesión con Google", error);
-    set({ isLoading: false });
-    throw error;
-  }
-},
-
-
+  loginWithGoogle: async (credential: string) => {
+    try {
+      set({ isLoading: true });
+      const res = await axiosInstance.post(
+        "/auth/google",
+        { credential },
+        { withCredentials: true }
+      );
+      set({ user: res.data.user, isLoading: false });
+    } catch (error) {
+      console.error("Error al iniciar sesión con Google", error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
 }));
