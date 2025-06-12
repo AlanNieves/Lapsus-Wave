@@ -123,15 +123,68 @@ export const ExpandedPlayerView = () => {
           <div className="absolute top-4 right-4 text-lapsus-500 text-sm font-semibold animate-softGlow">
             LAPSUS INNOVATIONS
           </div>
-          {/* Efecto de texto acuático */}
+
+          {/* Efecto de agua con SVG */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+            <filter id="waterEffect" x="0" y="0" width="100%" height="100%">
+              <feTurbulence 
+                type="fractalNoise" 
+                baseFrequency="0.02 0.03" 
+                numOctaves="3" 
+                seed="50"
+              >
+                <animate
+                  attributeName="baseFrequency"
+                  dur="20s"
+                  values="0.02 0.03; 0.03 0.04; 0.02 0.03"
+                  repeatCount="indefinite"
+                />
+              </feTurbulence>
+              <feDisplacementMap 
+                in="SourceGraphic" 
+                scale="15" 
+                xChannelSelector="R" 
+                yChannelSelector="G"
+              />
+            </filter>
+          </svg>
+
+          {/* Texto "LAPSUS" con efecto agua intenso */}
           <motion.div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.03 }}
+            animate={{ opacity: 0.2 }}
             transition={{ duration: 2 }}
           >
+            <motion.h1 
+              className="text-[18rem] font-black tracking-tighter bg-clip-text"
+              style={{
+                backgroundImage: `
+                  linear-gradient(
+                    45deg,
+                    rgba(164, 77, 121, 0.5),
+                    rgba(255, 255, 255, 0.7),
+                    rgba(164, 77, 121, 0.5)
+                  )`,
+                WebkitTextFillColor: 'transparent',
+                backgroundSize: '300% 300%',
+                filter: 'url(#waterEffect) blur(0.8px)'
+              }}
+              animate={{
+                backgroundPosition: ['0% 0%', '100% 100%'],
+                scale: [1, 1.02]
+              }}
+              transition={{
+                duration: 12,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              LAPSUS
+            </motion.h1>
           </motion.div>
 
+          {/* Efecto de luz pulsante */}
           <motion.div
             initial={{ opacity: 0.5, scale: 1 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -147,44 +200,6 @@ export const ExpandedPlayerView = () => {
             }}
           />
           
-      {/* SVG para el filtro tipo agua */}
-      <svg className="hidden">
-        <filter id="water" x="0%" y="0%" width="100%" height="100%">
-          <feTurbulence
-            type="turbulence"
-            baseFrequency="0.01 0.02"
-            numOctaves="2"
-            result="turbulence"
-            seed="8"
-          >
-            <animate
-              attributeName="baseFrequency"
-              dur="20s"
-              values="0.01 0.02; 0.02 0.01; 0.01 0.02"
-              repeatCount="indefinite"
-            />
-          </feTurbulence>
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="turbulence"
-            scale="20"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </svg>
-
-      {/* Texto "LAPSUS" con efecto agua */}
-      <div className="absolute z-0 inset-0 flex items-center justify-center pointer-events-none">
-        <h1
-          className="text-[10rem] font-bold text-lapsus-900 opacity-10 mix-blend-overlay blur-sm select-none"
-          style={{ filter: "url(#water)" }}
-        >
-          LAPSUS
-        </h1>
-      </div>
-
-
           {/* Contenido principal */}
           <div className="flex flex-col items-center gap-4 z-10 mt-20">
             <motion.img
@@ -207,7 +222,7 @@ export const ExpandedPlayerView = () => {
             </div>
           </div>
 
-          {/* Controles de reproducción reorganizados */}
+          {/* Controles de reproducción */}
           <footer className="w-full h-full px-6 py-8 bg-lapsus-900">
             <div className="flex flex-col justify-center items-center gap-8 h-full w-full">
               {/* Controles principales */}
