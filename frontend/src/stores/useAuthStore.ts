@@ -15,7 +15,8 @@ interface AuthState {
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: (credential: string) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<{ user: { isProfileComplete: boolean } }>;
+
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -56,19 +57,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  loginWithGoogle: async (credential: string) => {
-    try {
-      set({ isLoading: true });
-      const res = await axiosInstance.post(
-        "/auth/google",
-        { credential },
-        { withCredentials: true }
-      );
-      set({ user: res.data.user, isLoading: false });
-    } catch (error) {
-      console.error("Error al iniciar sesión con Google", error);
-      set({ isLoading: false });
-      throw error;
-    }
-  },
+  loginWithGoogle: async (credential: string): Promise<{ user: { isProfileComplete: boolean } }> => {
+  try {
+    set({ isLoading: true });
+
+    const res = await axiosInstance.post(
+      "/auth/google",
+      { credential },
+      { withCredentials: true }
+    );
+
+    set({ user: res.data.user, isLoading: false });
+
+    return res.data; // 👈 esto existe, pero sin el tipo TS lo ignora
+  } catch (error) {
+    set({ isLoading: false });
+    throw error;
+  }
+},
+
 }));

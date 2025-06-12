@@ -19,9 +19,14 @@ const LoginPage = () => {
               const credential = credentialResponse.credential;
               if (!credential) throw new Error("Token inválido");
 
-              await loginWithGoogle(credential);
-              toast.success("Sesión iniciada");
-              navigate("/");
+              const res = await loginWithGoogle(credential);
+              toast.success("Sesion iniciada");
+
+              if(!res.user.isProfileComplete) {
+                navigate("/complete-profile");
+              } else {
+                navigate("/");
+              }
             } catch (error) {
               toast.error("Error al iniciar sesión con Google");
             }
