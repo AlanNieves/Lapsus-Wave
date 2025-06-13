@@ -1,12 +1,13 @@
 import Topbar from "@/components/Topbar";
 import { useChatStore } from "@/stores/useChatStore";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import UsersList from "./components/UsersList";
 import ChatHeader from "./components/ChatHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import MessageInput from "./components/MessageInput";
+import type { Message } from "@/types";
 
 const formatTime = (date: string) => {
 	return new Date(date).toLocaleTimeString("en-US", {
@@ -26,7 +27,7 @@ const ChatPage = () => {
 	}, [fetchUsers, user]);
 
 	useEffect(() => {
-		if (selectedUser) fetchMessages(selectedUser._id); // Asegúrate que no uses `clerkId`
+		if (selectedUser) fetchMessages(selectedUser._id);
 	}, [selectedUser, fetchMessages]);
 
 	useEffect(() => {
@@ -34,6 +35,17 @@ const ChatPage = () => {
 			bottomRef.current.scrollIntoView({ behavior: "smooth" });
 		}
 	}, [messages, selectedUser]);
+
+	// ✅ Agrupamos mensajes únicos por _id para evitar duplicados
+	const uniqueMessages: Message[] = useMemo(() => {
+		if (!selectedUser || !user) return [];
+		const rawMessages = messages[selectedUser._id] || [];
+		const map = new Map<string, Message>();
+		for (const m of rawMessages) {
+			if (m && m._id) map.set(m._id, m);
+		}
+		return Array.from(map.values());
+	}, [messages, selectedUser, user]);
 
 	if (!user) return null;
 
@@ -51,11 +63,12 @@ const ChatPage = () => {
 
 							<ScrollArea className='h-[calc(100vh-340px)]'>
 								<div className='p-4 space-y-4'>
-									{(messages[selectedUser._id] || []).map((message) => (
+									{uniqueMessages.map((message) => (
 										<div
 											key={message._id}
-											className={`flex items-start gap-3 ${message.senderId === user._id ? "flex-row-reverse" : ""
-												}`}
+											className={`flex items-start gap-3 ${
+												message.senderId === user._id ? "flex-row-reverse" : ""
+											}`}
 										>
 											<Avatar className='size-8'>
 												<AvatarImage
@@ -69,7 +82,11 @@ const ChatPage = () => {
 
 											<div
 												className={`rounded-lg p-3 max-w-[70%]
-													${message.senderId === user._id ? "bg-lapsus-1000" : "bg-lapsus-1100/20"}
+													${
+														message.senderId === user._id
+															? "bg-lapsus-1000"
+															: "bg-lapsus-1100/20"
+													}
 												`}
 											>
 												<p className='text-sm'>{message.content}</p>
@@ -84,7 +101,7 @@ const ChatPage = () => {
 								</div>
 							</ScrollArea>
 
-							<MessageInput user={user} />
+							<MessageInput />
 						</>
 					) : (
 						<NoConversationPlaceholder />

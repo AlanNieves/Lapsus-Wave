@@ -49,7 +49,7 @@ const UsersList = () => {
 										<Avatar className='size-8 md:size-12'>
 											<AvatarImage src={user.imageUrl} />
 											<AvatarFallback>
-												{user.fullName?.[0] ?? "U"}
+												{user.nickname?.[0] ?? "U"}
 											</AvatarFallback>
 										</Avatar>
 										<div
@@ -64,7 +64,7 @@ const UsersList = () => {
 
 									<div className='flex-1 min-w-0 lg:block hidden'>
 										<span className='truncate max-w-[180px] block'>
-											{user.fullName ?? "Usuario"}
+											{user.nickname ?? "Usuario"}
 										</span>
 									</div>
 								</div>

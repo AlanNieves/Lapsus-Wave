@@ -17,7 +17,7 @@ const ChatHeader = () => {
 					<AvatarFallback>{userInitial}</AvatarFallback>
 				</Avatar>
 				<div>
-					<h2 className='font-medium'>{selectedUser.fullName ?? "Usuario"}</h2>
+					<h2 className='font-medium'>{selectedUser.nickname ?? "Usuario"}</h2>
 					<p className='text-sm text-lapsus-700'>
 						{isOnline ? "Online" : "Offline"}
 					</p>
