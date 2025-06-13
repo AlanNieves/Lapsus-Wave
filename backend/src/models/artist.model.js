@@ -7,7 +7,7 @@ const artistSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    default: "", // puedes poner una imagen por defecto si quieres
+    default: "", 
   },
   followers: {
     type: Number,

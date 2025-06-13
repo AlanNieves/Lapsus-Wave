@@ -51,4 +51,8 @@ const LoginPage = () => {
   );
 };
 
+<<<<<<< HEAD
 export default LoginPage;
+=======
+export default LoginPage;
+>>>>>>> d6279b3ef99e7144468ee8d6cf463f0d40a445dd

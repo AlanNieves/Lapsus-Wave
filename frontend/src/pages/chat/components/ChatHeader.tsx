@@ -19,7 +19,11 @@ const ChatHeader = () => {
 				<div>
 					<h2 className='font-medium'>{selectedUser.nickname ?? "Usuario"}</h2>
 					<p className='text-sm text-lapsus-700'>
+<<<<<<< HEAD
 						{isOnline ? "Online" : "Offline"}
+=======
+						{onlineUsers.has(selectedUser._id) ? "Online" : "Offline"}
+>>>>>>> d6279b3ef99e7144468ee8d6cf463f0d40a445dd
 					</p>
 				</div>
 			</div>

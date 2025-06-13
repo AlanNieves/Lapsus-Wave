@@ -21,7 +21,7 @@ export const translations = {
     date: "Date",
     duration: "Duration",
     searchPlaceholder: "What song are you looking for?",
-    goodAfternoon: "Good afternoon",
+    goodAfternoon: "afternoon",
     madeForYou: "Made For You",
     trending: "Trending",
     shuffle: "Enable shuffle",

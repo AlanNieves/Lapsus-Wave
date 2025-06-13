@@ -89,6 +89,7 @@ export const loginWithGoogle = async (req, res) => {
 
     let user = await User.findOne({ googleId });
 
+<<<<<<< HEAD
     // Si no existe por googleId, busca por email
     if (!user && email) {
       user = await User.findOne({ email });
@@ -120,6 +121,28 @@ export const loginWithGoogle = async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
 
+=======
+    if (!user && email) {
+      user = await User.findOne({ email });
+    }
+
+    if (!user) {
+      user = await User.create({
+        googleId,
+        email,
+        nickname: name,
+        imageUrl: picture,
+        authProvider: "google",
+        isVerified: true,
+        isProfileComplete: false,
+      });
+    }
+
+    generateTokenAndSetCookie(res, user._id);
+    user.lastLogin = new Date();
+    await user.save();
+
+>>>>>>> d6279b3ef99e7144468ee8d6cf463f0d40a445dd
     res.status(200).json({
       success: true,
       message: "Sesión iniciada con Google",

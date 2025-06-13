@@ -83,6 +83,15 @@ const AllPlaylistsPage = () => {
 
       <div className="p-6 text-white">
         <h1 className="text-3xl font-bold mb-6">Tus Playlists</h1>
+
+        <button
+          onClick={() => setCreating(!creating)}
+          className="absolute top-6 right-6 bg-lapsus-700 hover:bg-lapsus-600 transition-colors text-white rounded-full p-2"
+          title={creating ? "Cancelar" : "Crear nueva playlist"}
+        >
+          {creating ? <X size={24} /> : <Plus size={24} />}
+        </button>
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
 
           {isCreating && (
