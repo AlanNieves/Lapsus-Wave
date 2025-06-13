@@ -153,7 +153,4 @@ const ArtistsTable = () => {
 };
 
 export default ArtistsTable;
-<<<<<<< HEAD
 */
-=======
->>>>>>> d6279b3ef99e7144468ee8d6cf463f0d40a445dd
