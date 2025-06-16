@@ -143,4 +143,8 @@ export default function CompleteProfilePage() {
       </form>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 36bf03af77e895e2702573dc4983366fa558fd6e

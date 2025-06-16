@@ -159,7 +159,11 @@ const SignupPage = () => {
         >
           {step === "form"
             ? cooldown > 0
+<<<<<<< HEAD
               ? "Reintentar en ${cooldown}s"
+=======
+              ? `Reintentar en ${cooldown}s`
+>>>>>>> 36bf03af77e895e2702573dc4983366fa558fd6e
               : "Enviar código"
             : "Verificar y crear cuenta"}
         </button>
@@ -168,4 +172,8 @@ const SignupPage = () => {
   );
 };
 
+<<<<<<< HEAD
 export default SignupPage;
+=======
+export default SignupPage;
+>>>>>>> 36bf03af77e895e2702573dc4983366fa558fd6e

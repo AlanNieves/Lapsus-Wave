@@ -34,7 +34,7 @@ const startServer = async () => {
   // 🧁 Servir archivos subidos
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-  // 🛡 CORS
+  // 🛡️ CORS
   app.use(
     cors({
       origin: process.env.CLIENT_URL,

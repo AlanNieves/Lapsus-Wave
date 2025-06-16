@@ -21,7 +21,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		};
 
 		initAuth();
-		// ⚠ NO incluir user ni checkAuth en dependencias
+		// ⚠️ NO incluir `user` ni `checkAuth` en dependencias
 		// Solo se llama una vez al montar
 	}, []);
 
