@@ -1,7 +1,5 @@
-
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
-
 import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -10,13 +8,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const { initSocket, disconnectSocket } = useChatStore();
 	const [loading, setLoading] = useState(true);
 
+	// 1️⃣ Solo una vez al montar
 	useEffect(() => {
 		const initAuth = async () => {
 			try {
 				await checkAuth();
-
-				// Iniciar socket si hay usuario
-				if (user?._id) initSocket(user._id);
 			} catch (error) {
 				console.error("Error en AuthProvider:", error);
 			} finally {
@@ -25,9 +21,20 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		};
 
 		initAuth();
+		// ⚠ NO incluir user ni checkAuth en dependencias
+		// Solo se llama una vez al montar
+	}, []);
 
-		return () => disconnectSocket();
-	}, [checkAuth, user, initSocket, disconnectSocket]);
+	// 2️⃣ Escuchar cuando el usuario ya está cargado
+	useEffect(() => {
+		if (user?._id) {
+			initSocket(user._id);
+		}
+
+		return () => {
+			disconnectSocket();
+		};
+	}, [user, initSocket, disconnectSocket]);
 
 	if (loading) {
 		return (

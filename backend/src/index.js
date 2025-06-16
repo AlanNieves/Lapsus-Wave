@@ -7,10 +7,8 @@ import fs from "fs";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import cron from "node-cron";
-
 import { initializeSocket } from "./lib/socket.js";
 import { connectDB } from "./lib/db.js";
-
 import playlistRoutes from "./routes/playlist.routes.js";
 import userRoutes from "./routes/user.route.js";
 import adminRoutes from "./routes/admin.route.js";
@@ -19,7 +17,7 @@ import songRoutes from "./routes/song.route.js";
 import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
 import artistRoutes from "./routes/artist.routes.js";
-
+import tokenRoutes from "./routes/token.route.js";
 dotenv.config();
 
 const __dirname = path.resolve();
@@ -27,83 +25,91 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const httpServer = createServer(app);
-initializeSocket(httpServer);
 
-// 🧁 Servir archivos subidos
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// 👇 metemos todo en una función async para poder usar await
+const startServer = async () => {
+  
+  initializeSocket(httpServer); // 🧠 WebSockets
 
-// 🛡️ CORS
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL, // o 5173 si usas Vite
-    credentials: true,
-  })
-);
+  // 🧁 Servir archivos subidos
+  app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 🍪 Parsear cookies
-app.use(cookieParser());
+  // 🛡 CORS
+  app.use(
+    cors({
+      origin: process.env.CLIENT_URL,
+      credentials: true,
+    })
+  );
 
-// 🧠 Parsear JSON
-app.use(express.json());
+  // 🍪 Cookies y JSON
+  app.use(cookieParser());
+  app.use(express.json());
 
-// 📁 Subidas de archivos
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/",
-    createParentPath: true,
-    limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB
-    },
-  })
-);
+  // 📁 Archivos
+  app.use(
+    fileUpload({
+      useTempFiles: true,
+      tempFileDir: "/tmp/",
+      createParentPath: true,
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
+    })
+  );
 
-// 🔁 Rutas API
-app.use("/api/artists", artistRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/auth", authRoutes); // ← Aquí ya entra tu sistema MERN
-app.use("/api/songs", songRoutes);
-app.use("/api/albums", albumRoutes);
-app.use("/api/stats", statRoutes);
-app.use("/api/playlists", playlistRoutes);
+  // 🔁 Rutas
+  app.use("/api/artists", artistRoutes);
+  app.use("/api/users", userRoutes);
+  app.use("/api/admin", adminRoutes);
+  app.use("/api/auth", authRoutes);
+  app.use("/api/songs", songRoutes);
+  app.use("/api/albums", albumRoutes);
+  app.use("/api/stats", statRoutes);
+  app.use("/api/playlists", playlistRoutes);
+  app.use("/api/token", tokenRoutes);
 
-// 🧹 Limpieza de temporales
-const tempDir = path.join(process.cwd(), "tmp");
-cron.schedule("0 * * * *", () => {
-  if (fs.existsSync(tempDir)) {
-    fs.readdir(tempDir, (err, files) => {
-      if (err) return;
-      for (const file of files) {
-        fs.unlink(path.join(tempDir, file), () => {});
-      }
+  // 🧹 Cron para limpiar archivos temporales
+  const tempDir = path.join(process.cwd(), "tmp");
+  cron.schedule("0 * * * *", () => {
+    if (fs.existsSync(tempDir)) {
+      fs.readdir(tempDir, (err, files) => {
+        if (err) return;
+        for (const file of files) {
+          fs.unlink(path.join(tempDir, file), () => {});
+        }
+      });
+    }
+  });
+
+  // 🌍 Servir frontend en producción
+  if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "../frontend/dist")));
+    app.get("*", (req, res) => {
+      res.sendFile(
+        path.resolve(__dirname, "../frontend", "dist", "index.html")
+      );
     });
   }
-});
 
-// 🌍 Servir frontend en producción
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "../frontend", "dist", "index.html"));
+  // 🧨 Manejo de errores
+  app.use((err, req, res, next) => {
+    res.status(500).json({
+      message:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
   });
-}
 
-// 🧨 Manejador global de errores
-app.use((err, req, res, next) => {
-  res.status(500).json({
-    message:
-      process.env.NODE_ENV === "production"
-        ? "Internal server error"
-        : err.message,
+  console.log("Entorno:", process.env.NODE_ENV);
+  console.log("Frontend permitido:", process.env.CLIENT_URL);
+
+  // 🚀 Iniciar servidor
+  httpServer.listen(PORT, () => {
+    console.log("Servidor corriendo en el puerto " + PORT);
+    connectDB(); // conectar a Mongo
   });
-});
+};
 
-console.log("Entorno:", process.env.NODE_ENV);
-console.log("Frontend permitido:", process.env.CLIENT_URL);
-
-// 🚀 Iniciar servidor
-httpServer.listen(PORT, () => {
-  console.log("Servidor corriendo en el puerto " + PORT);
-  connectDB();
-});
+startServer(); // 👈 ejecutamos la función

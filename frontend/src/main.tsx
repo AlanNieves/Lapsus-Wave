@@ -18,8 +18,4 @@ createRoot(document.getElementById("root")!).render(
       </BrowserRouter>
     </GoogleOAuthProvider>
   </StrictMode>
-<<<<<<< HEAD
 );
-=======
-);
->>>>>>> 46a697b5dd65c6b10b5e1926daf29f6622536fad

@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
-
-
+import CompleteProfilePage from "./pages/completeProfile/CompleteProfilePage";
+import SignupPage from "./pages/signup/SignupPage";
 import MainLayout from "./layout/MainLayout";
-import ChatPage from "./pages/chat/ChatPage";
+
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
 import PlaylistPage from "./pages/playlist/PlaylistPage";
@@ -35,15 +35,16 @@ function App() {
             
                 <Route path='/admin' element={<AdminPage />} />
 
+                <Route path="/signup" element={<SignupPage />} />
 
 				<Route element={<MainLayout />}>
 					<Route path='/' element={<HomePage />} />
-					<Route path='/chat' element={<ChatPage />} />
+				
 					<Route path='/albums/:albumId' element={<AlbumPage />} />
 					<Route path="/playlists/:id" element={<PlaylistPage />} />
 					<Route path="/artist/:artistId" element={<ArtistPage />} />
                     <Route path="/playlists" element={<AllPlaylistsPage />} />
-
+                    <Route path="/complete-profile" element={<CompleteProfilePage />} />
 					<Route path='*' element={<NotFoundPage />} />
 					
 				</Route>
