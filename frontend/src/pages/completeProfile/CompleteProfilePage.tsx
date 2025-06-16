@@ -47,12 +47,14 @@ export default function CompleteProfilePage() {
       const payload = {
         nickname: form.nickname,
         edad: form.edad,
-        phone: form.phone,
-        ...(user?.authProvider === "local" && { email: form.email }),
-        ...(user?.authProvider === "local" && { tokenDelivery: form.tokenDelivery }),
+        ...(user?.authProvider === "google" && { phone: form.phone }),
+        ...(user?.authProvider === "local" && {
+          email: form.email,
+          tokenDelivery: form.tokenDelivery,
+        }),
       };
 
-        await axios.post("/api/auth/complete-profile", payload, {
+      await axios.post("/api/auth/complete-profile", payload, {
         withCredentials: true,
       });
 
@@ -105,15 +107,17 @@ export default function CompleteProfilePage() {
           className="p-2 rounded w-full text-black"
         />
 
-        <input
-          type="tel"
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          placeholder="Teléfono"
-          required
-          className="p-2 rounded w-full text-black"
-        />
+        {user.authProvider === "google" && (
+          <input
+            type="tel"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="Teléfono"
+            required
+            className="p-2 rounded w-full text-black"
+          />
+        )}
 
         {user.authProvider === "local" && (
           <div className="text-sm text-zinc-200">

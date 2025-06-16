@@ -39,13 +39,14 @@ const userSchema = new mongoose.Schema(
     googleId: String,
     facebookId: String,
     appleId: String,
+    lapsusId: String,
     avatar: {
       type: String,
       default: "https://ui-avatars.com/api/?name=User&background=random",
     },
     authProvider: {
       type: String,
-      enum: ["local", "google", "facebook", "apple"],
+      enum: ["local", "google", "facebook", "apple", "lapsus-wave"],
       required: true,
     },
     isProfileComplete: {
@@ -60,7 +61,7 @@ const userSchema = new mongoose.Schema(
 
 // Hash de contraseña antes de guardar (solo si es 'local')
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password") && this.authProvider === "local") {
+  if (this.isModified("password") && this.password) {
     this.password = await bcrypt.hash(this.password, 12);
   }
   next();

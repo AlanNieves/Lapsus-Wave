@@ -6,16 +6,18 @@ import { verifyGoogleToken } from "../utils/googleAuth.js";
 
 // ✅ SIGNUP LOCAL
 export const signup = async (req, res) => {
-  const { email, password, fullName, imageUrl } = req.body;
+  const { email, password, fullName, nickname, phone } = req.body;
 
   try {
-    if (!email || !password || !fullName || !imageUrl) {
+    if (!email || !password || !fullName || !nickname || !phone ) {
       throw new Error("Todos los campos son obligatorios");
     }
 
-    const userAlreadyExists = await User.findOne({ email });
+    const userAlreadyExists = await User.findOne({
+		 $or: [{email}, {nickname}, {phone}], 
+	});
     if (userAlreadyExists) {
-      return res.status(400).json({ success: false, message: "El usuario ya existe" });
+      return res.status(400).json({ success: false, message: "El usuario ya existe con ese correo, nickname o telefono" });
     }
 
     const hashedPassword = await bcryptjs.hash(password, 10);
@@ -25,8 +27,9 @@ export const signup = async (req, res) => {
       email,
       password: hashedPassword,
       fullName,
-      imageUrl,
-      authProvider: "local",
+	  nickname,
+      phone,
+      authProvider: "lapsus-wave",
       verificationToken,
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
       isProfileComplete: false,
