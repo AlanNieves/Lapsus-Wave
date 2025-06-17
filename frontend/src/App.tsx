@@ -14,6 +14,8 @@ import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
 import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
 import LoginPage from "./pages/login/LoginPage";
+import UniversalSearch from "./components/UniversalSearch";
+
 function App() {
     useEffect(() => {
         loadCastSdk()
@@ -45,6 +47,7 @@ function App() {
 					<Route path="/artist/:artistId" element={<ArtistPage />} />
                     <Route path="/playlists" element={<AllPlaylistsPage />} />
                     <Route path="/complete-profile" element={<CompleteProfilePage />} />
+                    <Route path="/universal-search" element={<UniversalSearch />} />
 					<Route path='*' element={<NotFoundPage />} />
 					
 				</Route>

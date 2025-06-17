@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
-import { Album, Playlist, Song, Stats } from "@/types";
+import { Album, Playlist, Song, Stats, Artist } from "@/types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
@@ -15,6 +15,8 @@ interface MusicStore {
 	trendingSongs: Song[];
 	stats: Stats;
 	playlists: Playlist[];
+	artists: Artist[];
+	
 	
 	
 
@@ -25,6 +27,7 @@ interface MusicStore {
 	fetchTrendingSongs: () => Promise<void>;
 	fetchStats: () => Promise<void>;
 	fetchSongs: () => Promise<void>;
+	fetchArtists: () => Promise<void>;
 	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
 }
@@ -46,6 +49,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	},
 	currentPlaylist: null,
 	playlists: [],
+	artists: [],
 
 	deleteSong: async (id) => {
 		set({ isLoading: true, error: null });
@@ -168,4 +172,22 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set({ isLoading: false });
 		}
 	},
+
+	fetchArtists: async () => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get("/artists");
+			set({ artists: response.data });
+		} catch (error: any) {
+			set({ error: error.response.data.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
 }));
+
+interface Artist {
+  _id: string;
+  name: string;
+  image?: string;
+}
