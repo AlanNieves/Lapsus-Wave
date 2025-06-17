@@ -1,3 +1,4 @@
+
 import { motion, AnimatePresence } from "framer-motion";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useEffect, useRef, useState } from "react";
@@ -124,65 +125,39 @@ export const ExpandedPlayerView = () => {
             LAPSUS INNOVATIONS
           </div>
 
-          {/* Efecto de agua con SVG */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-            <filter id="waterEffect" x="0" y="0" width="100%" height="100%">
-              <feTurbulence 
-                type="fractalNoise" 
-                baseFrequency="0.02 0.03" 
-                numOctaves="3" 
-                seed="50"
-              >
-                <animate
-                  attributeName="baseFrequency"
-                  dur="20s"
-                  values="0.02 0.03; 0.03 0.04; 0.02 0.03"
-                  repeatCount="indefinite"
-                />
+          {/* Filtro de agua para uso posterior */}
+          <svg className="absolute w-0 h-0">
+            <filter id="waterTextEffect" x="0%" y="0%" width="100%" height="100%">
+              <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="3" seed="8">
+                <animate attributeName="baseFrequency" dur="12s" values="0.02;0.03;0.02" repeatCount="indefinite" />
               </feTurbulence>
-              <feDisplacementMap 
-                in="SourceGraphic" 
-                scale="15" 
-                xChannelSelector="R" 
-                yChannelSelector="G"
-              />
+              <feDisplacementMap in="SourceGraphic" scale="30" />
             </filter>
           </svg>
 
-          {/* Texto "LAPSUS" con efecto agua intenso */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+        
+          <motion.svg
+            className="absolute inset-0 w-full h-full z-10 pointer-events-none flex items-center justify-center"
+            viewBox="0 0 1600 400"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.2 }}
+            animate={{ opacity: 0.45 }}
             transition={{ duration: 2 }}
           >
-            <motion.h1 
-              className="text-[18rem] font-black tracking-tighter bg-clip-text"
-              style={{
-                backgroundImage: `
-                  linear-gradient(
-                    45deg,
-                    rgba(164, 77, 121, 0.5),
-                    rgba(255, 255, 255, 0.7),
-                    rgba(164, 77, 121, 0.5)
-                  )`,
-                WebkitTextFillColor: 'transparent',
-                backgroundSize: '300% 300%',
-                filter: 'url(#waterEffect) blur(0.8px)'
-              }}
-              animate={{
-                backgroundPosition: ['0% 0%', '100% 100%'],
-                scale: [1, 1.02]
-              }}
-              transition={{
-                duration: 12,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+            <text
+              x="50%"
+              y="50%"
+              dominantBaseline="middle"
+              textAnchor="middle"
+              fontSize="250"
+              fontWeight="900"
+              fill="white"
+              fillOpacity="0.2"
+              filter="url(#waterTextEffect)"
+              style={{ fontFamily: 'sans-serif', letterSpacing: '0.1em' }}
             >
               LAPSUS
-            </motion.h1>
-          </motion.div>
+            </text>
+          </motion.svg>
 
           {/* Efecto de luz pulsante */}
           <motion.div
@@ -199,7 +174,7 @@ export const ExpandedPlayerView = () => {
               background: `radial-gradient(circle, rgba(164, 77, 121, 0.3) 0%, rgba(164, 77, 121, 0) 70%)`,
             }}
           />
-          
+
           {/* Contenido principal */}
           <div className="flex flex-col items-center gap-4 z-10 mt-20">
             <motion.img
