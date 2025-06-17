@@ -65,3 +65,14 @@ export interface Playlist {
   artistId: string;
   songs?: Song[];
 }
+
+export interface Review {
+  _id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+  songId?: string;
+  albumId?: string;
+}

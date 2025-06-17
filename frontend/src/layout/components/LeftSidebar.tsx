@@ -11,20 +11,20 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/stores/useSearchStore";
-
+import { useMusicStore } from "@/stores/useMusicStore";
 
 const navItems = [
   { name: "Home", icon: Home, path: "/" },
   { name: "Messages", icon: MessageCircle, path: "/chat" },
   { name: "Profile", icon: User, path: "/profile" },
-  { name: "Reviews", icon: Star, path: "/reviews" },
+  { name: "Reviews", icon: Star, path: "/reviews", badge: true },
   { name: "Your Library", icon: Library, path: "/library" },
   { name: "Playlists", icon: ListMusic, path: "/playlists" },
 ];
 
 const LeftSidebar = () => {
   const location = useLocation();
-
+  const { reviews } = useMusicStore();
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
@@ -171,8 +171,13 @@ const LeftSidebar = () => {
               <Link
                 to={item.path}
                 key={item.name}
-                className="w-full group flex items-center justify-center"
+                className="w-full group flex items-center justify-center relative"
               >
+                {item.badge && reviews.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {reviews.length}
+                  </span>
+                )}
                 <div
                   className={cn(
                     "relative flex flex-col items-center justify-center w-full h-11 md:h-14 transition-all duration-600 cursor-pointer",

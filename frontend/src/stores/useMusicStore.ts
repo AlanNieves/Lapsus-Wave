@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
-import { Album, Playlist, Song, Stats, Artist } from "@/types";
+import { Album, Playlist, Song, Stats, Artist, Review } from "@/types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
@@ -16,6 +16,7 @@ interface MusicStore {
 	stats: Stats;
 	playlists: Playlist[];
 	artists: Artist[];
+	reviews: Review[];
 	
 	
 	
@@ -28,8 +29,10 @@ interface MusicStore {
 	fetchStats: () => Promise<void>;
 	fetchSongs: () => Promise<void>;
 	fetchArtists: () => Promise<void>;
+	fetchReviews: () => Promise<void>;
 	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
+	addReview: (review: Omit<Review, '_id' | 'createdAt'>) => Promise<void>;
 }
 
 export const useMusicStore = create<MusicStore>((set) => ({
@@ -50,6 +53,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	currentPlaylist: null,
 	playlists: [],
 	artists: [],
+	reviews: [],
 
 	deleteSong: async (id) => {
 		set({ isLoading: true, error: null });
@@ -184,10 +188,49 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set({ isLoading: false });
 		}
 	},
+
+	fetchReviews: async () => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get("/reviews");
+			set({ reviews: response.data });
+		} catch (error: any) {
+			set({ error: error.response.data.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+
+	addReview: async (review) => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.post("/reviews", review);
+			set((state) => ({
+				reviews: [...state.reviews, response.data],
+			}));
+			toast.success("Review added successfully");
+		} catch (error: any) {
+			set({ error: error.response.data.message });
+			toast.error("Failed to add review: " + error.message);
+		} finally {
+			set({ isLoading: false });
+		}
+	},
 }));
 
 interface Artist {
   _id: string;
   name: string;
   image?: string;
+}
+
+export interface Review {
+  _id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+  songId?: string;
+  albumId?: string;
 }
