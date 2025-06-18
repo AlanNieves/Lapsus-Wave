@@ -6,8 +6,9 @@ import MainLayout from "./layout/MainLayout";
 import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
-import PlaylistPage from "./pages/playlist/PlaylistPage";
+import PlaylistPage from "./pages/playlist/playlistPage";
 import ArtistPage from "./pages/artist/ArtistPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 import { useEffect } from "react";
 import { loadCastSdk } from "@/utils/cast";
 import { Toaster } from "react-hot-toast";
@@ -44,6 +45,7 @@ function App() {
 					<Route path="/playlists/:id" element={<PlaylistPage />} />
 					<Route path="/artist/:artistId" element={<ArtistPage />} />
                     <Route path="/playlists" element={<AllPlaylistsPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/complete-profile" element={<CompleteProfilePage />} />
 					<Route path='*' element={<NotFoundPage />} />
 					

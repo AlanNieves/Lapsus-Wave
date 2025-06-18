@@ -6,7 +6,7 @@ const ChatHeader = () => {
 
 	if (!selectedUser) return null;
 
-	const isOnline = onlineUsers?.has?.(selectedUser._id);
+	/*const isOnline = onlineUsers?.has?.(selectedUser._id);*/
 	const userInitial = selectedUser?.fullName?.[0] ?? "U";
 
 	return (
@@ -19,7 +19,7 @@ const ChatHeader = () => {
 				<div>
 					<h2 className='font-medium'>{selectedUser.nickname ?? "Usuario"}</h2>
 					<p className='text-sm text-lapsus-700'>
-						{isOnline ? "Online" : "Offline"}
+						{onlineUsers.has(selectedUser._id) ? "Online" : "Offline"}
 					</p>
 				</div>
 			</div>

@@ -55,10 +55,10 @@ const UsersList = () => {
 										<div
 											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-1 ring-neutral-800
 													${
-														onlineUsers?.has(user._id)
-															? "bg-green-500"
-															: "bg-neutral-500"
-													}`}
+													onlineUsers.has(user._id)
+														? "bg-green-500"
+														: "bg-neutral-500"
+											}`}
 										/>
 									</div>
 

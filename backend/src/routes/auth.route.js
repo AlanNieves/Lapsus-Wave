@@ -1,36 +1,41 @@
 import express from "express";
 import {
-	signup,
-	login,
-	logout,
-	verifyEmail,
-	forgotPassword,
-	resetPassword,
-	checkAuth,
-    loginWithGoogle,
-	completeProfile
+  signup,
+  login,
+  logout,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  checkAuth,
+  loginWithGoogle,
+  completeProfile,
 } from "../controller/auth.controller.js";
-import { verifyToken } from "../middleware/verifyToken.js";
+
+import { completeSignup } from "../controller/signup.controller.js";
+import { verifyToken as verifyJWT } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-// ✅ Verificar autenticación con token
-router.get("/check-auth", verifyToken, checkAuth);
+// ✅ Verificación por JWT (para usuarios logueados)
+router.get("/check-auth", verifyJWT, checkAuth);
 
-// ✅ Registro / inicio / cierre de sesión
-router.post("/signup", signup);
+// ✅ Rutas clásicas
+router.post("/signup", signup); // ya no usarás esta si usas SMS
 router.post("/login", login);
 router.post("/google", loginWithGoogle);
 router.post("/logout", logout);
 
-// ✅ Verificación de correo
+// ✅ Verificación de correo (Google)
 router.post("/verify-email", verifyEmail);
 
-// ✅ Recuperación y reinicio de contraseña
+// ✅ Recuperación de contraseña
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
-router.post("/complete-profile", verifyToken, completeProfile);
+// ✅ Registro por token (Lapsus)
+router.post("/signup/complete", completeSignup);
 
+// ✅ Completar perfil (usuarios Google o Lapsus)
+router.post("/complete-profile", verifyJWT, completeProfile);
 
 export default router;

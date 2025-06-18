@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      sparse: true, // Permite que usuarios de Google no tengan email único si ya existe
+      sparse: true,
     },
     nickname: {
       type: String,
@@ -36,16 +36,36 @@ const userSchema = new mongoose.Schema(
       },
       minlength: 6,
     },
+
+    // IDs de proveedores sociales
     googleId: String,
     facebookId: String,
     appleId: String,
-    avatar: {
+    lapsusId: String,
+
+    // NUEVOS CAMPOS PARA PERFIL SOCIAL
+    image: {
       type: String,
       default: "https://ui-avatars.com/api/?name=User&background=random",
     },
+    bio: {
+      type: String,
+      default: "",
+    },
+    cover: {
+      type: String,
+      default: "", // o una URL por defecto si prefieres
+    },
+
+    tags: {
+      type: [String],
+      default: [],
+    },
+
+    // Seguridad
     authProvider: {
       type: String,
-      enum: ["local", "google", "facebook", "apple"],
+      enum: ["local", "google", "facebook", "apple", "lapsus-wave"],
       required: true,
     },
     isProfileComplete: {
@@ -58,9 +78,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Hash de contraseña antes de guardar (solo si es 'local')
+// Hash de contraseña si cambia
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password") && this.authProvider === "local") {
+  if (this.isModified("password") && this.password) {
     this.password = await bcrypt.hash(this.password, 12);
   }
   next();
