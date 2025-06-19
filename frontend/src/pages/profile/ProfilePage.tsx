@@ -17,6 +17,18 @@ interface User {
   cover?: string;
 }
 
+interface Post {
+  _id: string;
+  image: string;
+  description: string;
+  createdAt: string;
+  userId: {
+    _id: string;
+    nickname: string;
+    image?: string;
+  };
+}
+
 const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [nickname, setNickname] = useState("");
@@ -24,6 +36,9 @@ const ProfilePage = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [postImage, setPostImage] = useState<File | null>(null);
+  const [postDescription, setPostDescription] = useState("");
+  const [posts, setPosts] = useState<Post[]>([]);
 
   const inputFileRef = useRef<HTMLInputElement | null>(null);
   const inputCoverRef = useRef<HTMLInputElement | null>(null);
@@ -57,9 +72,21 @@ const ProfilePage = () => {
       }
     };
 
+    const fetchPosts = async () => {
+      try {
+        const { data } = await axios.get(`${BASE_URL}/posts`, {
+          withCredentials: true,
+        });
+        setPosts(data.filter((p: Post) => p.userId?._id === user?._id));
+      } catch (err) {
+        console.error("Error al cargar posts", err);
+      }
+    };
+
     fetchUser();
     fetchPlaylists();
-  }, [navigate, BASE_URL]);
+    fetchPosts();
+  }, [navigate, BASE_URL, user?._id]);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,7 +140,6 @@ const ProfilePage = () => {
       await axios.put(`${BASE_URL}/users/update`, { nickname, bio, tags }, {
         withCredentials: true,
       });
-
       setUser((prev) => (prev ? { ...prev, nickname, bio, tags } : prev));
       setIsEditing(false);
     } catch (err) {
@@ -121,10 +147,30 @@ const ProfilePage = () => {
     }
   };
 
+  const handleCreatePost = async () => {
+    if (!postImage) return;
+    const formData = new FormData();
+    formData.append("image", postImage);
+    formData.append("description", postDescription);
+    try {
+      await axios.post(`${BASE_URL}/posts`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setPostDescription("");
+      setPostImage(null);
+      alert("✅ Publicación creada");
+      const { data } = await axios.get(`${BASE_URL}/posts`, { withCredentials: true });
+      setPosts(data.filter((p: Post) => p.userId?._id === user?._id));
+    } catch (err) {
+      console.error("Error creando post", err);
+    }
+  };
+
   if (!user) return null;
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-[#2c0e25] via-[#1c0b1a] to-[#0f0f0f] text-white overflow-x-hidden">
+    <div className="w-full h-screen overflow-y-auto bg-gradient-to-b from-[#2c0e25] via-[#1c0b1a] to-[#0f0f0f] text-white overflow-x-hidden">
       <div className="relative w-full h-64">
         <img
           src={user.cover || "/default-cover.jpg"}
@@ -226,7 +272,6 @@ const ProfilePage = () => {
                   )}
                 </Badge>
               ))}
-
               {isEditing && (
                 <input
                   type="text"
@@ -239,9 +284,60 @@ const ProfilePage = () => {
             </div>
 
             <p className="text-xs text-lapsus-400 mt-4">
-              Última canción escuchada:{" "}
-              <span className="text-lapsus-500 font-semibold">{user.lastSong || "N/A"}</span>
+              Última canción escuchada: <span className="text-lapsus-500 font-semibold">{user.lastSong || "N/A"}</span>
             </p>
+
+            {/* Crear publicación */}
+            <div className="mt-8 w-full">
+              <h3 className="text-lg font-bold mb-2">Crear publicación</h3>
+              <div className="bg-black/20 p-4 rounded-xl border border-white/10 w-full">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPostImage(e.target.files?.[0] || null)}
+                  className="mb-2 text-sm text-white"
+                />
+                <textarea
+                  value={postDescription}
+                  onChange={(e) => setPostDescription(e.target.value)}
+                  placeholder="Escribe una descripción..."
+                  className="w-full bg-transparent border-b border-lapsus-300 text-sm text-white mb-2 outline-none"
+                />
+                <Button
+                  onClick={handleCreatePost}
+                  disabled={!postImage}
+                  className="bg-[#A64D79] hover:bg-[#6A1E55]"
+                >
+                  Publicar
+                </Button>
+              </div>
+            </div>
+
+            {/* Ver publicaciones */}
+            <div className="mt-8">
+              <h3 className="text-lg font-bold mb-4">Mis publicaciones</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-2">
+                {posts.map((post) => (
+                  <div key={post._id} className="bg-black/20 p-4 rounded-lg border border-white/10">
+                    <div className="flex items-center gap-3 mb-2">
+                      <img
+                        src={post.userId.image || "/default-avatar.png"}
+                        alt="User"
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                      <p className="text-sm font-semibold text-white">{post.userId.nickname}</p>
+                    </div>
+                    <img
+                      src={post.image}
+                      alt="Post"
+                      className="w-full h-60 object-cover rounded mb-2"
+                    />
+                    <p className="text-sm text-white">{post.description}</p>
+                    <p className="text-xs text-gray-400 mt-1">{new Date(post.createdAt).toLocaleString()}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

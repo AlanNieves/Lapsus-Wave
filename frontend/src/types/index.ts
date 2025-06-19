@@ -65,3 +65,15 @@ export interface Playlist {
   artistId: string;
   songs?: Song[];
 }
+
+export interface Post {
+  _id: string;
+  image: string;
+  description: string;
+  createdAt: string;
+  userId: {
+    _id: string;
+    nickname: string;
+    image?: string;
+  };
+}
