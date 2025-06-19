@@ -1,6 +1,7 @@
+// src/lib/axios.ts
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-	baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
-	withCredentials: true, // ✅ esto es lo que faltaba
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api", // ✅ sin /api
+  withCredentials: true,
 });

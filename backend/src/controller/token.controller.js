@@ -1,9 +1,10 @@
 // src/controller/token.controller.js
 import { saveToken, verifyToken as checkToken, deleteToken } from "../utils/tokenStore.js";
 import { sendVerificationSMS } from "../utils/sendSms.js";
+import { sendVerificationEmail } from "../utils/sendEmail.js"; // ✅ Importación agregada
 
 /**
- * Envía un token por SMS (verificación previa al registro)
+ * Envía un token por SMS o correo electrónico (verificación previa al registro)
  * @route POST /api/token/send
  */
 export const sendToken = async (req, res) => {
@@ -14,17 +15,19 @@ export const sendToken = async (req, res) => {
   }
 
   try {
-    const token = Math.floor(100000 + Math.random() * 900000).toString();
+    const token = Math.floor(100000 + Math.random() * 900000).toString(); // Token de 6 dígitos
     await saveToken(key, token);
 
     if (method === "phone") {
       await sendVerificationSMS(key, token);
+    } else if (method === "email") {
+      await sendVerificationEmail(key, token);
     }
 
     res.status(200).json({ message: "Token enviado correctamente" });
   } catch (error) {
     console.error("Error en sendToken:", error);
-    res.status(500).json({ message: "Error al enviar token", error });
+    res.status(500).json({ message: "Error al enviar token", error: error.message });
   }
 };
 
@@ -48,6 +51,6 @@ export const verifyToken = async (req, res) => {
     res.status(200).json({ message: "Token válido" });
   } catch (error) {
     console.error("Error en verifyToken:", error);
-    res.status(500).json({ message: "Error al verificar token", error });
+    res.status(500).json({ message: "Error al verificar token", error: error.message });
   }
 };
