@@ -56,7 +56,7 @@ const startServer = async () => {
       createParentPath: true,
       limits: {
         fileSize: 10 * 1024 * 1024,
-      },
+      },  
     })
   );
 
@@ -64,7 +64,7 @@ const startServer = async () => {
   app.use("/api/artists", artistRoutes);
   app.use("/api/users", userRoutes);
   app.use("/api/admin", adminRoutes);
-  app.use("/api/auth", authRoutes);
+  app.use("/api", authRoutes);
   app.use("/api/songs", songRoutes);
   app.use("/api/albums", albumRoutes);
   app.use("/api/stats", statRoutes);

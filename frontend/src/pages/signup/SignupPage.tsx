@@ -1,35 +1,55 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { axiosInstance } from "@/lib/axios";
 
 const SignupPage = () => {
   const [form, setForm] = useState({
-    fullName: "",
     email: "",
     password: "",
     nickname: "",
     phone: "",
+    age: "",
+    tokenDelivery: "phone", // "phone" o "email"
   });
 
   const [step, setStep] = useState<"form" | "verify">("form");
   const [token, setToken] = useState("");
   const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const { setUser } = useAuthStore();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleInitiateSignup = async () => {
+  const validateUserData = async () => {
     try {
-      await axios.post("/api/token/send", {
-        key: "+521" + form.phone,
-        method: "phone",
+      const res = await axiosInstance.post("/auth/validate-user", {
+        email: form.email,
+        phone: "+521" + form.phone,
+        nickname: form.nickname,
       });
-      toast.success("Código enviado por SMS");
+      return res.data.success;
+    } catch (err: any) {
+      const errors = err.response?.data?.errors || {};
+      Object.values(errors).forEach((msg) => toast.error(msg as string));
+      return false;
+    }
+  };
+
+  const handleInitiateSignup = async () => {
+    const isValid = await validateUserData();
+    if (!isValid) return;
+
+    try {
+      await axiosInstance.post("/token/send", {
+        key: form.tokenDelivery === "phone" ? "+521" + form.phone : form.email,
+        method: form.tokenDelivery,
+      });
+
+      toast.success(`Código enviado por ${form.tokenDelivery === "phone" ? "SMS" : "correo"}`);
       setStep("verify");
       setCooldown(30);
     } catch (err: any) {
@@ -39,20 +59,43 @@ const SignupPage = () => {
 
   const handleCompleteSignup = async () => {
     try {
-      await axios.post("/api/auth/signup/complete", {
+      await axiosInstance.post("/auth/signup/complete", {
         phone: "+521" + form.phone,
         email: form.email,
         nickname: form.nickname,
         password: form.password,
-        age: 22,
-        verifyBy: "phone",
+        age: parseInt(form.age),
+        verifyBy: form.tokenDelivery,
         token,
       });
 
-      // ✅ Login automático usando email y password
-      await login(form.email, form.password);
+      const waitForUserToExist = async (email: string, maxRetries = 5) => {
+        let retries = 0;
+        while (retries < maxRetries) {
+          try {
+            const res = await axiosInstance.post("/auth/validate-user", {
+              email,
+              mode: "check",
+            });
+            if (res.data.exists) return true;
+          } catch (err) {
+  console.error("Error al validar usuario:", err);
+}
+          await new Promise((r) => setTimeout(r, 500 + 300 * retries));
+          retries++;
+        }
+        return false;
+      };
 
-      toast.success("Usuario registrado e iniciado sesión");
+      const exists = await waitForUserToExist(form.email);
+      if (!exists) {
+        toast.error("Tu cuenta aún no está disponible. Intenta más tarde.");
+        return;
+      }
+
+      const authRes = await axiosInstance.get("/auth/check-auth");
+      setUser(authRes.data.user);
+      toast.success("Cuenta creada e iniciada sesión correctamente");
       navigate("/");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Token inválido o expirado");
@@ -84,9 +127,7 @@ const SignupPage = () => {
       >
         <h2 className="text-3xl font-bold text-center mb-4">
           {step === "form" ? (
-            <>
-              Crea tu cuenta en <span className="text-violet-400">Lapsus</span>
-            </>
+            <>Crea tu cuenta en <span className="text-violet-400">Lapsus</span></>
           ) : (
             <>Verifica tu código</>
           )}
@@ -94,62 +135,23 @@ const SignupPage = () => {
 
         {step === "form" ? (
           <>
-            <input
-              type="text"
-              name="fullName"
-              placeholder="Nombre completo"
-              value={form.fullName}
-              onChange={handleChange}
-              required
-              className="p-2 w-full rounded bg-zinc-100 text-black"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Correo electrónico"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="p-2 w-full rounded bg-zinc-100 text-black"
-            />
-            <input
-              type="text"
-              name="phone"
-              placeholder="Número telefónico (sin +52)"
-              value={form.phone}
-              onChange={handleChange}
-              required
-              className="p-2 w-full rounded bg-zinc-100 text-black"
-            />
-            <input
-              type="text"
-              name="nickname"
-              placeholder="Nickname (único)"
-              value={form.nickname}
-              onChange={handleChange}
-              required
-              className="p-2 w-full rounded bg-zinc-100 text-black"
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="Contraseña"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="p-2 w-full rounded bg-zinc-100 text-black"
-            />
+            <input type="email" name="email" placeholder="Correo electrónico" value={form.email} onChange={handleChange} required className="p-2 w-full rounded bg-zinc-100 text-black" />
+            <input type="text" name="phone" placeholder="Número telefónico (sin +52)" value={form.phone} onChange={handleChange} required className="p-2 w-full rounded bg-zinc-100 text-black" />
+            <input type="text" name="nickname" placeholder="Nickname (único)" value={form.nickname} onChange={handleChange} required className="p-2 w-full rounded bg-zinc-100 text-black" />
+            <input type="password" name="password" placeholder="Contraseña" value={form.password} onChange={handleChange} required className="p-2 w-full rounded bg-zinc-100 text-black" />
+            <input type="number" name="age" placeholder="Edad" value={form.age} onChange={handleChange} required className="p-2 w-full rounded bg-zinc-100 text-black" />
+
+            <div className="text-sm text-zinc-300">
+              <label className="block mb-1">¿Cómo deseas recibir tu token?</label>
+              <select name="tokenDelivery" value={form.tokenDelivery} onChange={handleChange} className="p-2 w-full rounded bg-zinc-900 text-white">
+                <option value="phone">Por SMS</option>
+                <option value="email">Por correo</option>
+              </select>
+            </div>
           </>
         ) : (
           <>
-            <input
-              type="text"
-              placeholder="Código de verificación (SMS)"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              required
-              className="p-2 w-full rounded bg-zinc-100 text-black"
-            />
+            <input type="text" placeholder={`Código recibido por ${form.tokenDelivery === "phone" ? "SMS" : "correo"}`} value={token} onChange={(e) => setToken(e.target.value)} required className="p-2 w-full rounded bg-zinc-100 text-black" />
           </>
         )}
 

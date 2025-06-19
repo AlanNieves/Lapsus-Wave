@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  signup,
   login,
   logout,
   verifyEmail,
@@ -9,33 +8,35 @@ import {
   checkAuth,
   loginWithGoogle,
   completeProfile,
+  validateUserData
 } from "../controller/auth.controller.js";
 
-import { completeSignup } from "../controller/signup.controller.js";
+import { completeSignup, initiateSignup } from "../controller/signup.controller.js";
 import { verifyToken as verifyJWT } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-// ✅ Verificación por JWT (para usuarios logueados)
-router.get("/check-auth", verifyJWT, checkAuth);
+// ✅ Autenticación
+router.post("/auth/login", login);
+router.post("/auth/google", loginWithGoogle);
+router.post("/auth/logout", logout);
 
-// ✅ Rutas clásicas
-router.post("/signup", signup); // ya no usarás esta si usas SMS
-router.post("/login", login);
-router.post("/google", loginWithGoogle);
-router.post("/logout", logout);
+// ✅ Check de sesión
+router.get("/auth/check-auth", verifyJWT, checkAuth);
 
-// ✅ Verificación de correo (Google)
-router.post("/verify-email", verifyEmail);
+// ✅ Registro por token
+router.post("/auth/signup/initiate", initiateSignup);
+router.post("/auth/signup/complete", completeSignup);
+
+// ✅ Verificación de datos / correo
+router.post("/auth/validate-user", validateUserData);
+router.post("/auth/verify-email", verifyEmail);
 
 // ✅ Recuperación de contraseña
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password/:token", resetPassword);
+router.post("/auth/forgot-password", forgotPassword);
+router.post("/auth/reset-password/:token", resetPassword);
 
-// ✅ Registro por token (Lapsus)
-router.post("/signup/complete", completeSignup);
-
-// ✅ Completar perfil (usuarios Google o Lapsus)
-router.post("/complete-profile", verifyJWT, completeProfile);
+// ✅ Completar perfil
+router.post("/auth/complete-profile", verifyJWT, completeProfile);
 
 export default router;

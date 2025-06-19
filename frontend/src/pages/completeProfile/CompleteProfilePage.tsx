@@ -1,21 +1,29 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import {
+  checkAuth,
+  completeProfile,
+} from "@/services/auth.service";
 
 interface UserData {
-  authProvider: "google" | "local";
+  authProvider: "google" | "lapsus-wave";
   email?: string;
 }
 
 export default function CompleteProfilePage() {
   const [user, setUser] = useState<UserData | null>(null);
-  const [form, setForm] = useState({
+
+  const [form, setForm] = useState<{
+    nickname: string;
+    age: string;
+    phone: string;
+    tokenDelivery: "phone" | "email";
+  }>({
     nickname: "",
-    edad: "",
+    age: "",
     phone: "",
-    email: "",
-    tokenDelivery: "email", // "email" o "phone"
+    tokenDelivery: "email",
   });
 
   const navigate = useNavigate();
@@ -23,43 +31,49 @@ export default function CompleteProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data } = await axios.get("/api/auth/check-auth", { withCredentials: true });
+        const { data } = await checkAuth();
         setUser(data.user);
-        setForm((prev) => ({
-          ...prev,
-          email: data.user.email || "",
-        }));
       } catch (err) {
         toast.error("Error al cargar el perfil"+err);
+        navigate("/login");
       }
     };
 
     fetchUser();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const payload = {
-        nickname: form.nickname,
-        edad: form.edad,
-        ...(user?.authProvider === "google" && { phone: form.phone }),
-        ...(user?.authProvider === "local" && {
-          email: form.email,
-          tokenDelivery: form.tokenDelivery,
-        }),
+      const payload: {
+        nickname: string;
+        age: number;
+        phone?: string;
+        tokenDelivery?: "phone" | "email";
+      } = {
+        nickname: form.nickname.trim(),
+        age: Number(form.age),
       };
 
-      await axios.post("/api/auth/complete-profile", payload, {
-        withCredentials: true,
-      });
+      if (user?.authProvider === "google") {
+        payload.phone = form.phone.trim();
+      }
+
+      if (user?.authProvider === "lapsus-wave") {
+        payload.tokenDelivery = form.tokenDelivery;
+      }
+
+      await completeProfile(payload);
 
       toast.success("Perfil completado correctamente");
-      navigate("/");
+      navigate("/home");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Error al completar perfil");
     }
@@ -68,24 +82,16 @@ export default function CompleteProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-zinc-950 flex items-center justify-center px-4">
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-black via-zinc-900 to-zinc-950 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-violet-600/10 via-transparent to-black animate-pulse-slow"></div>
+
       <form
         onSubmit={handleSubmit}
-        className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8 max-w-md w-full shadow-lg text-white space-y-4"
+        className="relative z-10 w-full max-w-md p-8 rounded-2xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white space-y-5"
       >
-        <h2 className="text-2xl font-bold text-center">Completa tu perfil</h2>
-
-        {user.authProvider === "local" && (
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Correo electrónico"
-            required
-            className="p-2 rounded w-full text-black"
-          />
-        )}
+        <h2 className="text-3xl font-bold text-center tracking-wide mb-4">
+          Completa tu perfil
+        </h2>
 
         <input
           type="text"
@@ -94,17 +100,17 @@ export default function CompleteProfilePage() {
           onChange={handleChange}
           placeholder="Nickname único"
           required
-          className="p-2 rounded w-full text-black"
+          className="w-full p-3 rounded-lg bg-zinc-900/80 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 placeholder-zinc-400"
         />
 
         <input
           type="number"
-          name="edad"
-          value={form.edad}
+          name="age"
+          value={form.age}
           onChange={handleChange}
           placeholder="Edad"
           required
-          className="p-2 rounded w-full text-black"
+          className="w-full p-3 rounded-lg bg-zinc-900/80 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 placeholder-zinc-400"
         />
 
         {user.authProvider === "google" && (
@@ -115,18 +121,18 @@ export default function CompleteProfilePage() {
             onChange={handleChange}
             placeholder="Teléfono"
             required
-            className="p-2 rounded w-full text-black"
+            className="w-full p-3 rounded-lg bg-zinc-900/80 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 placeholder-zinc-400"
           />
         )}
 
-        {user.authProvider === "local" && (
-          <div className="text-sm text-zinc-200">
+        {user.authProvider === "lapsus-wave" && (
+          <div className="text-sm text-zinc-300">
             ¿Cómo deseas recibir tu token de autenticación?
             <select
               name="tokenDelivery"
               value={form.tokenDelivery}
               onChange={handleChange}
-              className="mt-2 p-2 rounded w-full text-black"
+              className="mt-2 w-full p-3 rounded-lg bg-zinc-900/80 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 text-white"
             >
               <option value="email">Por correo</option>
               <option value="phone">Por teléfono</option>
@@ -136,7 +142,7 @@ export default function CompleteProfilePage() {
 
         <button
           type="submit"
-          className="w-full bg-violet-600 hover:bg-violet-500 transition rounded py-2 font-semibold"
+          className="w-full py-3 rounded-full bg-gradient-to-r from-violet-600 to-violet-400 text-black font-semibold hover:opacity-90 transition"
         >
           Guardar perfil
         </button>

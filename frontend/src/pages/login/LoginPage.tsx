@@ -2,28 +2,35 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import { login, checkAuth } from "@/services/auth.service";
 
 const LoginPage = () => {
-  const { loginWithGoogle } = useAuthStore();
+  const { loginWithGoogle, user, isLoading, setUser } = useAuthStore();
   const navigate = useNavigate();
 
-  const [nickname, setNickname] = useState("");
+  const [identifier, setIdentifier] = useState(""); // puede ser nickname, email o teléfono
   const [password, setPassword] = useState("");
+
+  // Redirigir si ya hay sesión
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate("/");
+    }
+  }, [user, isLoading]);
 
   const handleLapsusLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(
-        "/api/auth/login",
-        { nickname, password },
-        { withCredentials: true }
-      );
-      toast.success("Sesión iniciada con Lapsus");
+      await login(identifier.trim(), password.trim());
+
+      const authRes = await checkAuth();
+      setUser(authRes.data.user);
+      toast.success("Sesión iniciada correctamente");
       navigate("/");
-    } catch (error) {
-      toast.error("Credenciales incorrectas o error de conexión"+error);
+    } catch (err: any) {
+      console.error("Error en login:", err);
+      toast.error(err.response?.data?.message || "Credenciales inválidas");
     }
   };
 
@@ -33,9 +40,9 @@ const LoginPage = () => {
 
       <div className="relative z-10 w-full max-w-md p-8 text-white">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">Bienvenido a Lapsus Wave </h1>
+          <h1 className="text-3xl font-bold">Bienvenido a Lapsus Wave</h1>
           <p className="text-zinc-400 text-sm mt-2">
-            ¿No tienes cuenta?{' '}
+            ¿No tienes cuenta?{" "}
             <button
               onClick={() => navigate("/signup")}
               className="text-purple-400 hover:underline"
@@ -48,10 +55,10 @@ const LoginPage = () => {
         <form onSubmit={handleLapsusLogin} className="space-y-4">
           <input
             type="text"
-            name="nickname"
-            placeholder="Nickname"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            name="identifier"
+            placeholder="Correo, nickname o teléfono"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
             className="w-full p-3 rounded-lg bg-zinc-900/70 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 placeholder-zinc-400"
           />

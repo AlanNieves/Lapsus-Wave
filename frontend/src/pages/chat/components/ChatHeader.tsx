@@ -7,7 +7,7 @@ const ChatHeader = () => {
 	if (!selectedUser) return null;
 
 	/*const isOnline = onlineUsers?.has?.(selectedUser._id);*/
-	const userInitial = selectedUser?.fullName?.[0] ?? "U";
+	const userInitial = selectedUser?.nickname?.[0] ?? "U";
 
 	return (
 		<div className='p-4 border-b border-transparent'>
