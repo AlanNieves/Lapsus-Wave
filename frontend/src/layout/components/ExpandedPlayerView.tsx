@@ -5,6 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Shuffle, SkipBack, Play, Pause, SkipForward, Repeat, Volume2, VolumeX } from "lucide-react";
+//import {AudioVisualizer} from "@/components/AudioVisualizer"; // Ajusta la ruta si es distinta
+import ThreeAudioVisualizer from "@/components/ThreeAudioVisualizer";
+
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -40,33 +43,66 @@ export const ExpandedPlayerView = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(75);
   const [duration, setDuration] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioElement] = useState(new Audio());
+  const audioRef = useRef<HTMLAudioElement>(new Audio());
+  
   const [hoveredButton, setHoveredButton] = useState<null | 'shuffle' | 'previous' | 'play' | 'next' | 'repeat' | 'queue' | 'lyrics' | 'mute' | 'connect'>(null);
 
+  // Añade este useEffect para controlar la reproducción
   useEffect(() => {
-    audioRef.current = document.querySelector("audio");
+    if (!audioRef.current) return;
 
-    const audio = audioRef.current;
-    if (!audio) return;
+    if (isPlaying) {
+      audioRef.current.play().catch(e => console.error("Error playing audio:", e));
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying, currentSong]); 
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
+  // Añade este useEffect para manejar la carga de audio
+  useEffect(() => {
+    if (!audioRef.current || !currentSong?.audioUrl) return;
 
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", updateDuration);
+    // Restablece el tiempo al cambiar de canción
+    setCurrentTime(0);
 
-    const handleEnded = () => {
-      usePlayerStore.setState({ isPlaying: false });
+    // Forzar recarga del recurso de audio
+    audioRef.current.load();
+    audioRef.current.onloadeddata = () => {
+      if (isPlaying) {
+        audioRef.current?.play().catch(e => console.error("Play error:", e));
+      }
     };
+  }, [currentSong?.audioUrl]);
 
-    audio.addEventListener("ended", handleEnded);
 
-    return () => {
-      audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", updateDuration);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [currentSong]);
+  // Reemplaza el useEffect existente por este:
+useEffect(() => {
+  if (!audioRef.current) {
+    audioRef.current = new Audio();
+  }
+
+  const audio = audioRef.current;
+  if (!currentSong?.audioUrl) return;
+
+  // Configuración básica del audio
+  audio.src = currentSong.audioUrl;
+  audio.volume = volume / 100;
+  
+  // Event listeners
+  const updateTime = () => setCurrentTime(audio.currentTime);
+  const updateDuration = () => setDuration(audio.duration || 0);
+  
+  audio.addEventListener("timeupdate", updateTime);
+  audio.addEventListener("durationchange", updateDuration);
+  audio.addEventListener("ended", () => usePlayerStore.setState({ isPlaying: false }));
+
+  return () => {
+    audio.removeEventListener("timeupdate", updateTime);
+    audio.removeEventListener("durationchange", updateDuration);
+    audio.removeEventListener("ended", () => usePlayerStore.setState({ isPlaying: false }));
+  };
+}, [currentSong?.audioUrl, volume]);
 
   const handleSeek = (value: number[]) => {
     if (audioRef.current) {
@@ -135,7 +171,7 @@ export const ExpandedPlayerView = () => {
             </filter>
           </svg>
 
-        
+
           <motion.svg
             className="absolute inset-0 w-full h-full z-10 pointer-events-none flex items-center justify-center"
             viewBox="0 0 1600 400"
@@ -177,6 +213,7 @@ export const ExpandedPlayerView = () => {
 
           {/* Contenido principal */}
           <div className="flex flex-col items-center gap-4 z-10 mt-20">
+
             <motion.img
               src={currentSong.imageUrl}
               alt={currentSong.title}
@@ -190,7 +227,9 @@ export const ExpandedPlayerView = () => {
                 ease: "easeInOut",
               }}
             />
-
+            <div className="absolute inset-0 z-0 pointer-events-none">
+              <ThreeAudioVisualizer audioRef={audioRef} />
+            </div>
             <div className="text-center">
               <h2 className="text-2xl font-bold">{currentSong.title}</h2>
               <p className="text-lapsus-500">{currentSong.artist}</p>
@@ -301,7 +340,7 @@ export const ExpandedPlayerView = () => {
                 <div className="text-xs text-lapsus-500 w-10 text-right">{formatTime(currentTime)}</div>
                 <Slider
                   value={[currentTime]}
-                  max={duration || 100}
+                  max={duration || 1}
                   step={1}
                   className="flex-grow hover:cursor-grab active:cursor-grabbing"
                   onValueChange={handleSeek}

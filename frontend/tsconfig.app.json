@@ -11,7 +11,8 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "three-stdlib/*": ["node_modules/three-stdlib/*"]
     },
 
     /* Bundler mode */
@@ -21,7 +22,7 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client", "three", "@react-three/fiber"],
+    "types": ["vite/client", "three", "@react-three/fiber",],
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -29,5 +30,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src" ,"src/three-types.d.ts"] 
 }
