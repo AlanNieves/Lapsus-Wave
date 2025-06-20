@@ -48,7 +48,7 @@ const UsersList = () => {
 									<div className='relative'>
 										<Avatar className='size-8 md:size-12'>
 											<AvatarImage src={user.imageUrl} />
-											<AvatarFallback>{user.fullName[0]}</AvatarFallback>
+											<AvatarFallback>{user.nickname}</AvatarFallback>
 										</Avatar>
 										<div
 											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-1 ring-neutral-800
@@ -62,7 +62,7 @@ const UsersList = () => {
 
 									<div className='flex-1 min-w-0 lg:block hidden'>
 										<span className='truncate max-w-[180px] block'>
-											{user.fullName}
+											{user.nickname}
 										</span>
 									</div>
 								</div>
