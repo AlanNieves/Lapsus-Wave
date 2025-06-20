@@ -29,6 +29,8 @@ const userSchema = new mongoose.Schema(
       type: Number,
       min: 13,
     },
+
+
     password: {
       type: String,
       required: function () {
@@ -61,7 +63,10 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-
+    followers: {
+      type: [String], // o [mongoose.Schema.Types.ObjectId] si usas refs
+      default: [],
+    },
     // Seguridad
     authProvider: {
       type: String,

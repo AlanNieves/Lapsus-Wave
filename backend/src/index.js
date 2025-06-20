@@ -19,6 +19,7 @@ import statRoutes from "./routes/stat.route.js";
 import artistRoutes from "./routes/artist.routes.js";
 import tokenRoutes from "./routes/token.route.js";
 import postRoutes from "./routes/post.route.js";
+import followRoute from "./routes/follow.route.js";
 
 dotenv.config();
 
@@ -71,6 +72,7 @@ const startServer = async () => {
   app.use("/api/playlists", playlistRoutes);
   app.use("/api/token", tokenRoutes);
   app.use("/api/posts", postRoutes);
+  app.use("/api/follow", followRoute);
 
   // 🧹 Cron para limpiar archivos temporales
   const tempDir = path.join(process.cwd(), "tmp");

@@ -40,13 +40,21 @@ export interface Message {
 export interface User {
   _id: string;
   email: string;
-  imageUrl: string;
-  isVerified: boolean;
+  lapsusId?: string;       // ✅ agregar este
+  lastSong?: string; 
   nickname?: string;
-  edad?: number;
+  googleId?: string;
   phone?: string;
+  avatar?: string;
+  bio?: string;
+  image?: string;        // imagen de perfil personalizada (reemplaza imageUrl)
+  cover?: string;        // imagen de portada
+  tags?: string[];
   authProvider?: "google" | "lapsus-wave";
   isProfileComplete?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  followers?: string[];
 }
 
 export interface Track {
