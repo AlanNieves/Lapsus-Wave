@@ -72,6 +72,11 @@ const ProfilePage = () => {
       }
     };
 
+    fetchUser();
+    fetchPlaylists();
+  }, [navigate, BASE_URL]);
+
+  useEffect(() => {
     const fetchPosts = async () => {
       try {
         const { data } = await axios.get(`${BASE_URL}/posts`, {
@@ -83,10 +88,10 @@ const ProfilePage = () => {
       }
     };
 
-    fetchUser();
-    fetchPlaylists();
-    fetchPosts();
-  }, [navigate, BASE_URL, user?._id]);
+    if (user?._id) {
+      fetchPosts();
+    }
+  }, [user?._id, BASE_URL]);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -170,7 +175,7 @@ const ProfilePage = () => {
   if (!user) return null;
 
   return (
-    <div className="w-full h-screen overflow-y-auto bg-gradient-to-b from-[#2c0e25] via-[#1c0b1a] to-[#0f0f0f] text-white overflow-x-hidden">
+    <div className="w-full h-screen overflow-y-auto bg-gradient-to-b from-[#2c0e25] via-[#1c0b1a] to-[#0f0f0f] text-white pb-40">
       <div className="relative w-full h-64">
         <img
           src={user.cover || "/default-cover.jpg"}
@@ -287,7 +292,6 @@ const ProfilePage = () => {
               Última canción escuchada: <span className="text-lapsus-500 font-semibold">{user.lastSong || "N/A"}</span>
             </p>
 
-            {/* Crear publicación */}
             <div className="mt-8 w-full">
               <h3 className="text-lg font-bold mb-2">Crear publicación</h3>
               <div className="bg-black/20 p-4 rounded-xl border border-white/10 w-full">
@@ -313,19 +317,20 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Ver publicaciones */}
             <div className="mt-8">
               <h3 className="text-lg font-bold mb-4">Mis publicaciones</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {posts.map((post) => (
                   <div key={post._id} className="bg-black/20 p-4 rounded-lg border border-white/10">
                     <div className="flex items-center gap-3 mb-2">
                       <img
-                        src={post.userId.image || "/default-avatar.png"}
+                        src={post.userId?.image || "/default-avatar.png"}
                         alt="User"
                         className="w-8 h-8 rounded-full object-cover"
                       />
-                      <p className="text-sm font-semibold text-white">{post.userId.nickname}</p>
+                      <p className="text-sm font-semibold text-white">
+                        {post.userId?.nickname || "Usuario eliminado"}
+                      </p>
                     </div>
                     <img
                       src={post.image}

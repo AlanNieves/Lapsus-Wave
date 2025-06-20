@@ -78,7 +78,6 @@ export const login = async (req, res) => {
 };
 
 // ✅ LOGIN CON GOOGLE
-// ✅ LOGIN CON GOOGLE (actualizado con migración de clerkId)
 export const loginWithGoogle = async (req, res) => {
   const { credential } = req.body;
 
@@ -127,12 +126,7 @@ export const loginWithGoogle = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-
-// ✅ VERIFY EMAIL
-=======
 // ✅ VERIFICAR EMAIL
->>>>>>> f7f1535c733f3bfa8018fbf97048dd48287ea111
 export const verifyEmail = async (req, res) => {
   const { code } = req.body;
   try {
