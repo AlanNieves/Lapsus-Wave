@@ -39,6 +39,7 @@ const ProfilePage = () => {
   const [postImage, setPostImage] = useState<File | null>(null);
   const [postDescription, setPostDescription] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
+  const [showPostForm, setShowPostForm] = useState(false);
 
   const inputFileRef = useRef<HTMLInputElement | null>(null);
   const inputCoverRef = useRef<HTMLInputElement | null>(null);
@@ -164,6 +165,7 @@ const ProfilePage = () => {
       });
       setPostDescription("");
       setPostImage(null);
+      setShowPostForm(false);
       alert("✅ Publicación creada");
       const { data } = await axios.get(`${BASE_URL}/posts`, { withCredentials: true });
       setPosts(data.filter((p: Post) => p.userId?._id === user?._id));
@@ -293,28 +295,65 @@ const ProfilePage = () => {
             </p>
 
             <div className="mt-8 w-full">
-              <h3 className="text-lg font-bold mb-2">Crear publicación</h3>
-              <div className="bg-black/20 p-4 rounded-xl border border-white/10 w-full">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setPostImage(e.target.files?.[0] || null)}
-                  className="mb-2 text-sm text-white"
-                />
-                <textarea
-                  value={postDescription}
-                  onChange={(e) => setPostDescription(e.target.value)}
-                  placeholder="Escribe una descripción..."
-                  className="w-full bg-transparent border-b border-lapsus-300 text-sm text-white mb-2 outline-none"
-                />
+              {!showPostForm ? (
                 <Button
-                  onClick={handleCreatePost}
-                  disabled={!postImage}
-                  className="bg-[#A64D79] hover:bg-[#6A1E55]"
+                  className="bg-[#A64D79] hover:bg-[#6A1E55] text-white"
+                  onClick={() => setShowPostForm(true)}
                 >
-                  Publicar
+                  Crear publicación
                 </Button>
-              </div>
+              ) : (
+                <>
+                  <h3 className="text-lg font-bold mb-2">Nueva publicación</h3>
+                  <div className="bg-black/20 p-4 rounded-xl border border-white/10 w-full">
+                    <div className="mb-2 flex items-center gap-2">
+                      <button
+                        onClick={() => document.getElementById("post-image-input")?.click()}
+                        className="text-white hover:text-lapsus-500 transition"
+                        title="Subir imagen"
+                      >
+                        📷 Elegir imagen
+                      </button>
+                      <span className="text-sm text-gray-400">
+                        {postImage ? postImage.name : "No se eligió ninguna imagen"}
+                      </span>
+                      <input
+                        id="post-image-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setPostImage(e.target.files?.[0] || null)}
+                        className="hidden"
+                      />
+                    </div>
+
+                    <textarea
+                      value={postDescription}
+                      onChange={(e) => setPostDescription(e.target.value)}
+                      placeholder="Escribe una descripción..."
+                      className="w-full bg-transparent border-b border-lapsus-300 text-sm text-white mb-2 outline-none"
+                    />
+                    <div className="flex gap-4">
+                      <Button
+                        onClick={handleCreatePost}
+                        disabled={!postImage}
+                        className="bg-[#A64D79] hover:bg-[#6A1E55]"
+                      >
+                        Publicar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowPostForm(false);
+                          setPostDescription("");
+                          setPostImage(null);
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="mt-8">
@@ -344,20 +383,20 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="w-[200px]">
-          <h2 className="text-white text-lg font-bold mb-4">MIS PLAYLIST</h2>
-          <div className="flex flex-col gap-2">
-            {playlists.map((p) => (
-              <div
-                key={p._id}
-                onClick={() => navigate(`/playlists/${p._id}`)}
-                className="bg-lapsus-1250 text-white text-sm py-2 px-3 rounded hover:bg-lapsus-1100 cursor-pointer border border-white/20"
-              >
-                {p.name}
-              </div>
-            ))}
+          <div className="max-w-6xl mx-auto px-4 mt-20">
+            <h2 className="text-white text-lg font-bold mb-4 whitespace-nowrap">MIS PLAYLIST</h2>
+            <div className="flex flex-col gap-2">
+              {playlists.map((p) => (
+                <div
+                  key={p._id}
+                  onClick={() => navigate(`/playlists/${p._id}`)}
+                  className="bg-lapsus-1250 text-white text-sm py-2 px-3 rounded hover:bg-lapsus-1100 cursor-pointer border border-white/20"
+                >
+                  {p.name}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
