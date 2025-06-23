@@ -5,7 +5,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuthStore();
 
   if (isLoading) return <div>Cargando...</div>;
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/auth" />;
 
   return <>{children}</>;
 };
