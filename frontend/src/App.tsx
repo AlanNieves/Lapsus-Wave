@@ -1,7 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
 import CompleteProfilePage from "./pages/completeProfile/CompleteProfilePage";
-import SignupPage from "./pages/signup/SignupPage";
+import AuthPage from "./pages/auth/AuthPage";
+import VerifyTokenPage from "./pages/auth/components/VerifyTokenPage";
 import MainLayout from "./layout/MainLayout";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
@@ -11,11 +12,11 @@ import { useEffect } from "react";
 import { loadCastSdk } from "@/utils/cast";
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
-import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
-import LoginPage from "./pages/login/LoginPage";
+import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage"
 import UniversalSearch from "./components/UniversalSearch";
 // Importa el componente de Reviews
 import ReviewsPage from "@/pages/reviews/ReviewsPage"; // Asegúrate de que esta ruta sea correcta
+
 
 function App() {
     useEffect(() => {
@@ -30,9 +31,15 @@ function App() {
     return (
         <>
             <Routes>
-                <Route path='/login' element={<LoginPage />} />
+                <Route
+                    path='/auth'
+                    element={<AuthPage />}
+                    
+                />
+            
                 <Route path='/admin' element={<AdminPage />} />
-                <Route path="/signup" element={<SignupPage />} />
+
+                <Route path="/signup/verify" element={<VerifyTokenPage />} />
 
                 <Route element={<MainLayout />}>
                     <Route path='/' element={<HomePage />} />

@@ -1,9 +1,9 @@
 import Topbar from "@/components/Topbar";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { useEffect, useRef } from "react";
-import FeaturedSection from "./components/FeaturedSection";
+import FeaturedSection from "@/pages/home/components/FeaturedSection";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import SectionGrid from "./components/SectionGrid";
+import SectionGrid from "@/pages/home/components/SectionGrid";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useLanguageStore } from "@/stores/useLanguageStore";
 import { translations } from "@/locales";

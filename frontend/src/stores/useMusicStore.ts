@@ -202,20 +202,21 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	},
 
 	addReview: async (review) => {
-		set({ isLoading: true, error: null });
+		set({ isLoading: true });
 		try {
 			const response = await axiosInstance.post("/reviews", review);
 			set((state) => ({
-				reviews: [...state.reviews, response.data],
+			reviews: [response.data, ...state.reviews],
+			isLoading: false
 			}));
-			toast.success("Review added successfully");
+			toast.success("Review added successfully!");
+			return response.data;
 		} catch (error: any) {
-			set({ error: error.response.data.message });
-			toast.error("Failed to add review: " + error.message);
-		} finally {
+			toast.error("Error adding review");
 			set({ isLoading: false });
+			throw error;
 		}
-	},
+		},
 }));
 
 interface Artist {

@@ -40,12 +40,13 @@ export interface Message {
 export interface User {
   _id: string;
   email: string;
+  fullName: string;
   imageUrl: string;
   isVerified: boolean;
   nickname?: string;
   edad?: number;
   phone?: string;
-  authProvider?: "google" | "lapsus-wave";
+  authProvider?: "google" | "local";
   isProfileComplete?: boolean;
 }
 
@@ -73,5 +74,7 @@ export interface Review {
   comment: string;
   createdAt: Date;
   songId?: string;
+  songTitle?: string;  
+  artistName?: string; 
   albumId?: string;
 }

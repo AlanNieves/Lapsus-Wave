@@ -140,6 +140,20 @@ const ReviewsPage = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {review.songTitle && (
+                    <div className="mb-2">
+                      <p className="text-lapsus-500 font-medium">
+                        Song: {review.songTitle}
+                      </p>
+                      {review.artistName && (
+                        <p className="text-lapsus-400 text-sm">
+                          Artist: {review.artistName}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-gray-300">{review.comment}</p>
                   <p className="text-gray-500 text-sm mt-4">
                     {new Date(review.createdAt).toLocaleDateString()}
