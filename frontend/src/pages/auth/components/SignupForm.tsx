@@ -1,32 +1,131 @@
-// src/pages/auth/components/SignupForm.tsx
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { axiosInstance } from "@/lib/axios";
 
-// Componente para las ondas de sonido
-const SoundWaveIndicator = ({ strength }: { strength: number }) => {
-  const waveCount = 7; // Más ondas para un efecto más visual
-  const heights = [40, 60, 80, 100, 80, 60, 40]; // Alturas variadas
+// Tipos para los patrones de onda
+type SoundPattern = {
+  name: string;
+  pattern: number[];
+};
+
+// Patrones musicales predefinidos
+const SOUND_PATTERNS: Record<string, SoundPattern> = {
+  EQUALIZER: {
+    name: "EQUALIZER",
+    pattern: [0.6, 0.8, 1.0, 0.9, 0.7, 0.5, 0.7, 0.9, 1.0, 0.8, 0.6]
+  },
+  HEARTBEAT: {
+    name: "HEARTBEAT",
+    pattern: [0.5, 0.9, 0.6, 1.0, 0.7, 0.8, 0.5, 0.95, 0.6, 0.85, 1.0, 0.75, 0.9, 0.65, 0.4,0.5, 0.9, 0.6, 1.0, 0.7, 0.4, 0.7, .5]
+  },
+  SINE_WAVE: {
+    name: "SINE_WAVE",
+    pattern: [0.3, 0.5, 0.7, 0.9, 1.0, 0.9, 0.7, 0.5, 0.3]
+  },
+  PULSE: {
+    name: "PULSE",
+    pattern: [0.4, 0.7, .5, 1.1, 0.9, 0.5, 0.3, 0.5, 0.8, 0.7, 0.6, 0.5, 0.4, 0.7, .5, 1.1, 0.9, 0.4, 0.7, .5, 1.1, 0.9, 0.5]
+  },
+  RANDOM_PEAKS: {
+    name: "RANDOM_PEAKS",
+    pattern: [0.7, 1.1, 0.5, 1.4, 0.7, 0.9, 0.4, 0.97, 0.6, 0.8, 1.2, 0.6, 0.9, 0.5, 1.3, 0.8, 0.7, 1.1, 0.5, 1.4, 0.70, .4, 0.7, 1.1]
+  }
+};
+
+// Componente mejorado para las ondas de sonido estilo ecualizador musical
+interface SoundWaveIndicatorProps {
+  strength: number;
+  pattern?: number[];
+  barWidth?: number;
+  maxHeight?: number;
+  color?: string;
+  animation?: boolean;
+}
+
+const SoundWaveIndicator = ({
+  strength,
+  pattern = SOUND_PATTERNS.EQUALIZER.pattern,
+  barWidth = 12,
+  maxHeight = 100,
+  color = "",
+  animation = true
+}: SoundWaveIndicatorProps) => {
   
-  // Animación pulsante para contraseñas fuertes
-  const isStrong = strength > 70;
-  
+  // Determinar color automático si no se especifica
+  const getBarColor = () => {
+    if (color) return color;
+    if (strength < 40) return "bg-gradient-to-t from-red-400 to-red-600";
+    if (strength < 70) return "bg-gradient-to-t from-yellow-400 to-yellow-600";
+    return "bg-gradient-to-t from-green-400 to-green-600";
+  };
+
+  // Calcular altura con efecto de atenuación en los extremos
+  const calculateHeight = (heightFactor: number, index: number, total: number) => {
+    // Factor de posición (0 en extremos, 1 en centro)
+    const positionFactor = 1 - Math.abs((index / total) - 0.5) * 2;
+    
+    // Altura base + ajuste por fuerza + ajuste por posición
+    const calculatedHeight = maxHeight * heightFactor * 
+                            (0.5 + (strength / 100) * 0.5) * 
+                            (0.7 + 0.3 * positionFactor);
+    
+    return Math.max(8, calculatedHeight); // Altura mínima de 8px
+  };
+
+  // Efecto de animación para contraseñas fuertes
+  useEffect(() => {
+    if (strength > 85 && animation) {
+      const bars = document.querySelectorAll('.sound-bar');
+      bars.forEach(bar => {
+        bar.animate(
+          [
+            { transform: 'scaleY(1)' },
+            { transform: 'scaleY(1.2)', offset: 0.3 },
+            { transform: 'scaleY(1)', offset: 1 }
+          ],
+          {
+            duration: 800,
+            iterations: 1
+          }
+        );
+      });
+    }
+  }, [strength, animation]);
+
+  const barColor = getBarColor();
+
   return (
-    <div className="flex items-end h-16 space-x-1.5 mt-2">
-      {[...Array(waveCount)].map((_, i) => (
-        <div
-          key={i}
-          className={`w-3.5 rounded-t-lg transition-all duration-300 ${
-            isStrong ? "bg-green-500 animate-pulse" : "bg-violet-500"
-          }`}
-          style={{
-            height: `${heights[i] * (strength / 100)}px`,
-            opacity: 0.4 + (0.6 * strength) / 100,
-            animationDelay: isStrong ? `${i * 0.1}s` : "0s",
-          }}
-        />
-      ))}
+    <div className="flex items-end justify-center space-x-1.5 overflow-hidden mt-3 h-20">
+      {pattern.map((heightFactor, i) => {
+        const height = calculateHeight(heightFactor, i, pattern.length);
+        
+        return (
+          <div
+            key={i}
+            className={`sound-bar rounded-md ${barColor} transition-all ${
+              animation ? "duration-300 ease-in-out" : ""
+            }`}
+            style={{
+              width: `${barWidth}px`,
+              height: `${height}px`,
+              opacity: 0.6 + (0.4 * strength) / 100,
+              background: `
+                linear-gradient(
+                  to top,
+                  rgba(0,0,0,0.2) 0%,
+                  rgba(255,255,255,0.1) 30%,
+                  transparent 70%
+                ),
+                ${barColor.startsWith('bg-') ? '' : barColor}
+              `,
+              borderRadius: "4px 4px 8px 8px",
+              transform: `scaleY(${1 + (strength / 500)}) translateY(${strength > 70 ? -2 : 0}px)`,
+              boxShadow: "inset 0 -2px 4px rgba(255,255,255,0.3)"
+            }}
+          />
+        );
+      })}
     </div>
   );
 };
@@ -68,26 +167,6 @@ const PasswordRequirements = ({ password }: { password: string }) => {
   );
 };
 
-// Componente de teclado visual para teléfono
-const PhoneKeyboard = ({ phone }: { phone: string }) => {
-  return (
-    <div className="grid grid-cols-5 gap-2 mt-2">
-      {Array.from({ length: 10 }).map((_, i) => (
-        <div 
-          key={i}
-          className={`flex items-center justify-center h-10 rounded-lg ${
-            phone.includes(i.toString()) 
-              ? "bg-violet-600 text-white" 
-              : "bg-zinc-800/50"
-          } transition-all`}
-        >
-          {i}
-        </div>
-      ))}
-    </div>
-  );
-};
-
 const SignupForm = () => {
     const [form, setForm] = useState({
         email: "",
@@ -103,17 +182,22 @@ const SignupForm = () => {
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [phoneError, setPhoneError] = useState("");
     const [ageError, setAgeError] = useState("");
+    const [emailError, setEmailError] = useState(""); // Nuevo estado para error de email
     const navigate = useNavigate();
+
+    // Función para validar formato de email
+    const isValidEmail = (email: string): boolean => {
+        // Expresión regular para validar email con dominio
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+    };
 
     // Función para calcular la fortaleza de la contraseña
     const calculatePasswordStrength = useCallback((password: string) => {
         if (!password) return 0;
         
         let strength = 0;
-        // Puntos por longitud (máx 40 puntos)
         strength += Math.min(40, (password.length / 12) * 40);
-        
-        // Puntos por diversidad de caracteres
         if (/[A-Z]/.test(password)) strength += 15;
         if (/\d/.test(password)) strength += 15;
         if (/[!@#$%^&*]/.test(password)) strength += 20;
@@ -139,33 +223,37 @@ const SignupForm = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         
-        // Validación especial para teléfono
-        if (name === "phone") {
+        if (name === "email") {
+            setForm({ ...form, [name]: value });
+            
+            // Validar email en tiempo real
+            if (value && !isValidEmail(value)) {
+                setEmailError("Por favor ingresa un correo válido");
+            } else {
+                setEmailError("");
+            }
+        } 
+        else if (name === "phone") {
             const digitsOnly = value.replace(/\D/g, '');
             const truncated = digitsOnly.slice(0, 10);
-            
             setForm({ ...form, [name]: truncated });
             
-            // Validar longitud del teléfono
             if (truncated.length !== 10 && truncated.length > 0) {
                 setPhoneError("El teléfono debe tener 10 dígitos");
             } else {
                 setPhoneError("");
             }
         } 
-        // Validación especial para edad
         else if (name === "age") {
-            const ageValue = value.replace(/\D/g, ''); // Solo números
+            const ageValue = value.replace(/\D/g, '');
             let ageNum = parseInt(ageValue, 10);
             
-            // Limitar a máximo 3 dígitos
             let truncated = ageValue;
             if (ageValue.length > 3) {
                 truncated = ageValue.slice(0, 3);
                 ageNum = parseInt(truncated, 10);
             }
             
-            // Validar rango de edad
             if (truncated && (ageNum < 12 || ageNum > 100)) {
                 setAgeError("La edad debe ser entre 12 y 100 años");
             } else {
@@ -197,14 +285,19 @@ const SignupForm = () => {
         e.preventDefault();
         if (cooldown > 0) return;
 
-        // Validar teléfono antes de continuar
+        // Validar formato de email
+        if (form.email && !isValidEmail(form.email)) {
+            setEmailError("Por favor ingresa un correo válido");
+            toast.error("Por favor ingresa un correo electrónico válido");
+            return;
+        }
+
         if (form.phone.length !== 10) {
             setPhoneError("El teléfono debe tener 10 dígitos");
             toast.error("Por favor ingresa un teléfono válido de 10 dígitos");
             return;
         }
 
-        // Validar edad antes de continuar
         const ageNum = parseInt(form.age, 10);
         if (isNaN(ageNum)) {
             setAgeError("Edad inválida");
@@ -238,15 +331,25 @@ const SignupForm = () => {
 
     return (
         <form onSubmit={handleSendToken} className="space-y-4">
-            <input
-                type="email"
-                name="email"
-                placeholder="Correo electrónico"
-                value={form.email}
-                onChange={handleChange}
-                required
-                className="w-full p-3 rounded-lg bg-zinc-900/70 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 placeholder-zinc-400"
-            />
+            <div>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Correo electrónico"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full p-3 rounded-lg bg-zinc-900/70 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 placeholder-zinc-400"
+                />
+                {emailError && (
+                    <div className="text-red-500 text-xs mt-1 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {emailError}
+                    </div>
+                )}
+            </div>
             
             <div>
                 <input
@@ -308,23 +411,31 @@ const SignupForm = () => {
                             {passwordStrength < 40 ? 'Débil' : 
                              passwordStrength < 70 ? 'Moderada' : 
                              'Fuerte'}
-                            {passwordStrength >= 70 && " 🔥"}
                         </span>
                     </div>
                     
-                    {/* Barra de progreso */}
-                    <div className="w-full bg-zinc-700 rounded-full h-2 mb-2">
-                        <div 
-                            className={`h-2 rounded-full ${
-                                passwordStrength < 40 ? 'bg-red-500' : 
-                                passwordStrength < 70 ? 'bg-yellow-500' : 
-                                'bg-green-500'
-                            }`}
-                            style={{ width: `${passwordStrength}%` }}
-                        ></div>
-                    </div>
+                    {/* Indicador de ondas de sonido estilo ecualizador */}
+                    <SoundWaveIndicator 
+                      strength={passwordStrength}
+                      pattern={
+                        passwordStrength < 40 
+                          ? SOUND_PATTERNS.RANDOM_PEAKS.pattern 
+                          : passwordStrength < 70 
+                            ? SOUND_PATTERNS.PULSE.pattern 
+                            : SOUND_PATTERNS.HEARTBEAT.pattern
+                      }
+                      barWidth={passwordStrength < 40 ? 8 : passwordStrength < 50 ? 10 : 16}
+                      maxHeight={passwordStrength < 40 ? 60 : passwordStrength < 50 ? 50 : 80}
+                      color={
+                        passwordStrength < 40 
+                          ? "bg-gradient-to-t from-red-400 to-red-600" 
+                          : passwordStrength < 70 
+                            ? "bg-gradient-to-t from-yellow-400 to-yellow-600" 
+                            : "bg-gradient-to-t from-green-400 to-green-600"
+                      }
+                      animation={true}
+                    />
                     
-                    <SoundWaveIndicator strength={passwordStrength} />
                     <PasswordRequirements password={form.password} />
                 </div>
             </div>
