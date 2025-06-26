@@ -77,6 +77,19 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    likedSongs: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Song",
+  },
+],
+savedAlbums: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Album",
+  },
+],
+
   },
   {
     timestamps: true,
@@ -95,6 +108,7 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
 
 const User = mongoose.model("User", userSchema);
 

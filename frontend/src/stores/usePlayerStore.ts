@@ -35,6 +35,8 @@ interface PlayerStore {
   setOpenMenuSongId: (songId: string | null) => void;
   addToQueue: (song: Song) => void;
   addNextSong: (song: Song) => void;
+  playSong: (song: Song) => void;
+  
 
   // Nueva acción para Chromecast
   setCurrentTime: (time: number) => void;
@@ -182,6 +184,17 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     set({ queue: newQueue });
     toast.success('Canción añadida a continuación');
   },
+
+  playSong: (song) => {
+  set({
+    currentSong: song,
+    isPlaying: true,
+    queue: [song],
+    originalQueue: [song],
+    currentIndex: 0,
+  });
+},
+
 
   toggleQueue: () => set((state) => ({ showQueue: !state.showQueue })),
 

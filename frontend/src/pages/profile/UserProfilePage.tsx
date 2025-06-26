@@ -97,7 +97,7 @@ const UserProfilePage = () => {
   if (!user) return <div className="text-center text-red-400 py-10">Usuario no encontrado</div>;
 
   return (
-    <div className="w-full h-screen overflow-y-auto bg-gradient-to-b from-[#2c0e25] via-[#1c0b1a] to-[#0f0f0f] text-white pb-40">
+    <div className="w-full h-screen overflow-y-auto scrollbar-hide bg-gradient-to-b from-[#2c0e25] via-[#1c0b1a] to-[#0f0f0f] text-white pb-40">
       <div className="relative w-full h-64">
         <img src={user.cover || "/default-cover.jpg"} alt="Cover" className="object-cover w-full h-full" />
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />

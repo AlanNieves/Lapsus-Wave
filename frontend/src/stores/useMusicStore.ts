@@ -15,6 +15,9 @@ interface MusicStore {
 	trendingSongs: Song[];
 	stats: Stats;
 	playlists: Playlist[];
+	currentSongData: Song | null;
+
+
 	
 	
 
@@ -27,6 +30,7 @@ interface MusicStore {
 	fetchSongs: () => Promise<void>;
 	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
+	fetchSongById: (id: string) => Promise<void>;
 }
 
 export const useMusicStore = create<MusicStore>((set) => ({
@@ -46,6 +50,8 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	},
 	currentPlaylist: null,
 	playlists: [],
+	currentSongData: null,
+
 
 	deleteSong: async (id) => {
 		set({ isLoading: true, error: null });
@@ -168,4 +174,17 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set({ isLoading: false });
 		}
 	},
+	fetchSongById: async (id) => {
+		set({ isLoading: true });
+		try {
+			console.log("Fetching song with ID:", id); // 🔍 log clave
+			const res = await axiosInstance.get(`/songs/${id}`);
+			console.log("Fetch result:", res.data);     // 🔍 log clave
+			set({ currentSongData: res.data, isLoading: false });
+			} catch (error) {
+			console.error("Error fetching song by ID", error);
+			set({ isLoading: false });
+		}
+	},
+
 }));

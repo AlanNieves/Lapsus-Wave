@@ -102,7 +102,7 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
                   </td>
                   <td className="py-2">{song.title}</td>
                   <td className="py-2">{song.artist}</td>
-                  <td className="py-2">{song.albumId}</td>
+                  <td className="py-2">{song.title}</td>
                   <td className="py-2">{new Date(song.createdAt).toLocaleDateString()}</td>
                   <td className="py-2">{formatDuration(song.duration)}</td>
                 </tr>
