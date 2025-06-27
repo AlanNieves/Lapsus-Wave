@@ -57,7 +57,7 @@ const SoundWaveIndicator = ({
     if (color) return color;
     if (strength < 40) return "bg-gradient-to-t from-red-400 to-red-600";
     if (strength < 70) return "bg-gradient-to-t from-yellow-400 to-yellow-600";
-    return "bg-gradient-to-t from-green-400 to-green-600";
+    return "bg-gradient-to-t from-pink-400 to-pink-600";
   };
 
   // Calcular altura con efecto de atenuación en los extremos
@@ -130,7 +130,7 @@ const SoundWaveIndicator = ({
   );
 };
 
-// Componente para los requisitos de contraseña con íconos
+// Componente para los requisitos de contraseña con íconos (actualizado a rosa)
 const PasswordRequirements = ({ password }: { password: string }) => {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasNumber = /\d/.test(password);
@@ -139,25 +139,25 @@ const PasswordRequirements = ({ password }: { password: string }) => {
   
   return (
     <div className="grid grid-cols-2 gap-2 mt-3 text-xs text-zinc-400">
-      <div className={`flex items-center ${hasUpperCase ? 'text-green-400' : ''}`}>
+      <div className={`flex items-center ${hasUpperCase ? 'text-pink-400' : ''}`}>
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
         </svg>
         Mayúscula
       </div>
-      <div className={`flex items-center ${hasNumber ? 'text-green-400' : ''}`}>
+      <div className={`flex items-center ${hasNumber ? 'text-pink-400' : ''}`}>
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 8a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
         </svg>
         Número
       </div>
-      <div className={`flex items-center ${hasSymbol ? 'text-green-400' : ''}`}>
+      <div className={`flex items-center ${hasSymbol ? 'text-pink-400' : ''}`}>
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm3-1a1 1 0 11-2 0 1 1 0 012 0zm4 1a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
         </svg>
         Símbolo
       </div>
-      <div className={`flex items-center ${hasMinLength ? 'text-green-400' : ''}`}>
+      <div className={`flex items-center ${hasMinLength ? 'text-pink-400' : ''}`}>
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
         </svg>
@@ -182,12 +182,11 @@ const SignupForm = () => {
     const [passwordStrength, setPasswordStrength] = useState(0);
     const [phoneError, setPhoneError] = useState("");
     const [ageError, setAgeError] = useState("");
-    const [emailError, setEmailError] = useState(""); // Nuevo estado para error de email
+    const [emailError, setEmailError] = useState("");
     const navigate = useNavigate();
 
     // Función para validar formato de email
     const isValidEmail = (email: string): boolean => {
-        // Expresión regular para validar email con dominio
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         return emailRegex.test(email);
     };
@@ -406,7 +405,7 @@ const SignupForm = () => {
                         <span className={`text-xs font-medium ${
                             passwordStrength < 40 ? 'text-red-500' : 
                             passwordStrength < 70 ? 'text-yellow-500' : 
-                            'text-green-500'
+                            'text-pink-500' // Cambiado a pink
                         }`}>
                             {passwordStrength < 40 ? 'Débil' : 
                              passwordStrength < 70 ? 'Moderada' : 
@@ -425,13 +424,13 @@ const SignupForm = () => {
                             : SOUND_PATTERNS.HEARTBEAT.pattern
                       }
                       barWidth={passwordStrength < 40 ? 8 : passwordStrength < 50 ? 10 : 16}
-                      maxHeight={passwordStrength < 40 ? 60 : passwordStrength < 50 ? 50 : 80}
+                      maxHeight={passwordStrength < 40 ? 40 : passwordStrength < 40 ? 40 : 65}
                       color={
                         passwordStrength < 40 
                           ? "bg-gradient-to-t from-red-400 to-red-600" 
                           : passwordStrength < 70 
                             ? "bg-gradient-to-t from-yellow-400 to-yellow-600" 
-                            : "bg-gradient-to-t from-green-400 to-green-600"
+                            : "bg-gradient-to-t from-pink-400 to-pink-600"
                       }
                       animation={true}
                     />
