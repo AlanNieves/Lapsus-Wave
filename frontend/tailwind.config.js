@@ -68,12 +68,15 @@ export default {
       },
       boxShadow: {
         "3d": "0 10px 20px rgba(0, 0, 0, 0.2)",
+        glow: "0 0 10px rgba(168, 157, 177, 0.3)",
+        "text-glow": "0 0 6px rgba(168, 157, 177, 0.5)",
       },
       corePlugins: {
         preflight: false,
       },
       fontFamily: {
         sans: ["Segoe UI", "sans-serif"],
+        cormorant: ["'Cormorant Garamond'", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -135,6 +138,7 @@ export default {
           1100: "#A64D79",
           1200: "#6A1E55",
           1250: "#1A1A1D",
+          lavender: "#A89DB1",
         },
       },
     },
