@@ -1,7 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
 import CompleteProfilePage from "./pages/completeProfile/CompleteProfilePage";
-import SignupPage from "./pages/signup/SignupPage";
+import AuthPage from "./pages/auth/AuthPage";
+import VerifyTokenPage from "./pages/auth/components/VerifyTokenPage";
 import MainLayout from "./layout/MainLayout";
 import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
@@ -15,7 +16,6 @@ import { loadCastSdk } from "@/utils/cast";
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
 import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
-import LoginPage from "./pages/login/LoginPage";
 import LibraryPage from "./pages/library/LibraryPage";
 import LikedSongsPage from "./pages/library/LikedSongsPage";
 import SongPage from "./pages/song/SongPage";
@@ -33,14 +33,14 @@ function App() {
         <>
             <Routes>
                 <Route
-                    path='/login'
-                    element={<LoginPage />}
+                    path='/auth'
+                    element={<AuthPage />}
                     
                 />
             
                 <Route path='/admin' element={<AdminPage />} />
 
-                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/signup/verify" element={<VerifyTokenPage />} />
 
 				<Route element={<MainLayout />}>
 					<Route path='/' element={<HomePage />} />

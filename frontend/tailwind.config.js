@@ -28,16 +28,9 @@ export default {
           "100%": { opacity: 0, transform: "scale(0.95)" },
         },
         smoke: {
-          "0%": {
-            opacity: 0,
-            transform: "translateY(20px) scale(0.9)",
-            filter: "blur(5px)",
-          },
-          "100%": {
-            opacity: 1,
-            transform: "translateY(0) scale(1)",
-            filter: "blur(0)",
-          },
+          "0%": { backgroundPosition: "0% 50%", opacity: "0.2" },
+          "50%": { backgroundPosition: "100% 50%", opacity: "0.4" },
+          "100%": { backgroundPosition: "0% 50%", opacity: "0.2" },
         },
         waveMotion: {
           "0%, 100%": {
@@ -75,14 +68,14 @@ export default {
         fuild: "fluidMotion 12s ease-in-out infinite",
         bounce: "bounce 1s infinite",
         "fade-out": "fade-out 0.3s ease-out",
-        smoke: "smoke 0.5s ease-out forwards",
+        smoke: "smoke 4s ease-out infinite",
         "audio-wave": "audio-wave 1s infinite",
         gradient: "gradientMove 10s ease infinite",
         waves: "waveMotion 15s ease-in-out infinite",
         lightRain: "lightFlicker 8s ease-in-out infinite",
       },
       backgroundSize: {
-        '300':'300% 300%',
+        300: "300% 300%",
       },
       transform: {
         "rotate-x-10": "rotateX(10deg)",
@@ -90,12 +83,15 @@ export default {
       },
       boxShadow: {
         "3d": "0 10px 20px rgba(0, 0, 0, 0.2)",
+        glow: "0 0 10px rgba(168, 157, 177, 0.3)",
+        "text-glow": "0 0 6px rgba(168, 157, 177, 0.5)",
       },
       corePlugins: {
         preflight: false,
       },
       fontFamily: {
         sans: ["Segoe UI", "sans-serif"],
+        cormorant: ["'Cormorant Garamond'", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -157,6 +153,7 @@ export default {
           1100: "#A64D79",
           1200: "#6A1E55",
           1250: "#1A1A1D",
+          lavender: "#A89DB1",
         },
       },
     },
