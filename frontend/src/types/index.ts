@@ -78,3 +78,11 @@ export interface Review {
   artistName?: string; 
   albumId?: string;
 }
+
+interface Artist {
+  _id: string;
+  name: string;
+  image?: string;
+}
+
+

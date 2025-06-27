@@ -49,7 +49,6 @@ function App() {
                     <Route path="/playlists" element={<AllPlaylistsPage />} />
                     <Route path="/complete-profile" element={<CompleteProfilePage />} />
                     <Route path="/universal-search" element={<UniversalSearch />} />
-                    {/* Agrega la nueva ruta para Reviews aquí */}
                     <Route path="/reviews" element={<ReviewsPage />} />
                     <Route path='*' element={<NotFoundPage />} />
                 </Route>

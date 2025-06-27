@@ -219,19 +219,3 @@ export const useMusicStore = create<MusicStore>((set) => ({
 		},
 }));
 
-interface Artist {
-  _id: string;
-  name: string;
-  image?: string;
-}
-
-export interface Review {
-  _id: string;
-  userId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  createdAt: Date;
-  songId?: string;
-  albumId?: string;
-}
