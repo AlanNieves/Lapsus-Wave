@@ -2,6 +2,7 @@ import { axiosInstance } from "@/lib/axios";
 import { Message, User } from "@/types";
 import { create } from "zustand";
 import { io } from "socket.io-client";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 interface ChatStore {
 	users: User[];
@@ -20,7 +21,7 @@ interface ChatStore {
 	fetchUsers: () => Promise<void>;
 	initSocket: (userId: string) => void;
 	disconnectSocket: () => void;
-	sendMessage: (receiverId: string, senderId: string, content: string) => void;
+	sendMessage: (receiverId: string, content: string) => void;
 	fetchMessages: (userId: string) => Promise<void>;
 	setSelectedUser: (user: User | null) => void;
 }
@@ -88,42 +89,25 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 			});
 
 			socket.on("receive_message", (message: Message) => {
-				set((state) => {
-					const userId = message.senderId;
-					const prevMessages = state.messages[userId] || [];
-					const updatedMessages = [...prevMessages, message];
-			
-					// Actualiza el orden moviendo este userId al principio
-					const newOrder = [userId, ...state.chatOrder.filter((id) => id !== userId)];
-			
-					return {
-						messages: {
-							...state.messages,
-							[userId]: updatedMessages,
-						},
-						chatOrder: newOrder,
-					};
-				});
+				const currentUserId = useAuthStore.getState().user?._id;
+
+				// Verifica si ya existe ese mensaje en el estado (por _id)
+				const alreadyExists = get().messages[message.senderId]?.some(
+				(m) => m._id === message._id
+				);
+
+				// Si fue enviado por ti o ya existe, ignóralo
+				if (message.senderId === currentUserId || alreadyExists) return;
+
+
+				addMessage(message);
 			});
-			
+
 			socket.on("message_sent", (message: Message) => {
-				set((state) => {
-					const userId = message.receiverId;
-					const prevMessages = state.messages[userId] || [];
-					const updatedMessages = [...prevMessages, message];
-			
-					const newOrder = [userId, ...state.chatOrder.filter((id) => id !== userId)];
-			
-					return {
-						messages: {
-							...state.messages,
-							[userId]: updatedMessages,
-						},
-						chatOrder: newOrder,
-					};
-				});
+				// ✅ Recibe confirmación de tus propios mensajes
+				addMessage(message);
 			});
-			
+
 			socket.on("activity_updated", ({ userId, activity }) => {
 				set((state) => {
 					const newActivities = new Map(state.userActivities);
@@ -143,9 +127,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		}
 	},
 
-	sendMessage: async (receiverId, senderId, content) => {
+	sendMessage: async (receiverId, content) => {
 		const socket = get().socket;
-		if (!socket) return;
+		const { user } = useAuthStore.getState();
+		const senderId = user?._id;
+
+		if (!socket || !senderId) return;
 
 		socket.emit("send_message", { receiverId, senderId, content });
 	},
@@ -153,7 +140,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	fetchMessages: async (userId: string) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axiosInstance.get('/users/messages/${userId}');
+			const response = await axiosInstance.get(`/users/messages/${userId}`);
 			set((state) => ({
 				messages: {
 					...state.messages,
@@ -165,6 +152,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		} finally {
 			set({ isLoading: false });
 		}
-		
 	},
 }));
+
+// 🔁 Manejo centralizado de almacenamiento y orden de mensajes
+function addMessage(message: Message) {
+	const { senderId, receiverId } = message;
+	const currentUserId = useAuthStore.getState().user?._id;
+	const isSender = senderId === currentUserId;
+	const targetId = isSender ? receiverId : senderId;
+
+	useChatStore.setState((state) => {
+		const prev = state.messages[targetId] || [];
+		return {
+			messages: {
+				...state.messages,
+				[targetId]: [...prev, message],
+			},
+			chatOrder: [targetId, ...state.chatOrder.filter((id) => id !== targetId)],
+		};
+	});
+}

@@ -60,7 +60,7 @@ export default function CompleteProfilePage() {
         const { data } = await checkAuth();
         setUser(data.user);
       } catch (err) {
-        toast.error("Error al cargar el perfil");
+        toast.error("Error al cargar el perfil"+err);
         navigate("/login");
       }
     };

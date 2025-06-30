@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      sparse: true, // Permite que usuarios de Google no tengan email único si ya existe
+      sparse: true,
     },
     nickname: {
       type: String,
@@ -29,6 +29,8 @@ const userSchema = new mongoose.Schema(
       type: Number,
       min: 13,
     },
+
+
     password: {
       type: String,
       required: function () {
@@ -36,14 +38,36 @@ const userSchema = new mongoose.Schema(
       },
       minlength: 6,
     },
+
+    // IDs de proveedores sociales
     googleId: String,
     facebookId: String,
     appleId: String,
     lapsusId: String,
-    avatar: {
+
+    // NUEVOS CAMPOS PARA PERFIL SOCIAL
+    image: {
       type: String,
       default: "https://ui-avatars.com/api/?name=User&background=random",
     },
+    bio: {
+      type: String,
+      default: "",
+    },
+    cover: {
+      type: String,
+      default: "", // o una URL por defecto si prefieres
+    },
+
+    tags: {
+      type: [String],
+      default: [],
+    },
+    followers: {
+      type: [String], // o [mongoose.Schema.Types.ObjectId] si usas refs
+      default: [],
+    },
+    // Seguridad
     authProvider: {
       type: String,
       enum: ["local", "google", "facebook", "apple", "lapsus-wave"],
@@ -53,13 +77,26 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    likedSongs: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Song",
+  },
+],
+savedAlbums: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Album",
+  },
+],
+
   },
   {
     timestamps: true,
   }
 );
 
-// Hash de contraseña antes de guardar (solo si es 'local')
+// Hash de contraseña si cambia
 userSchema.pre("save", async function (next) {
   if (this.isModified("password") && this.password) {
     this.password = await bcrypt.hash(this.password, 12);
@@ -71,6 +108,7 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
 
 const User = mongoose.model("User", userSchema);
 

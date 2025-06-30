@@ -1,4 +1,3 @@
-// src/routes/token.route.js
 import express from "express";
 import { sendToken, verifyToken } from "../controller/token.controller.js";
 

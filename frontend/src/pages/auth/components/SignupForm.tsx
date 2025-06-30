@@ -17,7 +17,7 @@ const SOUND_PATTERNS: Record<string, SoundPattern> = {
   },
   HEARTBEAT: {
     name: "HEARTBEAT",
-    pattern: [0.5, 0.9, 0.6, 1.0, 0.7, 0.8, 0.5, 0.95, 0.6, 0.85, 1.0, 0.75, 0.9, 0.65, 0.4,0.5, 0.9, 0.6, 1.0, 0.7, 0.4, 0.7, .5]
+    pattern: [0.5, 0.9, 0.6, 1.0, 0.7, 0.8, 0.5, 0.95, 0.6, 0.85, .98, 0.75, 0.9, 0.65, 0.4,0.5, 0.9, 0.6, 1.0, 0.7, 0.4, 0.7, .5]
   },
   SINE_WAVE: {
     name: "SINE_WAVE",
@@ -96,7 +96,7 @@ const SoundWaveIndicator = ({
   const barColor = getBarColor();
 
   return (
-    <div className="flex items-end justify-center space-x-1.5 overflow-hidden mt-3 h-20">
+    <div className="flex items-end justify-center space-x-1.5 overflow-hidden mt-3 h-16">
       {pattern.map((heightFactor, i) => {
         const height = calculateHeight(heightFactor, i, pattern.length);
         

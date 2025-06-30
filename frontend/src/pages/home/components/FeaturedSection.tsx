@@ -42,7 +42,7 @@ const FeaturedSection = () => {
             <Link
               to={`/artist/${song.artistId}`}
               className='text-sm text-lapsus-500 hover:underline'
-              onClick={(e) => e.stopPropagation()} // 👈 evita conflicto con onClick general
+              onClick={(e) => e.stopPropagation()} 
             >
               {song.artist}
             </Link>
@@ -52,6 +52,7 @@ const FeaturedSection = () => {
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               handleCardClick(song);
+              
             }}
           />
         </div>

@@ -7,7 +7,7 @@ import fs from "fs";
 export const createPlaylist = async (req, res, next) => {
   try {
     const { name, description, isPublic } = req.body;
-    const userId = req.user._id;
+    const userId = req.userId;
 
     const playlist = await Playlist.create({
       name,
@@ -25,7 +25,7 @@ export const createPlaylist = async (req, res, next) => {
 
 export const getUserPlaylists = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.userId;
     const playlists = await Playlist.find({ createdBy: userId }).sort({
       createdAt: -1,
     });
@@ -38,6 +38,8 @@ export const getUserPlaylists = async (req, res, next) => {
 export const getPlaylistById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.userId;
+
     const playlist = await Playlist.findById(id).populate("songs");
 
     if (!playlist) {
@@ -45,7 +47,7 @@ export const getPlaylistById = async (req, res, next) => {
     }
 
     // Verificar si el usuario es el dueño o la playlist es pública
-    if (playlist.createdBy !== req.user._id && !playlist.isPublic) {
+    if (String(playlist.createdBy) !== String(userId) && !playlist.isPublic) {
       return res.status(403).json({ message: "No tienes acceso a esta playlist" });
     }
 
@@ -59,7 +61,7 @@ export const addSongToPlaylist = async (req, res, next) => {
   try {
     const { playlistId } = req.params;
     const { songId } = req.body;
-    const userId = req.user._id;
+    const userId = req.userId;
 
     const playlist = await Playlist.findOne({ _id: playlistId, createdBy: userId });
     if (!playlist) return res.status(404).json({ message: "Playlist no encontrada" });
@@ -83,7 +85,7 @@ export const addSongToPlaylist = async (req, res, next) => {
 export const deletePlaylist = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.userId;
 
     const playlist = await Playlist.findOneAndDelete({
       _id: id,
@@ -103,7 +105,7 @@ export const deletePlaylist = async (req, res, next) => {
 export const updateCoverImage = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.userId;
 
     if (!req.files || !req.files.cover) {
       return res.status(400).json({ message: "No se subió ninguna imagen." });
@@ -136,7 +138,7 @@ export const updateCoverImage = async (req, res, next) => {
 export const updatePlaylist = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.userId;
     const { name, description, isPublic } = req.body;
 
     const playlist = await Playlist.findById(id);

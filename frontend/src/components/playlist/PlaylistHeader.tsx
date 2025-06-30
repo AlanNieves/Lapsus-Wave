@@ -118,11 +118,19 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
 
   if (!playlist) return <div className="text-white p-6">Cargando...</div>;
 
-  const fullImageUrl = playlist.coverImage
-    ? playlist.coverImage.startsWith("http")
-      ? playlist.coverImage
-      : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
-    : "/default-playlist-cover.png";
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const FILE_BASE = API_BASE.replace("/api", ""); // quitar /api solo para imágenes
+
+const correctedCoverImage = playlist.coverImage?.replace("/api/uploads", "/uploads");
+
+const fullImageUrl = correctedCoverImage
+  ? correctedCoverImage.startsWith("http") || correctedCoverImage.startsWith("/uploads")
+    ? correctedCoverImage
+    : `${FILE_BASE}/uploads/${correctedCoverImage}`
+  : "/default-playlist-cover.png";
+
+
+
 
   const totalDuration = playlist.songs.reduce((acc, song) => acc + song.duration, 0);
   const minutes = Math.floor(totalDuration / 60);

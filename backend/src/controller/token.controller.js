@@ -1,4 +1,3 @@
-// src/controller/token.controller.js
 import { saveToken, verifyToken as checkToken, deleteToken } from "../utils/tokenStore.js";
 import { sendVerificationSMS } from "../utils/sendSms.js";
 import { sendVerificationEmail } from "../utils/sendEmail.js"; // ✅ Importación agregada

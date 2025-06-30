@@ -40,14 +40,31 @@ export interface Message {
 export interface User {
   _id: string;
   email: string;
+<<<<<<< HEAD
   fullName: string;
   imageUrl: string;
   isVerified: boolean;
+=======
+  lapsusId?: string;       // ✅ agregar este
+  lastSong?: string; 
+>>>>>>> 625b92f9a65b6e2ff5782ce07ae7a4b42fdb4fc7
   nickname?: string;
-  edad?: number;
+  googleId?: string;
   phone?: string;
+<<<<<<< HEAD
   authProvider?: "google" | "local";
+=======
+  avatar?: string;
+  bio?: string;
+  image?: string;        // imagen de perfil personalizada (reemplaza imageUrl)
+  cover?: string;        // imagen de portada
+  tags?: string[];
+  authProvider?: "google" | "lapsus-wave";
+>>>>>>> 625b92f9a65b6e2ff5782ce07ae7a4b42fdb4fc7
   isProfileComplete?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  followers?: string[];
 }
 
 export interface Track {
@@ -66,6 +83,7 @@ export interface Playlist {
   songs?: Song[];
 }
 
+<<<<<<< HEAD
 export interface Review {
   _id: string;
   userId: string;
@@ -86,3 +104,16 @@ interface Artist {
 }
 
 
+=======
+export interface Post {
+  _id: string;
+  image: string;
+  description: string;
+  createdAt: string;
+  userId: {
+    _id: string;
+    nickname: string;
+    image?: string;
+  };
+}
+>>>>>>> 625b92f9a65b6e2ff5782ce07ae7a4b42fdb4fc7
