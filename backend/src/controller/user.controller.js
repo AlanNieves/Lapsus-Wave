@@ -96,16 +96,18 @@ export const uploadProfileImage = async (req, res) => {
   }
 };
 
+// 📷 Subir imagen de portada a Cloudinary
 export const uploadCoverImage = async (req, res) => {
   try {
     if (!req.files || !req.files.cover) {
-      return res.status(400).json({ success: false, message: "No se recibió imagen de portada" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No se recibió imagen de portada" });
     }
 
     const cover = req.files.cover;
 
-    const cloudinary = await import("../utils/cloudinary.js");
-    const result = await cloudinary.uploadImage(cover.tempFilePath);
+    const result = await uploadImage(cover.tempFilePath);
 
     const user = await User.findById(req.userId);
     user.cover = result.secure_url;
@@ -114,7 +116,8 @@ export const uploadCoverImage = async (req, res) => {
     res.status(200).json({ success: true, cover: user.cover });
   } catch (error) {
     console.error("Error al subir portada:", error);
-    res.status(500).json({ success: false, message: "Error al subir portada" });
+    res
+      .status(500)
+      .json({ success: false, message: "Error al subir portada" });
   }
 };
-

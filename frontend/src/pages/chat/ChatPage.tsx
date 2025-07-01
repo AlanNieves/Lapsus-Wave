@@ -75,7 +75,7 @@ const ChatPage = () => {
 													src={
 														message.senderId === user._id
 															? user.imageUrl
-															: selectedUser.imageUrl
+															: selectedUser.image
 													}
 												/>
 											</Avatar>

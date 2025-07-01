@@ -73,7 +73,7 @@ export interface Playlist {
   songs?: Song[];
 }
 
-export interface Post {
+export interface UserPost {
   _id: string;
   image: string;
   description: string;

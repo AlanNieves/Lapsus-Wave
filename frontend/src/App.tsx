@@ -4,7 +4,6 @@ import CompleteProfilePage from "./pages/completeProfile/CompleteProfilePage";
 import AuthPage from "./pages/auth/AuthPage";
 import VerifyTokenPage from "./pages/auth/components/VerifyTokenPage";
 import MainLayout from "./layout/MainLayout";
-import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
 import PlaylistPage from "./pages/playlist/playlistPage";
@@ -15,10 +14,17 @@ import { useEffect } from "react";
 import { loadCastSdk } from "@/utils/cast";
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
-import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
+import ChatPage from "./pages/chat/ChatPage";
 import LibraryPage from "./pages/library/LibraryPage";
 import LikedSongsPage from "./pages/library/LikedSongsPage";
 import SongPage from "./pages/song/SongPage";
+import AllPlaylistsPage from "./pages/playlist/AllPlaylistsPage";
+import UniversalSearch from "./components/UniversalSearch";
+// Importa el componente de Reviews
+import ReviewsPage from "@/pages/reviews/ReviewsPage"; // Asegúrate de que esta ruta sea correcta
+/*import ChatMessages from "./pages/chat/components/ChatMessages";*/
+
+
 function App() {
     useEffect(() => {
         loadCastSdk()
@@ -42,12 +48,12 @@ function App() {
 
                 <Route path="/signup/verify" element={<VerifyTokenPage />} />
 
-				<Route element={<MainLayout />}>
-					<Route path='/' element={<HomePage />} />
-					<Route path='/chat' element={<ChatPage />} />
-					<Route path='/albums/:albumId' element={<AlbumPage />} />
-					<Route path="/playlists/:id" element={<PlaylistPage />} />
-					<Route path="/artist/:artistId" element={<ArtistPage />} />
+                <Route element={<MainLayout />}>
+                    <Route path='/' element={<HomePage />} />
+                    <Route path='/chat' element={<ChatPage />} />
+                    <Route path='/albums/:albumId' element={<AlbumPage />} />
+                    <Route path="/playlists/:id" element={<PlaylistPage />} />
+                    <Route path="/artist/:artistId" element={<ArtistPage />} />
                     <Route path="/playlists" element={<AllPlaylistsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/users/:id" element={<UserProfilePage />} />
@@ -56,6 +62,9 @@ function App() {
                     <Route path="/library/liked-songs" element={<LikedSongsPage />} />
                     <Route path="/song/:songId" element={<SongPage />} />
 					<Route path='*' element={<NotFoundPage />} />
+                    <Route path="/universal-search" element={<UniversalSearch/>}/>
+                    <Route path="/reviews" element={<ReviewsPage />} />
+                    <Route path='*' element={<NotFoundPage />} />
 					
 				</Route>
 			</Routes>
@@ -63,5 +72,6 @@ function App() {
 		</>
 	);
 }
+
 
 export default App;
