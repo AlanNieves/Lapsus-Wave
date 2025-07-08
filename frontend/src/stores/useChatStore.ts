@@ -150,21 +150,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		socket.emit("send_message", { receiverId, senderId, content });
 	},
 
-	fetchMessages: async (userId: string) => {
-		set({ isLoading: true, error: null });
-		try {
-			const response = await axiosInstance.get('/users/messages/${userId}');
-			set((state) => ({
-				messages: {
-					...state.messages,
-					[userId]: response.data,
-				},
-			}));
-		} catch (error: any) {
-			set({ error: error.response?.data?.message || "Error loading messages" });
-		} finally {
-			set({ isLoading: false });
-		}
-		
-	},
+fetchMessages: async (userId: string) => {
+  set({ isLoading: true, error: null });
+  try {
+    const response = await axiosInstance.get(`/users/messages/${userId}`);
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [userId]: response.data,
+      },
+    }));
+  } catch (error: any) {
+    set({ error: error.response?.data?.message || "Error loading messages" });
+  } finally {
+    set({ isLoading: false });
+  }
+},
+
 }));

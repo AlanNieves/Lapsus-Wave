@@ -4,17 +4,10 @@ import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useNavigate } from "react-router-dom";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { motion } from "framer-motion";
-import type { Song } from "@/types";
+import type { Playlist } from "@/types";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { axiosInstance } from "@/lib/axios";
 
-interface Playlist {
-  _id: string;
-  name: string;
-  description: string;
-  coverImage?: string;
-  songs: Song[];
-}
 
 interface PlaylistHeaderProps {
   playlistId: string;

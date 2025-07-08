@@ -2,7 +2,13 @@ import { Artist } from "../models/artist.model.js";
 
 export const getArtistById = async (req, res, next) => {
   try {
-    const artist = await Artist.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    const artist = await Artist.findById(id);
     if (!artist) {
       return res.status(404).json({ message: "Artista no encontrado" });
     }

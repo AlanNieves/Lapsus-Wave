@@ -1,13 +1,16 @@
 import { Playlist } from "../models/playlist.model.js";
 import { Song } from "../models/song.model.js";
-import mongoose from "mongoose"; 
+import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
 
+/**
+ * Crear una nueva playlist
+ */
 export const createPlaylist = async (req, res, next) => {
   try {
     const { name, description, isPublic } = req.body;
-    const userId = req.user._id;
+    const userId = req.userId;
 
     const playlist = await Playlist.create({
       name,
@@ -23,9 +26,12 @@ export const createPlaylist = async (req, res, next) => {
   }
 };
 
+/**
+ * Obtener todas las playlists del usuario autenticado
+ */
 export const getUserPlaylists = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.userId;
     const playlists = await Playlist.find({ createdBy: userId }).sort({
       createdAt: -1,
     });
@@ -35,18 +41,32 @@ export const getUserPlaylists = async (req, res, next) => {
   }
 };
 
+/**
+ * Obtener una playlist por ID
+ */
 export const getPlaylistById = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    // Validar ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
     const playlist = await Playlist.findById(id).populate("songs");
 
     if (!playlist) {
       return res.status(404).json({ message: "Playlist no encontrada" });
     }
 
-    // Verificar si el usuario es el dueño o la playlist es pública
-    if (playlist.createdBy !== req.user._id && !playlist.isPublic) {
-      return res.status(403).json({ message: "No tienes acceso a esta playlist" });
+    // Verificar permisos
+    if (
+      playlist.createdBy.toString() !== req.userId &&
+      !playlist.isPublic
+    ) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a esta playlist" });
     }
 
     res.json(playlist);
@@ -55,20 +75,40 @@ export const getPlaylistById = async (req, res, next) => {
   }
 };
 
+/**
+ * Agregar una canción a la playlist
+ */
 export const addSongToPlaylist = async (req, res, next) => {
   try {
     const { playlistId } = req.params;
     const { songId } = req.body;
-    const userId = req.user._id;
+    const userId = req.userId;
 
-    const playlist = await Playlist.findOne({ _id: playlistId, createdBy: userId });
-    if (!playlist) return res.status(404).json({ message: "Playlist no encontrada" });
+    // Validar IDs
+    if (!mongoose.Types.ObjectId.isValid(playlistId)) {
+      return res.status(400).json({ message: "ID de playlist inválido" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(songId)) {
+      return res.status(400).json({ message: "ID de canción inválido" });
+    }
+
+    const playlist = await Playlist.findOne({
+      _id: playlistId,
+      createdBy: userId,
+    });
+    if (!playlist) {
+      return res.status(404).json({ message: "Playlist no encontrada" });
+    }
 
     const song = await Song.findById(songId);
-    if (!song) return res.status(404).json({ message: "Canción no encontrada" });
+    if (!song) {
+      return res.status(404).json({ message: "Canción no encontrada" });
+    }
 
     if (playlist.songs.includes(songId)) {
-      return res.status(400).json({ message: "La canción ya está en la playlist" });
+      return res
+        .status(400)
+        .json({ message: "La canción ya está en la playlist" });
     }
 
     playlist.songs.push(songId);
@@ -80,10 +120,18 @@ export const addSongToPlaylist = async (req, res, next) => {
   }
 };
 
+/**
+ * Eliminar una playlist
+ */
 export const deletePlaylist = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.userId;
+
+    // Validar ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
 
     const playlist = await Playlist.findOneAndDelete({
       _id: id,
@@ -91,7 +139,9 @@ export const deletePlaylist = async (req, res, next) => {
     });
 
     if (!playlist) {
-      return res.status(404).json({ message: "Playlist no encontrada o no tienes permisos" });
+      return res
+        .status(404)
+        .json({ message: "Playlist no encontrada o no tienes permisos" });
     }
 
     res.json({ message: "Playlist eliminada correctamente" });
@@ -100,22 +150,61 @@ export const deletePlaylist = async (req, res, next) => {
   }
 };
 
+/**
+ * Actualizar la imagen de portada
+ */
 export const updateCoverImage = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.userId;
 
+    //  Validar que el ID sea un ObjectId válido
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    //  Validar que se haya subido un archivo
     if (!req.files || !req.files.cover) {
       return res.status(400).json({ message: "No se subió ninguna imagen." });
     }
 
     const cover = req.files.cover;
-    const ext = path.extname(cover.name);
+
+    //  Validar tipo MIME
+    if (!cover.mimetype.startsWith("image/")) {
+      return res.status(400).json({ message: "Formato de imagen inválido." });
+    }
+
+    //  Validar tamaño máximo (2MB)
+    if (cover.size > 2 * 1024 * 1024) {
+      return res.status(400).json({ message: "La imagen supera el límite de 2MB." });
+    }
+
+    // Lista blanca de extensiones permitidas
+    const allowedExts = [".jpg", ".jpeg", ".png", ".gif"];
+
+    // Sanitizar nombre
+    const safeName = path
+      .basename(cover.name)
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9._-]/g, "");
+
+    //  Extraer extensión
+    const ext = path.extname(safeName).toLowerCase();
+
+    //  Validar extensión
+    if (!allowedExts.includes(ext)) {
+      return res.status(400).json({ message: "Extensión de imagen no permitida." });
+    }
+
+    //  Generar nombre único
     const filename = `cover_${id}_${Date.now()}${ext}`;
     const uploadPath = path.join(process.cwd(), "uploads", filename);
 
+    //  Mover archivo
     await cover.mv(uploadPath);
 
+    //  Actualizar la playlist con la nueva imagen
     const playlist = await Playlist.findOneAndUpdate(
       { _id: id, createdBy: userId },
       { coverImage: filename },
@@ -123,7 +212,9 @@ export const updateCoverImage = async (req, res, next) => {
     );
 
     if (!playlist) {
-      return res.status(404).json({ message: "Playlist no encontrada o no tienes permisos" });
+      return res
+        .status(404)
+        .json({ message: "Playlist no encontrada o no tienes permisos" });
     }
 
     res.json(playlist);
@@ -133,11 +224,20 @@ export const updateCoverImage = async (req, res, next) => {
   }
 };
 
+
+/**
+ * Actualizar datos de la playlist
+ */
 export const updatePlaylist = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user._id;
+    const userId = req.userId;
     const { name, description, isPublic } = req.body;
+
+    // Validar ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
 
     const playlist = await Playlist.findById(id);
 
@@ -145,8 +245,10 @@ export const updatePlaylist = async (req, res, next) => {
       return res.status(404).json({ message: "Playlist no encontrada" });
     }
 
-    if (String(playlist.createdBy) !== String(userId)) {
-      return res.status(403).json({ message: "No tienes permisos para editar esta playlist" });
+    if (playlist.createdBy.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para editar esta playlist" });
     }
 
     if (name !== undefined) playlist.name = name;

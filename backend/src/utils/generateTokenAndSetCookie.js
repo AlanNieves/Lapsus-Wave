@@ -6,17 +6,33 @@ import jwt from "jsonwebtoken";
  * @param {string} userId - ID del usuario
  * @returns {string} token JWT generado
  */
-export const generateTokenAndSetCookie = (res, userId) => {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
+export const generateTokensAndSetCookies = (res, userId) => {
+  const accessToken = jwt.sign(
+    { userId },
+    process.env.JWT_SECRET,
+    { expiresIn: "15m" }
+  );
+
+  const refreshToken = jwt.sign(
+    { userId },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 15 * 60 * 1000, // 15 minutos
   });
 
-  res.cookie("token", token, {
-    httpOnly: true,                       // ✅ no accesible desde JS
-    secure: process.env.NODE_ENV === "production", // ✅ solo HTTPS en prod
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ compatibilidad con localhost
-    maxAge: 7 * 24 * 60 * 60 * 1000,      // 7 días
+  // Guardar el Refresh Token en cookie segura
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
   });
 
-  return token;
+  return accessToken;
 };

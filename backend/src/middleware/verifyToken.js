@@ -1,22 +1,32 @@
 import jwt from "jsonwebtoken";
 
 export const verifyToken = (req, res, next) => {
-	const token = req.cookies.token;
+  try {
+    // 🚩 Leer la cookie accessToken
+    const accessToken = req.cookies.accessToken;
 
-	if (!token) {
-		return res.status(401).json({ success: false, message: "No autorizado - no token" });
-	}
+    if (!accessToken) {
+      return res.status(401).json({
+        success: false,
+        message: "No hay token de acceso",
+      });
+    }
 
-	try {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
-		if (!decoded) {
-			return res.status(401).json({ success: false, message: "Token inválido" });
-		}
+    // 🚩 Verificar el token
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
 
-		req.userId = decoded.userId; // usado en checkAuth
-		next();
-	} catch (error) {
-		console.error("Error en verifyToken", error);
-		return res.status(500).json({ success: false, message: "Error en el servidor" });
-	}
+    // 🚩 Guardar userId en req para los controladores
+    req.userId = decoded.userId;
+
+    next();
+  } catch (error) {
+    console.error("Error en verifyToken:", error);
+    res.status(401).json({
+      success: false,
+      message:
+        error.name === "TokenExpiredError"
+          ? "Token expirado"
+          : "Token inválido",
+    });
+  }
 };

@@ -47,7 +47,7 @@ const UsersList = () => {
 								>
 									<div className='relative'>
 										<Avatar className='size-8 md:size-12'>
-											<AvatarImage src={user.imageUrl} />
+											<AvatarImage src={user.avatar} />
 											<AvatarFallback>{user.nickname}</AvatarFallback>
 										</Avatar>
 										<div

@@ -1,8 +1,7 @@
-// src/pages/auth/components/LoginForm.tsx
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router-dom";
-import { login, checkAuth } from "@/services/auth.service";
+import { login } from "@/services/auth.service";
 import toast from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
 
@@ -16,16 +15,29 @@ const LoginForm = () => {
     if (!isLoading && user) {
       navigate("/");
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(identifier.trim(), password.trim());
-      const authRes = await checkAuth();
-      setUser(authRes.data.user);
+      const res = await login(identifier.trim(), password.trim());
+      const data = res.data;
+
+      if (!data.success) {
+        toast.error(data.message || "Credenciales inválidas");
+        return;
+      }
+
+      setUser(data.user);
+
       toast.success("Sesión iniciada correctamente");
-      navigate("/");
+
+      if (!data.user.isProfileComplete) {
+        navigate("/complete-profile");
+      } else {
+        navigate("/");
+      }
+
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Credenciales inválidas");
     }
@@ -73,10 +85,12 @@ const LoginForm = () => {
               const credential = credentialResponse.credential;
               if (!credential) throw new Error("Token inválido");
 
-              const res = await loginWithGoogle(credential);
+              const user = await loginWithGoogle(credential);
+              setUser(user);
+
               toast.success("Sesión iniciada con Google");
 
-              if (!res.user.isProfileComplete) {
+              if (!user.isProfileComplete) {
                 navigate("/complete-profile");
               } else {
                 navigate("/");

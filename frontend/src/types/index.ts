@@ -1,8 +1,9 @@
+
 export interface Song {
   _id: string;
   title: string;
   artist: string;
-  albumId: string;
+  albumId: string | null;
   imageUrl: string;
   audioUrl: string;
   duration: number;
@@ -39,19 +40,28 @@ export interface Message {
 // ✅ Actualizado sin Clerk
 export interface User {
   _id: string;
-  email: string;
-  imageUrl: string;
-  isVerified: boolean;
-  nickname?: string;
-  edad?: number;
+  email?: string; // Opcional, porque puede faltar si el proveedor no es local
+  nickname: string;
   phone?: string;
-  authProvider?: "google" | "lapsus-wave";
-  isProfileComplete?: boolean;
+  age?: number;
+  avatar: string;
+  authProvider: "local" | "google" | "facebook" | "apple" | "lapsus-wave";
+  isProfileComplete: boolean;
+  createdAt: string;
+  updatedAt: string;
+  googleId?: string;
+  facebookId?: string;
+  appleId?: string;
+  lapsusId?: string;
 }
+
 
 export interface Track {
   _id: string;
   title: string;
+  artist: string;
+  duration: number;
+  imageUrl?:string;
 }
 
 export interface Playlist {
@@ -61,6 +71,37 @@ export interface Playlist {
   isPublic?: boolean;
   createdBy?: string;
   coverImage?: string;
-  artistId: string;
+  songs: Song[];
+}
+
+export interface Review {
+  _id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+  songId?: string;
+  songTitle?: string;  
+  artistName?: string; 
+  albumId?: string;
+}
+
+export interface Artist {
+  _id: string;
+  name: string;
+  bio?: string;
+  imageUrl?: string;
   songs?: Song[];
+  albums?: Album[];
+  followers?:number;
+}
+
+export interface SignupData {
+  email?: string;
+  phone?: string;
+  nickname: string;
+  password: string;
+  age: string;
+  tokenDelivery: "phone" | "email";
 }

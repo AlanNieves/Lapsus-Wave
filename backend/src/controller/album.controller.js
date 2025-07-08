@@ -10,17 +10,22 @@ export const getAllAlbums = async (req, res, next) => {
 };
 
 export const getAlbumById = async (req, res, next) => {
-	try {
-		const { albumId } = req.params;
+  try {
+    const { albumId } = req.params;
 
-		const album = await Album.findById(albumId).populate("songs");
+    // 🔹 AÑADIR VALIDACIÓN
+    if (!mongoose.Types.ObjectId.isValid(albumId)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
 
-		if (!album) {
-			return res.status(404).json({ message: "Album not found" });
-		}
+    const album = await Album.findById(albumId).populate("songs");
 
-		res.status(200).json(album);
-	} catch (error) {
-		next(error);
-	}
+    if (!album) {
+      return res.status(404).json({ message: "Album not found" });
+    }
+
+    res.status(200).json(album);
+  } catch (error) {
+    next(error);
+  }
 };

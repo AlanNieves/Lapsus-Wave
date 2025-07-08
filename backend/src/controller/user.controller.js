@@ -14,19 +14,23 @@ export const getAllUsers = async (req, res, next) => {
 
 // 🔄 Obtener mensajes entre el usuario autenticado y otro
 export const getMessages = async (req, res, next) => {
-	try {
-		const myId = req.userId;
-		const { userId } = req.params;
+  try {
+    const myId = req.userId;
+    const { userId } = req.params;
 
-		const messages = await Message.find({
-			$or: [
-				{ senderId: userId, receiverId: myId },
-				{ senderId: myId, receiverId: userId },
-			],
-		}).sort({ createdAt: 1 });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
 
-		res.status(200).json(messages);
-	} catch (error) {
-		next(error);
-	}
+    const messages = await Message.find({
+      $or: [
+        { senderId: userId, receiverId: myId },
+        { senderId: myId, receiverId: userId },
+      ],
+    }).sort({ createdAt: 1 });
+
+    res.status(200).json(messages);
+  } catch (error) {
+    next(error);
+  }
 };

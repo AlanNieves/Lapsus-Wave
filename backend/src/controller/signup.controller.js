@@ -1,7 +1,8 @@
 import { deleteToken, verifyToken } from "../utils/tokenStore.js";
 import User from "../models/user.model.js";
 import * as bcrypt from "bcrypt";
-import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import { generateTokensAndSetCookies } from "../utils/generateTokenAndSetCookie.js";
+import { normalizePhone } from "../utils/normalizePhone.js";
 
 // ✅ Para mantener compatibilidad con /signup/initiate
 export const initiateSignup = async (req, res) => {
@@ -34,6 +35,8 @@ export const completeSignup = async (req, res) => {
       token,
     } = req.body;
 
+    const normalizedPhone = normalizePhone(phone);
+
     const key = verifyBy === "phone" ? phone : email;
 
     const isValid = await verifyToken(key, token);
@@ -42,7 +45,7 @@ export const completeSignup = async (req, res) => {
     }
 
     const userExists = await User.findOne({
-      $or: [{ email }, { phone }, { nickname }],
+      $or: [{ email }, { phone: normalizedPhone }, { nickname }],
     });
     if (userExists) {
       return res
@@ -54,7 +57,7 @@ export const completeSignup = async (req, res) => {
 
     const newUser = new User({
       email: email || undefined,
-      phone: phone || undefined,
+      phone: normalizePhone(phone) || undefined,
       nickname,
       password,
       age,
@@ -66,11 +69,12 @@ export const completeSignup = async (req, res) => {
     await newUser.save();
     await deleteToken(key);
 
-    generateTokenAndSetCookie(res, newUser._id);
+    const accessToken = generateTokensAndSetCookies(res, newUser._id);
 
     res.status(201).json({
       success: true,
       message: "Usuario creado exitosamente",
+      accessToken,
       user: { ...newUser._doc, password: undefined },
     });
   } catch (error) {

@@ -8,20 +8,21 @@ import { sendVerificationEmail } from "../utils/sendEmail.js"; // ✅ Importaci�
  * @route POST /api/token/send
  */
 export const sendToken = async (req, res) => {
-  const { key, method } = req.body;
+  const { email, phone } = req.body;
 
-  if (!key || !["phone", "email"].includes(method)) {
-    return res.status(400).json({ message: "Datos inválidos" });
+  if (!email && !phone) {
+    return res.status(400).json({ message: "Debes proporcionar email o teléfono." });
   }
 
   try {
     const token = Math.floor(100000 + Math.random() * 900000).toString(); // Token de 6 dígitos
-    await saveToken(key, token);
 
-    if (method === "phone") {
-      await sendVerificationSMS(key, token);
-    } else if (method === "email") {
-      await sendVerificationEmail(key, token);
+    if (email) {
+      await saveToken(email, token);
+      await sendVerificationEmail(email, token);
+    } else if (phone) {
+      await saveToken(phone, token);
+      await sendVerificationSMS(phone, token);
     }
 
     res.status(200).json({ message: "Token enviado correctamente" });
@@ -30,6 +31,7 @@ export const sendToken = async (req, res) => {
     res.status(500).json({ message: "Error al enviar token", error: error.message });
   }
 };
+
 
 /**
  * Verifica un token enviado previamente

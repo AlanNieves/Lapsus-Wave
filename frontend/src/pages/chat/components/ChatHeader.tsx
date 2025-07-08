@@ -10,7 +10,7 @@ const ChatHeader = () => {
 		<div className='p-4 border-b border-transparent'>
 			<div className='flex items-center gap-3'>
 				<Avatar>
-					<AvatarImage src={selectedUser.imageUrl} />
+					<AvatarImage src={selectedUser.avatar} />
 					<AvatarFallback>{selectedUser.nickname}</AvatarFallback>
 				</Avatar>
 				<div>

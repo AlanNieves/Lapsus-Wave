@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
-import { Album, Playlist, Song, Stats } from "@/types";
+import { Album, Playlist, Song, Stats, Artist, Review } from "@/types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
@@ -15,6 +15,9 @@ interface MusicStore {
 	trendingSongs: Song[];
 	stats: Stats;
 	playlists: Playlist[];
+	artists: Artist[];
+	reviews: Review[];
+	
 	
 	
 
@@ -25,8 +28,11 @@ interface MusicStore {
 	fetchTrendingSongs: () => Promise<void>;
 	fetchStats: () => Promise<void>;
 	fetchSongs: () => Promise<void>;
+	fetchArtists: () => Promise<void>;
+	fetchReviews: () => Promise<void>;
 	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
+	addReview: (review: Omit<Review, '_id' | 'createdAt'>) => Promise<void>;
 }
 
 export const useMusicStore = create<MusicStore>((set) => ({
@@ -46,6 +52,8 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	},
 	currentPlaylist: null,
 	playlists: [],
+	artists: [],
+	reviews: [],
 
 	deleteSong: async (id) => {
 		set({ isLoading: true, error: null });
@@ -168,4 +176,46 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set({ isLoading: false });
 		}
 	},
+
+	fetchArtists: async () => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get("/artists");
+			set({ artists: response.data });
+		} catch (error: any) {
+			set({ error: error.response.data.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+
+	fetchReviews: async () => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get("/reviews");
+			set({ reviews: response.data });
+		} catch (error: any) {
+			set({ error: error.response.data.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+
+	addReview: async (review) => {
+		set({ isLoading: true });
+		try {
+			const response = await axiosInstance.post("/reviews", review);
+			set((state) => ({
+			reviews: [response.data, ...state.reviews],
+			isLoading: false
+			}));
+			toast.success("Review added successfully!");
+			return response.data;
+		} catch (error: any) {
+			toast.error("Error adding review");
+			set({ isLoading: false });
+			throw error;
+		}
+		},
 }));
+

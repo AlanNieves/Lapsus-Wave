@@ -81,9 +81,17 @@ export const getTrendingSongs = async (req, res, next) => {
 // Obtener canciones por artista (usado en ArtistPage)
 export const getSongsByArtist = async (req, res, next) => {
   try {
-    const songs = await Song.find({ artistId: req.params.id }).populate("artistId");
+    const { id } = req.params;
+
+    // 🔹 AÑADIR VALIDACIÓN
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    const songs = await Song.find({ artistId: id }).populate("artistId");
     res.json(songs);
   } catch (error) {
     next(error);
   }
 };
+

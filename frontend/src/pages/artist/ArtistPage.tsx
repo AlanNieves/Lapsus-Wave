@@ -1,23 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
+import { Artist, Song } from "@/types";
 import { Play, Heart } from "lucide-react";
 import { axiosInstance } from "@/lib/axios";
 
-interface Artist {
-  _id: string;
-  name: string;
-  image?: string;
-  followers?: number;
-}
-
-interface Song {
-  _id: string;
-  title: string;
-  imageUrl: string;
-  duration: number;
-  audioUrl: string;
-}
 
 const ArtistPage = () => {
   const { artistId } = useParams();
@@ -49,13 +35,13 @@ const ArtistPage = () => {
         <div
           className="absolute inset-0 bg-cover bg-center blur-md opacity-30"
           style={{
-            backgroundImage: `url(${artist.image || "/default-artist.jpg"})`,
+            backgroundImage: `url(${artist.imageUrl || "/default-artist.jpg"})`,
           }}
         />
         <div className="absolute inset-0 bg-black opacity-50" />
         <div className="relative z-10 p-8 flex flex-col items-center text-center">
           <img
-            src={artist.image || "/default-artist.jpg"}
+            src={artist.imageUrl || "/default-artist.jpg"}
             alt={artist.name}
             className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-md"
           />

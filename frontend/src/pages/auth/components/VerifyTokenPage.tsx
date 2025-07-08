@@ -1,35 +1,36 @@
-// src/pages/auth/components/VerifyTokenPage.tsx
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { axiosInstance } from "@/lib/axios";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useSignupStore } from "@/stores/useSignupStore";
 
 const VerifyTokenPage = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
-  const form = location.state;
+  const { signupData, clearSignupData } = useSignupStore();
 
   const [token, setToken] = useState("");
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
-    if (!form?.email || !form?.phone) {
+    if (!signupData?.email && !signupData?.phone) {
       toast.error("Información incompleta. Intenta registrarte de nuevo.");
       navigate("/auth");
     }
-  }, [form, navigate]);
+  }, [signupData, navigate]);
 
   const handleCompleteSignup = async () => {
+    if (!signupData) return;
+
     try {
       await axiosInstance.post("/auth/signup/complete", {
-        phone: "+521" + form.phone,
-        email: form.email,
-        nickname: form.nickname,
-        password: form.password,
-        age: parseInt(form.age),
-        verifyBy: form.tokenDelivery,
+        phone: signupData.phone ? "+521" + signupData.phone : undefined,
+        email: signupData.email,
+        nickname: signupData.nickname,
+        password: signupData.password,
+        age: parseInt(signupData.age),
+        verifyBy: signupData.tokenDelivery,
         token,
       });
 
@@ -49,7 +50,7 @@ const VerifyTokenPage = () => {
         return false;
       };
 
-      const exists = await waitForUserToExist(form.email);
+      const exists = await waitForUserToExist(signupData.email || "");
       if (!exists) {
         toast.error("Tu cuenta aún no está disponible. Intenta más tarde.");
         return;
@@ -57,7 +58,9 @@ const VerifyTokenPage = () => {
 
       const authRes = await axiosInstance.get("/auth/check-auth");
       setUser(authRes.data.user);
+
       toast.success("Cuenta creada e iniciada sesión correctamente");
+      clearSignupData();
       navigate("/");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Token inválido o expirado");
@@ -65,11 +68,16 @@ const VerifyTokenPage = () => {
   };
 
   const handleResendToken = async () => {
+    if (!signupData) return;
+
     try {
-      await axiosInstance.post("/token/send", {
-        key: form.tokenDelivery === "phone" ? "+521" + form.phone : form.email,
-        method: form.tokenDelivery,
-      });
+      await axiosInstance.post(
+        "/token/send",
+        signupData.tokenDelivery === "phone"
+          ? { phone: "+521" + signupData.phone }
+          : { email: signupData.email }
+      );
+
       toast.success("Código reenviado");
       setCooldown(30);
     } catch (err: any) {
@@ -102,7 +110,7 @@ const VerifyTokenPage = () => {
         <input
           type="text"
           placeholder={`Código recibido por ${
-            form.tokenDelivery === "phone" ? "SMS" : "correo"
+            signupData?.tokenDelivery === "phone" ? "SMS" : "correo"
           }`}
           value={token}
           onChange={(e) => setToken(e.target.value)}

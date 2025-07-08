@@ -1,37 +1,26 @@
 import { create } from "zustand";
 import { axiosInstance } from "@/lib/axios";
-
-export interface User {
-  _id: string;
-  email: string;
-  imageUrl: string;
-  isVerified: boolean;
-  isProfileComplete: boolean;
-  authProvider: string;
-  nickname: string;
-  phone: string;
-}
+import { User } from "@/types";
+import { useChatStore } from "./useChatStore";
 
 interface AuthState {
   user: User | null;
   isLoading: boolean;
 
-  // Métodos
   setUser: (user: User | null) => void;
+  clearAuth: () => void;
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
   login: (identifier: string, password: string) => Promise<void>;
-  loginWithGoogle: (credential: string) => Promise<{ user: User }>;
+  loginWithGoogle: (credential: string) => Promise<User>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
 
-  // ✅ Permite actualizar manualmente el estado del usuario
   setUser: (user) => set({ user }),
 
-  // ✅ Verifica si hay sesión activa
   checkAuth: async () => {
     try {
       set({ isLoading: true });
@@ -45,19 +34,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  // ✅ Cierra sesión
   logout: async () => {
     try {
       await axiosInstance.post("/auth/logout", null, {
         withCredentials: true,
       });
+
+      const { disconnectSocket } = useChatStore.getState();
+      disconnectSocket();
+
       set({ user: null });
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
+
+      const { disconnectSocket } = useChatStore.getState();
+      disconnectSocket();
+
+      set({ user: null });
     }
   },
 
-  // ✅ Login con email, teléfono o nickname
   login: async (identifier: string, password: string) => {
     try {
       set({ isLoading: true });
@@ -74,8 +70,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  // ✅ Login con Google
-  loginWithGoogle: async (credential: string): Promise<{ user: User }> => {
+  loginWithGoogle: async (credential: string): Promise<User> => {
     try {
       set({ isLoading: true });
       const res = await axiosInstance.post(
@@ -84,11 +79,13 @@ export const useAuthStore = create<AuthState>((set) => ({
         { withCredentials: true }
       );
       set({ user: res.data.user, isLoading: false });
-      return res.data;
+      return res.data.user;
     } catch (error) {
       console.error("Error en login con Google:", error);
       set({ isLoading: false });
       throw error;
     }
   },
+
+  clearAuth: () => set({ user: null }),
 }));

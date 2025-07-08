@@ -9,7 +9,7 @@ import { createServer } from "http";
 import cron from "node-cron";
 import { initializeSocket } from "./lib/socket.js";
 import { connectDB } from "./lib/db.js";
-import playlistRoutes from "./routes/playlist.routes.js";
+import playlistRoutes from "./routes/playlist.route.js";
 import userRoutes from "./routes/user.route.js";
 import adminRoutes from "./routes/admin.route.js";
 import authRoutes from "./routes/auth.route.js";
@@ -18,6 +18,7 @@ import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
 import artistRoutes from "./routes/artist.routes.js";
 import tokenRoutes from "./routes/token.route.js";
+import reviewRoutes from "./routes/review.route.js";
 dotenv.config();
 
 const __dirname = path.resolve();
@@ -35,10 +36,18 @@ const startServer = async () => {
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
   // 🛡️ CORS
+  const whitelist = [process.env.CLIENT_URL];
   app.use(
     cors({
-      origin: process.env.CLIENT_URL,
-      credentials: true,
+      origin: (origin, callback) => {
+        if(!origin) return callback(null, true);
+        if(whitelist.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("No permitido por CORS"));
+        }
+      },
+      credentials: true, // permitir cookies
     })
   );
 
@@ -68,6 +77,7 @@ const startServer = async () => {
   app.use("/api/stats", statRoutes);
   app.use("/api/playlists", playlistRoutes);
   app.use("/api/token", tokenRoutes);
+  app.use("/api/reviews", reviewRoutes);
 
   // 🧹 Cron para limpiar archivos temporales
   const tempDir = path.join(process.cwd(), "tmp");

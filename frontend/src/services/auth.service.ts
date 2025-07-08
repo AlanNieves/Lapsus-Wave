@@ -1,12 +1,22 @@
 import { axiosInstance } from "@/lib/axios";
+import { User } from "@/types";
 
 // ✅ LOGIN
-export const login = (identifier: string, password: string) =>
-  axiosInstance.post("/auth/login", { identifier, password }, { withCredentials: true });
+export const login = async (identifier: string, password: string) => {
+  return axiosInstance.post(
+    "/auth/login",
+    { identifier, password },
+    { withCredentials: true }
+  );
+};
 
 // ✅ LOGIN CON GOOGLE
-export const loginWithGoogle = (credential: string) =>
-  axiosInstance.post("/auth/google", { credential }, { withCredentials: true });
+export const loginWithGoogle = async (
+  credential: string
+): Promise<User> => {
+  const res = await axiosInstance.post("/auth/google", { credential });
+  return res.data;
+};
 
 // ✅ LOGOUT
 export const logout = () =>
@@ -16,7 +26,7 @@ export const logout = () =>
 export const checkAuth = () =>
   axiosInstance.get("/auth/check-auth", { withCredentials: true });
 
-// ✅ VALIDAR USUARIO (antes de crear cuenta)
+// ✅ VALIDAR USUARIO
 export const validateUserData = ({
   email,
   phone,
@@ -32,20 +42,15 @@ export const validateUserData = ({
     nickname,
   });
 
-// ✅ ENVIAR TOKEN (registro por SMS/correo)
-export const initiateSignup = (key: string, method: "email" | "phone") =>
-  axiosInstance.post("/token/send", { key, method });
+// ✅ ENVIAR TOKEN
+export const initiateSignup = (value: string, method: "email" | "phone") =>
+  axiosInstance.post(
+    "/token/send",
+    method === "phone" ? { phone: value } : { email: value }
+  );
 
-// ✅ COMPLETAR REGISTRO (una vez verificado el token)
-export const completeSignup = ({
-  email,
-  phone,
-  nickname,
-  password,
-  age,
-  verifyBy,
-  token,
-}: {
+// ✅ COMPLETAR REGISTRO
+export const completeSignup = (payload: {
   email: string;
   phone: string;
   nickname: string;
@@ -54,15 +59,7 @@ export const completeSignup = ({
   verifyBy: "email" | "phone";
   token: string;
 }) =>
-  axiosInstance.post("/auth/signup/complete", {
-    email,
-    phone,
-    nickname,
-    password,
-    age,
-    verifyBy,
-    token,
-  });
+  axiosInstance.post("/auth/signup/complete", payload);
 
 // ✅ COMPLETAR PERFIL
 export const completeProfile = (payload: {
@@ -83,6 +80,6 @@ export const forgotPassword = (email: string) =>
 export const resetPassword = (token: string, password: string) =>
   axiosInstance.post(`/auth/reset-password/${token}`, { password });
 
-// ✅ VERIFICAR EMAIL (opcional, si lo usas)
+// ✅ VERIFICAR EMAIL
 export const verifyEmail = (code: string) =>
   axiosInstance.post("/auth/verify-email", { code });

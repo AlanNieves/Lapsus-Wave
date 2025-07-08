@@ -1,15 +1,17 @@
 import * as bcrypt from "bcrypt";
 import crypto from "crypto";
-
+import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import { generateTokensAndSetCookies } from "../utils/generateTokenAndSetCookie.js";
 import { verifyGoogleToken } from "../utils/googleAuth.js";
 import {
   sendWelcomeEmail,
   sendPasswordResetEmail,
   sendResetSuccessEmail,
 } from "../utils/sendEmail.js";
+import { normalizePhone } from "../utils/normalizePhone.js";
 
+// ✅ LOGIN LOCAL o LAPSUS-WAVE
 // ✅ LOGIN LOCAL o LAPSUS-WAVE
 export const login = async (req, res) => {
   const { identifier, password } = req.body;
@@ -21,27 +23,24 @@ export const login = async (req, res) => {
         .json({ success: false, message: "Faltan campos requeridos" });
     }
 
+    let user = null;
     const isEmail = identifier.includes("@");
-    const normalizedIdentifier = isEmail
-      ? identifier.toLowerCase()
-      : identifier;
+    const isPhone = /^\d+$/.test(identifier);
 
-    const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const user = await User.findOne({
-      $or: [
-        { email: normalizedIdentifier },
-        {
-          nickname: new RegExp(`^${escapeRegExp(normalizedIdentifier)}$`, "i"),
-        },
-        { phone: normalizedIdentifier },
-      ],
-    });
+    if (isEmail) {
+      user = await User.findOne({ email: identifier.toLowerCase() });
+    } else if (isPhone) {
+      user = await User.findOne({ phone: normalizePhone(identifier) });
+    } else {
+      user = await User.findOne({
+        nickname: new RegExp(`^${identifier}$`, "i"),
+      });
+    }
 
     console.log("🟢 Body recibido:", req.body);
     console.log("🟡 Usuario encontrado:", user);
 
     if (!user) {
-      console.log("🔴 No se encontró usuario con:", identifier);
       return res
         .status(400)
         .json({ success: false, message: "Usuario no encontrado" });
@@ -49,27 +48,27 @@ export const login = async (req, res) => {
 
     if (!["local", "lapsus-wave"].includes(user.authProvider)) {
       console.log("🟠 authProvider incorrecto:", user.authProvider);
-      return res
-        .status(400)
-        .json({ success: false, message: "Proveedor inválido" });
+      return res.status(400).json({
+        success: false,
+        message: `Este usuario se registró con ${user.authProvider}. Usa ese método de inicio de sesión.`,
+      });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log("Comparando:", password, "con hash:", user.password);
-    console.log("¿Es válida la contraseña?", isPasswordValid);
     if (!isPasswordValid) {
       return res
         .status(400)
         .json({ success: false, message: "Credenciales inválidas" });
     }
 
-    generateTokenAndSetCookie(res, user._id);
+    const accessToken = generateTokensAndSetCookies(res, user._id);
     user.lastLogin = new Date();
     await user.save();
 
     res.status(200).json({
       success: true,
       message: "Sesión iniciada",
+      accessToken,
       user: { ...user._doc, password: undefined },
     });
   } catch (error) {
@@ -109,13 +108,14 @@ export const loginWithGoogle = async (req, res) => {
       });
     }
 
-    generateTokenAndSetCookie(res, user._id);
+    const accessToken = generateTokensAndSetCookies(res, user._id);
     user.lastLogin = new Date();
     await user.save();
 
     res.status(200).json({
       success: true,
       message: "Sesión iniciada con Google",
+      accessToken,
       user: { ...user._doc, password: undefined },
     });
   } catch (error) {
@@ -163,6 +163,7 @@ export const verifyEmail = async (req, res) => {
 // ✅ VALIDACIÓN DE USUARIO
 export const validateUserData = async (req, res) => {
   const { email, phone, nickname, mode } = req.body;
+  const normalizedPhone = normalizePhone(phone);
 
   if (mode === "check") {
     try {
@@ -182,8 +183,8 @@ export const validateUserData = async (req, res) => {
     if (emailExists) errors.email = "El correo ya está registrado";
   }
 
-  if (phone) {
-    const phoneExists = await User.findOne({ phone });
+  if (normalizedPhone) {
+    const phoneExists = await User.findOne({ phone: normalizedPhone });
     if (phoneExists) errors.phone = "El número telefónico ya está registrado";
   }
 
@@ -253,7 +254,6 @@ export const resetPassword = async (req, res) => {
         .json({ success: false, message: "Token inválido o expirado" });
     }
 
-    
     user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpiresAt = undefined;
@@ -270,21 +270,60 @@ export const resetPassword = async (req, res) => {
 // ✅ CHECK AUTH
 export const checkAuth = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Usuario no encontrado" });
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+      return res.status(401).json({
+        success: false,
+        message: "No hay token de acceso",
+      });
     }
-    res.status(200).json({ success: true, user });
+
+    //verificar token
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuario no enontrado",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        email: user.email ?? null,
+        nickname: user.nickname ?? null,
+        phone: user.phone ?? null,
+        age: user.age ?? null,
+        avatar: user.avatar ?? null,
+        authProvider: user.authProvider ?? null,
+        isProfileComplete: user.isProfileComplete ?? false,
+        googleId: user.googleId ?? null,
+        facebookId: user.facebookId ?? null,
+        appleId: user.appleId ?? null,
+        lapsusId: user.lapsusId ?? null,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error("Error en checkauth:", error);
+    res.status(401).json({
+      success: false,
+      message:
+        error.name === "TokenExpiredError"
+          ? "Token expirado"
+          : "Token invalido",
+    });
   }
 };
 
 // ✅ COMPLETE PROFILE
 export const completeProfile = async (req, res) => {
   const { nickname, phone, age } = req.body;
+  const normalizedPhone = normalizePhone(phone);
 
   try {
     const user = await User.findById(req.userId);
@@ -298,10 +337,17 @@ export const completeProfile = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Perfil ya completado" });
 
-    if (!nickname || !age || (!phone && user.authProvider === "local")) {
+    if (
+      !nickname ||
+      !age ||
+      (!normalizedPhone && user.authProvider === "local")
+    ) {
       return res
         .status(400)
-        .json({ success: false, message: "Faltan campos obligatorios" });
+        .json({
+          success: false,
+          message: "Faltan campos obligatorios o el teléfono no es válido",
+        });
     }
 
     const nicknameTaken = await User.findOne({ nickname });
@@ -311,8 +357,8 @@ export const completeProfile = async (req, res) => {
         .json({ success: false, message: "Nickname ya está en uso" });
     }
 
-    if (phone) {
-      const phoneTaken = await User.findOne({ phone });
+    if (normalizedPhone) {
+      const phoneTaken = await User.findOne({ phone: normalizedPhone });
       if (phoneTaken) {
         return res
           .status(400)
@@ -322,7 +368,7 @@ export const completeProfile = async (req, res) => {
 
     user.nickname = nickname;
     user.age = age;
-    if (phone) user.phone = phone;
+    if (normalizedPhone) user.phone = normalizedPhone;
     user.isProfileComplete = true;
 
     await user.save();

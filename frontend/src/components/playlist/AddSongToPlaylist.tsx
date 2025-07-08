@@ -1,12 +1,8 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useEffect, useState } from "react";
 import { axiosInstance } from "@/lib/axios";
+import { Song } from "@/types";
 
-interface Song {
-  _id: string;
-  title: string;
-  artist: string;
-}
 
 interface AddSongToPlaylistProps {
   playlistId: string;

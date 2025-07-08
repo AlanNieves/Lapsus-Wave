@@ -2,14 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search } from "lucide-react";
 import { useLanguageStore } from "@/stores/useLanguageStore";
 import { translations } from "@/locales";
-
-interface Track {
-  _id: string;
-  title: string;
-  artist: string;
-  duration: string;
-  imageUrl?: string;
-}
+import { Track } from "@/types";
 
 interface SearchComponentProps {
   tracks: Track[];
