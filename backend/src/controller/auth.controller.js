@@ -101,7 +101,7 @@ export const loginWithGoogle = async (req, res) => {
         googleId,
         email,
         nickname: name,
-        imageUrl: picture,
+        avatar: picture,
         authProvider: "google",
         isVerified: true,
         isProfileComplete: false,

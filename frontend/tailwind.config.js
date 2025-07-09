@@ -49,6 +49,21 @@ export default {
           "75%": { opacity: 0.3 },
         },
       },
+      // tailwind.config.js
+      extend: {
+        keyframes: {
+          pingOnce: {
+            '0%': { transform: 'scale(1)', opacity: '1' },
+            '40%': { transform: 'scale(1.8)', opacity: '0.5' },
+            '100%': { transform: 'scale(1)', opacity: '1' },
+          },
+        },
+        animation: {
+          'ping-once': 'pingOnce 0.6s ease-in-out',
+        },
+      },
+
+
       animation: {
         fuild: "fluidMotion 12s ease-in-out infinite",
         bounce: "bounce 1s infinite",
@@ -143,5 +158,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
+  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar"), require('tailwind-scrollbar-hide')],
 };

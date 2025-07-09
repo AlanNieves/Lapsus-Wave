@@ -53,6 +53,7 @@
     "@types/react": "^18.3.18",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18.3.5",
+    "@types/three": "^0.178.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "classnames": "^2.5.1",

@@ -40,10 +40,47 @@ const userSchema = new mongoose.Schema(
     facebookId: String,
     appleId: String,
     lapsusId: String,
+
+    /**
+     * Imagen de perfil principal
+     */
     avatar: {
       type: String,
       default: "https://ui-avatars.com/api/?name=User&background=random",
     },
+
+    /**
+     * Imagen de portada opcional
+     */
+    cover: {
+      type: String,
+      default: "",
+    },
+
+    /**
+     * Breve biografía del usuario
+     */
+    bio: {
+      type: String,
+      default: "",
+    },
+
+    /**
+     * Etiquetas asociadas al usuario
+     */
+    tags: {
+      type: [String],
+      default: [],
+    },
+
+    /**
+     * IDs de otros usuarios que siguen a este usuario
+     */
+    followers: {
+      type: [String],
+      default: [],
+    },
+
     authProvider: {
       type: String,
       enum: ["local", "google", "facebook", "apple", "lapsus-wave"],

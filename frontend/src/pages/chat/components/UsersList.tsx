@@ -7,7 +7,7 @@ import type { User } from "@/types";
 
 const UsersList = () => {
 	const {
-		users,
+		users = [], // 🛡️ Protección: array por defecto
 		selectedUser,
 		isLoading,
 		setSelectedUser,
@@ -48,7 +48,9 @@ const UsersList = () => {
 									<div className='relative'>
 										<Avatar className='size-8 md:size-12'>
 											<AvatarImage src={user.avatar} />
-											<AvatarFallback>{user.nickname}</AvatarFallback>
+											<AvatarFallback>
+												{user.nickname?.[0] ?? "U"}
+											</AvatarFallback>
 										</Avatar>
 										<div
 											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-1 ring-neutral-800
@@ -62,7 +64,7 @@ const UsersList = () => {
 
 									<div className='flex-1 min-w-0 lg:block hidden'>
 										<span className='truncate max-w-[180px] block'>
-											{user.nickname}
+											{user.nickname ?? "Usuario"}
 										</span>
 									</div>
 								</div>

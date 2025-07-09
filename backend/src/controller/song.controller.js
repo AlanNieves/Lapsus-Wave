@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Song } from "../models/song.model.js";
 
 // Obtener todas las canciones (orden descendente por fecha)
@@ -78,12 +79,12 @@ export const getTrendingSongs = async (req, res, next) => {
   }
 };
 
-// Obtener canciones por artista (usado en ArtistPage)
+// Obtener canciones por artista
 export const getSongsByArtist = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // 🔹 AÑADIR VALIDACIÓN
+    // Validar ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido" });
     }
@@ -95,3 +96,26 @@ export const getSongsByArtist = async (req, res, next) => {
   }
 };
 
+// Obtener canción por ID
+export const getSongById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Validar ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    const song = await Song.findById(id);
+
+    if (!song) {
+      return res
+        .status(404)
+        .json({ message: "Canción no encontrada" });
+    }
+
+    res.status(200).json(song);
+  } catch (error) {
+    next(error);
+  }
+};
