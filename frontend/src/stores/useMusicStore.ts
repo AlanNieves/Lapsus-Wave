@@ -30,7 +30,7 @@ interface MusicStore {
   fetchReviews: () => Promise<void>;
   deleteSong: (id: string) => Promise<void>;
   deleteAlbum: (id: string) => Promise<void>;
-  addReview: (review: Omit<Review, "_id" | "createdAt">) => Promise<void>;
+  addReview: (review: Omit<Review, "_id" | "createdAt">) => Promise<Review>;
 }
 
 export const useMusicStore = create<MusicStore>((set) => ({
@@ -231,6 +231,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
         isLoading: false,
       }));
       toast.success("Review added successfully!");
+      return response.data; // ✅ Incluido
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Error adding review");
       set({ isLoading: false });
