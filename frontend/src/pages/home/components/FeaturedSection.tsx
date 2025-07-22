@@ -4,7 +4,7 @@ import PlayButton from "./PlayButton";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { MouseEvent } from "react";
 import { Song } from "@/types";
-import { useNavigate, Link } from "react-router-dom"; // Importación de useNavigate
+import { useNavigate, Link } from "react-router-dom";
 
 const FeaturedSection = () => {
   const { isLoading, featuredSongs, error } = useMusicStore();
@@ -27,26 +27,28 @@ const FeaturedSection = () => {
   if (error) return <p className="text-red-500 mb-4 text-lg">{error}</p>;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
       {featuredSongs.map((song: Song) => (
         <div
           key={song._id}
-          className="flex items-center bg-lapsus-1000/40 rounded-md overflow-hidden hover:bg-lapsus-1100/20 transition-colors group cursor-pointer relative"
           onClick={() => handleCardClick(song)}
           role="button"
           tabIndex={0}
+          className="flex items-center bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl hover:scale-[1.015] transition-transform group cursor-pointer relative"
         >
           <img
             src={song.imageUrl}
             alt={song.title}
-            className="w-16 sm:w-20 h-16 sm:h-20 object-cover flex-shrink-0"
+            className="w-16 sm:w-20 h-16 sm:h-20 object-cover flex-shrink-0 rounded-l-2xl"
           />
           <div className="truncate flex-1 p-4">
-            <p className="font-medium truncate">{song.title}</p>
+            <p className="text-white font-semibold truncate text-base sm:text-lg">
+              {song.title}
+            </p>
             <Link
               to={`/artist/${song.artistId}`}
-              className="text-sm text-lapsus-500 hover:underline"
-              onClick={(e) => e.stopPropagation()} // Evita conflicto con el click del contenedor
+              className="text-sm text-purple-300 hover:underline"
+              onClick={(e) => e.stopPropagation()}
             >
               {song.artist}
             </Link>

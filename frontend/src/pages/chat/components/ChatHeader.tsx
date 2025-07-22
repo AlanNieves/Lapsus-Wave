@@ -15,24 +15,26 @@ const ChatHeader = () => {
   };
 
   return (
-    <div className='p-4 border-b border-transparent'>
+    <div className="px-6 py-4 border-b border-white/5">
       <div
-        className='flex items-center gap-3 cursor-pointer hover:bg-lapsus-1250 rounded-lg p-2 transition-all'
+        className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md p-3 rounded-xl shadow transition-all cursor-pointer"
         onClick={goToProfile}
         title="Ver perfil"
       >
-        <Avatar>
+        <Avatar className="w-12 h-12">
           <AvatarImage src={selectedUser.image || "/default-avatar.png"} />
           <AvatarFallback>{userInitial}</AvatarFallback>
         </Avatar>
+
         <div>
-          <h2 className='font-medium text-white'>{selectedUser.nickname ?? "Usuario"}</h2>
-          <p className='text-sm text-lapsus-700'>
-            {onlineUsers.has(selectedUser._id) ? "Online" : "Offline"}
+          <h2 className="text-white text-lg font-semibold">{selectedUser.nickname ?? "Usuario"}</h2>
+          <p className={`text-sm ${onlineUsers.has(selectedUser._id) ? "text-green-400" : "text-purple-400"}`}>
+            {onlineUsers.has(selectedUser._id) ? "🟢 En línea" : "🔘 Desconectado"}
           </p>
         </div>
       </div>
     </div>
   );
 };
+
 export default ChatHeader;

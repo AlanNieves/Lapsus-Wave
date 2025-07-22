@@ -6,15 +6,9 @@ export default {
     extend: {
       keyframes: {
         fluidMotion: {
-          "0%": {
-            backgroundPosition: "0% 50%",
-          },
-          "50%": {
-            backgroundPosition: "100% 50%",
-          },
-          "100%": {
-            backgroundPosition: "0% 50%",
-          },
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
         },
         gradientMove: {
           "0%, 100%": { backgroundPosition: "0% 50%" },
@@ -48,22 +42,19 @@ export default {
           "50%": { opacity: 0.1 },
           "75%": { opacity: 0.3 },
         },
-      },
-      // tailwind.config.js
-      extend: {
-        keyframes: {
-          pingOnce: {
-            '0%': { transform: 'scale(1)', opacity: '1' },
-            '40%': { transform: 'scale(1.8)', opacity: '0.5' },
-            '100%': { transform: 'scale(1)', opacity: '1' },
-          },
+        pingOnce: {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "40%": { transform: "scale(1.8)", opacity: "0.5" },
+          "100%": { transform: "scale(1)", opacity: "1" },
         },
-        animation: {
-          'ping-once': 'pingOnce 0.6s ease-in-out',
+        heartbeat: {
+          "0%, 100%": { transform: "scale(1)" },
+          "14%": { transform: "scale(1.3)" },
+          "28%": { transform: "scale(1)" },
+          "42%": { transform: "scale(1.3)" },
+          "70%": { transform: "scale(1)" },
         },
       },
-
-
       animation: {
         fuild: "fluidMotion 12s ease-in-out infinite",
         bounce: "bounce 1s infinite",
@@ -73,6 +64,9 @@ export default {
         gradient: "gradientMove 10s ease infinite",
         waves: "waveMotion 15s ease-in-out infinite",
         lightRain: "lightFlicker 8s ease-in-out infinite",
+        "ping-once": "pingOnce 0.6s ease-in-out",
+        "spin-slow": "spin 12s linear infinite",
+        heartbeat: "heartbeat 1.5s infinite", // 💜 Nuevo
       },
       backgroundSize: {
         300: "300% 300%",
@@ -85,9 +79,6 @@ export default {
         "3d": "0 10px 20px rgba(0, 0, 0, 0.2)",
         glow: "0 0 10px rgba(168, 157, 177, 0.3)",
         "text-glow": "0 0 6px rgba(168, 157, 177, 0.5)",
-      },
-      corePlugins: {
-        preflight: false,
       },
       fontFamily: {
         sans: ["Segoe UI", "sans-serif"],
@@ -158,5 +149,9 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar"), require('tailwind-scrollbar-hide')],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("tailwind-scrollbar"),
+    require("tailwind-scrollbar-hide"),
+  ],
 };

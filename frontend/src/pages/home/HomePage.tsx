@@ -2,7 +2,6 @@ import Topbar from "@/components/Topbar";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { useEffect, useRef } from "react";
 import FeaturedSection from "./components/FeaturedSection";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import SectionGrid from "./components/SectionGrid";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useLanguageStore } from "@/stores/useLanguageStore";
@@ -31,7 +30,8 @@ const HomePage = () => {
     fetchMadeForYouSongs();
     fetchTrendingSongs();
     fetchSongs();
-  }, [fetchFeaturedSongs, fetchMadeForYouSongs, fetchTrendingSongs, fetchSongs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (
@@ -47,30 +47,46 @@ const HomePage = () => {
   }, [initializeQueue, madeForYouSongs, trendingSongs, featuredSongs]);
 
   return (
-    <main className="rounded-md overflow-hidden h-full bg-gradient-to-b from-lapsus-1200/35 to-lapsus-900">
+    <main className=" rounded-xl scroll-smooth w-full h-full overflow-y-auto scrollbar-none p-10 text-white bg-gradient-to-b from-[#1f1023] via-[#140d1a] to-[#0a0a0a] border border-white/20">
       <Topbar />
-      <ScrollArea className="h-[calc(100vh-180px)]">
-        <div className="p-4 sm:p-6">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-6">
-            {t.goodAfternoon || "Good afternoon"}
-          </h1>
+
+      <h1 className="text-4xl font-bold mb-10 drop-shadow-md">
+        {t.goodAfternoon || "Good afternoon"}
+      </h1>
+
+      {/* Featured Section */}
+      <section className="mb-16">
+        <h2 className="text-2xl font-semibold mb-6 text-purple-300">🌟 Recomendadas</h2>
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl">
           <FeaturedSection />
-          <div className="space-y-8">
-            <SectionGrid
-              title={t.madeForYou || "Made For You"}
-              songs={madeForYouSongs}
-              isLoading={isLoading}
-              onPlayClick={(song) => console.log("Play song", song)}
-            />
-            <SectionGrid
-              title={t.trending || "Trending"}
-              songs={trendingSongs}
-              isLoading={isLoading}
-              onPlayClick={(song) => console.log("Play song", song)}
-            />
-          </div>
         </div>
-      </ScrollArea>
+      </section>
+
+      {/* Made for You */}
+      <section className="mb-16">
+        <h2 className="text-2xl font-semibold mb-6 text-purple-300">🎧 {t.madeForYou || "Made For You"}</h2>
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl">
+          <SectionGrid
+            title=""
+            songs={madeForYouSongs}
+            isLoading={isLoading}
+            onPlayClick={(song) => console.log("Play song", song)}
+          />
+        </div>
+      </section>
+
+      {/* Trending */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-6 text-purple-300">🔥 {t.trending || "Trending"}</h2>
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-2xl">
+          <SectionGrid
+            title=""
+            songs={trendingSongs}
+            isLoading={isLoading}
+            onPlayClick={(song) => console.log("Play song", song)}
+          />
+        </div>
+      </section>
     </main>
   );
 };

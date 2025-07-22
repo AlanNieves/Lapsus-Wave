@@ -30,7 +30,6 @@ const LeftSidebar = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Componente de búsqueda animado integrado
   const AnimatedSearchButton = () => {
     const targetRef = useRef<HTMLInputElement>(null);
     const [isHovered, setIsHovered] = useState(false);
@@ -88,13 +87,13 @@ const LeftSidebar = () => {
         }}
         onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
-        onSubmit={(e) => e.preventDefault()} // evita Enter
+        onSubmit={(e) => e.preventDefault()}
       >
         <div
           className={cn(
             "absolute inset-0 flex items-center justify-center",
-            "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
-            showSearchInput ? "before:opacity-0" : "group-hover:before:bg-purple-100/5"
+            "before:content-[''] before:absolute before:inset-1 before:rounded-xl before:blur-lg before:transition-all before:duration-300",
+            showSearchInput ? "before:opacity-0" : "group-hover:before:bg-purple-200/5"
           )}
         />
 
@@ -107,8 +106,8 @@ const LeftSidebar = () => {
               value={inputValue}
               onChange={handleChange}
               className={cn(
-                "absolute w-full h-full bg-black/20 backdrop-blur-md",
-                "rounded-full border border-lapsus-500 px-4 pr-10",
+                "absolute w-full h-full bg-white/10 backdrop-blur-md",
+                "rounded-xl border border-white/20 px-4 pr-10 text-sm",
                 "text-white outline-none transition-all duration-500",
                 "placeholder:text-white/50",
                 showSearchInput
@@ -117,9 +116,8 @@ const LeftSidebar = () => {
               )}
             />
 
-            {/* Icono flecha a la derecha */}
             {showSearchInput ? (
-              <div className="absolute right-3 z-20 flex items-center justify-center text-lapsus-500">
+              <div className="absolute right-3 z-20 flex items-center justify-center text-purple-300">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -160,9 +158,8 @@ const LeftSidebar = () => {
   };
 
   return (
-    <aside className="w-full h-full relative flex items-center justify-center bg-gradient-to-b from-lapsus-1200/35 to-lapsus-900">
-      {/* Contenedor efecto cristal */}
-      <div className="w-full h-full rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 p-2 flex flex-col items-center justify-center">
+    <aside className="w-full h-full relative flex items-center justify-center bg-gradient-to-b from-[#1f102a]/50 to-[#0d0913]/90">
+      <div className="w-full h-full rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 p-2 flex flex-col items-center justify-center shadow-xl">
         <nav className="flex flex-col items-center w-full h-full justify-center gap-4 py-6">
           {navItems.map((item) => {
             const active = isActive(item.path);
@@ -174,26 +171,32 @@ const LeftSidebar = () => {
                 className="w-full group flex items-center justify-center relative"
               >
                 {item.badge && reviews.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-md">
                     {reviews.length}
                   </span>
                 )}
                 <div
                   className={cn(
                     "relative flex flex-col items-center justify-center w-full h-11 md:h-14 transition-all duration-600 cursor-pointer",
-                    "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
+                    "before:content-[''] before:absolute before:inset-1 before:rounded-xl before:blur-md before:transition-all before:duration-300",
                     active
-                      ? "before:bg-pink-200/20"
-                      : "group-hover:before:bg-purple-100/5"
+                      ? "before:bg-purple-300/10"
+                      : "group-hover:before:bg-purple-200/5"
                   )}
                 >
                   <div
                     className={cn(
-                      "z-10 flex flex-col items-center justify-center w-full h-full text-white",
-                      active && "text-lapsus-500"
+                      "z-10 flex flex-col items-center justify-center w-full h-full",
+                      active ? "text-purple-300" : "text-white"
                     )}
                   >
-                    <item.icon className="w-4 h-4 mb-0.5" />
+                    {/* ✅ Ícono animado */}
+                    <item.icon
+                      className={cn(
+                        "w-4 h-4 mb-0.5 transition-transform duration-300",
+                        "group-hover:scale-110 group-hover:animate-pulse"
+                      )}
+                    />
                     <span className="text-[11px] text-center hidden lg:block font-medium">
                       {item.name}
                     </span>
@@ -203,13 +206,12 @@ const LeftSidebar = () => {
             );
           })}
 
-          {/* Botón de búsqueda animado - mantiene su posición original */}
           <div className="w-full group flex items-center justify-center">
             <div
               className={cn(
                 "relative flex flex-col items-center justify-center w-full h-11 md:h-14 transition-all duration-600",
-                "before:content-[''] before:absolute before:inset-1 before:rounded-md before:blur-md before:transition-all before:duration-300",
-                "group-hover:before:bg-purple-100/5"
+                "before:content-[''] before:absolute before:inset-1 before:rounded-xl before:blur-md before:transition-all before:duration-300",
+                "group-hover:before:bg-purple-200/5"
               )}
             >
               <AnimatedSearchButton />

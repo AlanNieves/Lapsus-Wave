@@ -23,25 +23,27 @@ const ChatMessages = () => {
 
   if (!selectedUser || !user) {
     return (
-      <div className="flex-1 text-white flex items-center justify-center">
-        Selecciona un usuario para comenzar a chatear
+      <div className="flex-1 text-purple-200 flex items-center justify-center px-4 text-center">
+        Selecciona un usuario para comenzar a chatear.
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-2" ref={containerRef}>
-      <ScrollArea className="h-full">
-        <div className="flex flex-col gap-2">
+    <div className="flex-1 overflow-hidden" ref={containerRef}>
+      <ScrollArea className="h-full px-4 py-6">
+        <div className="flex flex-col gap-4">
           {allMessages.map((msg) => {
             const isMine = msg.senderId?.toString?.() === user._id;
 
             return (
               <div
                 key={msg._id || `${msg.senderId}-${msg.content}-${Math.random()}`}
-
-                className={`max-w-[70%] px-4 py-2 rounded-xl text-sm whitespace-pre-wrap break-words
-                  ${isMine ? "bg-pink-800 text-white self-end" : "bg-zinc-800 text-white self-start"}`}
+                className={`max-w-[70%] px-4 py-3 rounded-xl text-sm whitespace-pre-wrap break-words shadow-lg border
+                  ${isMine
+                    ? "self-end bg-gradient-to-br from-purple-600/40 to-pink-500/30 text-white border-white/10"
+                    : "self-start bg-white/5 text-purple-100 border-white/10"
+                  }`}
               >
                 {msg.content}
               </div>

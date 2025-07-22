@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Song } from "@/types";
 import axios from "axios";
 import { ScrollArea } from "@/components/ui/scroll-area";
-/*import { Button } from "@/components/ui/button";*/
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 
@@ -54,31 +53,48 @@ const LikedSongsPage = () => {
   };
 
   return (
-    <div className="h-full w-full flex gap-6">
+    <div className="rounded-xl h-full w-full flex gap-6 border border-white/20">
       <div className="flex-1 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-lapsus-1200/35 to-lapsus-900 -z-10" />
+        {/* Fondo igual que LeftSidebar */}
+        <div className="rounded-xl absolute inset-0 bg-gradient-to-b from-[#1f102a]/50 to-[#0d0913]/90 -z-10  border-white/20" />
+
         <ScrollArea className="h-full rounded-md">
           <div className="relative min-h-full">
             {/* Header */}
             <div className="relative z-10 pt-10 px-10">
               <div className="flex gap-8 pb-10 items-end">
-                <img
-                  src="/heart-8bit.png"
-                  alt="Liked Songs"
-                  className="w-[220px] h-[220px] shadow-xl rounded-xl object-contain bg-white/10 p-4"
-                />
+                {/* Corazón animado */}
+                <div className="w-[220px] h-[220px] flex items-center justify-center bg-gradient-to-b from-purple-800/30 to-purple-900/20 shadow-xl rounded-xl">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-32 h-32 text-pink-500 animate-heartbeat"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42
+                        4.42 3 7.5 3c1.74 0 3.41 0.81
+                        4.5 2.09C13.09 3.81 14.76 3
+                        16.5 3 19.58 3 22 5.42
+                        22 8.5c0 3.78-3.4 6.86-8.55
+                        11.54L12 21.35z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
                 <div className="flex flex-col justify-end w-full">
-                  <p className="text-sm font-medium uppercase text-lapsus-400">
+                  <p className="text-sm font-medium uppercase text-purple-400">
                     Colección
                   </p>
                   <h1 className="text-6xl md:text-7xl font-bold my-3 text-white">
                     Me gusta
                   </h1>
-                  <div className="flex items-center gap-4 text-sm text-lapsus-300">
+                  <div className="flex items-center gap-4 text-sm text-purple-300">
                     <span>{likedSongs.length} canciones</span>
                     <button
                       onClick={handlePlayAll}
-                      className="w-10 h-10 rounded-full bg-pink-800 hover:bg-pink-700 flex items-center justify-center shadow-md transition"
+                      className="w-10 h-10 rounded-full bg-gradient-to-b from-purple-500/40 to-purple-700/40 hover:from-purple-500 hover:to-purple-700 flex items-center justify-center shadow-md hover:shadow-lg transition"
                     >
                       <Play className="w-5 h-5 text-white" />
                     </button>
@@ -89,7 +105,8 @@ const LikedSongsPage = () => {
 
             {/* Tabla de canciones */}
             <div className="bg-white/5 backdrop-blur-md border-t border-white/10">
-              <div className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-10 py-3 text-sm text-lapsus-100 font-medium uppercase tracking-widest">
+              {/* Encabezado */}
+              <div className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-10 py-3 text-sm text-purple-200 font-medium uppercase tracking-widest">
                 <div className="flex justify-end">#</div>
                 <div>Título</div>
                 <div className="flex justify-start">Artista</div>
@@ -98,38 +115,48 @@ const LikedSongsPage = () => {
 
               <div className="px-6">
                 <div className="space-y-2 py-4">
-                  {likedSongs.map((song, /*index*/) => (
+                  {likedSongs.map((song) => (
                     <div
                       key={song._id}
-                      className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm text-white hover:bg-white/10 rounded-lg group cursor-pointer transition"
+                      className="group relative grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm text-white rounded-lg cursor-pointer transition"
                       onClick={() => handlePlay(song)}
                     >
-                      <div className="flex items-center justify-center">
+                      {/* Efecto morado al hover */}
+                      <div className="absolute inset-0 rounded-lg bg-purple-500/5 opacity-0 group-hover:opacity-100 transition" />
+
+                      {/* Ícono de play */}
+                      <div className="relative flex items-center justify-center z-10">
                         {isPlayingThisSong(song) ? (
-                          <Play className="h-4 w-4 text-lapsus-300 fill-current animate-pulse" />
+                          <Play className="h-4 w-4 text-purple-400 fill-current animate-pulse" />
                         ) : (
-                          <Play className="h-4 w-4 text-lapsus-500" />
+                          <Play className="h-4 w-4 text-purple-500" />
                         )}
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      {/* Título y cover */}
+                      <div className="flex items-center gap-3 z-10">
                         <img
                           src={song.imageUrl}
                           alt={song.title}
                           className="size-10 rounded-md"
                         />
                         <div>
-                          <div className="font-semibold text-lapsus-300">
+                          <div className="font-semibold text-purple-200 truncate">
                             {song.title}
                           </div>
-                          <div className="text-lapsus-400 text-sm">{song.artist}</div>
+                          <div className="text-purple-400 text-sm truncate">
+                            {song.artist}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center text-lapsus-400">
+                      {/* Artista */}
+                      <div className="flex items-center text-purple-400 z-10">
                         {song.artist}
                       </div>
-                      <div className="flex items-center text-lapsus-400">
+
+                      {/* Duración */}
+                      <div className="flex items-center text-purple-400 z-10">
                         {formatDuration(song.duration)}
                       </div>
                     </div>

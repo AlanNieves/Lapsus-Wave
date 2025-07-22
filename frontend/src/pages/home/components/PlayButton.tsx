@@ -6,14 +6,14 @@ import { MouseEvent } from "react";
 
 interface PlayButtonProps {
   song: Song;
-  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
+  onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 const PlayButton = ({ song }: PlayButtonProps) => {
   const { currentSong, isPlaying, setCurrentSong, togglePlay } = usePlayerStore();
   const isCurrentSong = currentSong?._id === song._id;
 
-  const handlePlay = (e: MouseEvent<HTMLButtonElement>) => { // Tipo específico para el evento
+  const handlePlay = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (isCurrentSong) {
       togglePlay();
@@ -26,15 +26,16 @@ const PlayButton = ({ song }: PlayButtonProps) => {
     <Button
       size="icon"
       onClick={handlePlay}
-      className={`absolute bottom-3 right-2 bg-gradient-to-br from-lapsus-1200 to-lapsus-1250 hover:bg-lapsus-1000 hover:scale-105 transition-all 
-        opacity-0 translate-y-2 group-hover:translate-y-0 ${
-          isCurrentSong ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-        }`}
+      className={`absolute bottom-3 right-2 backdrop-blur-md border border-white/10 shadow-lg
+        bg-gradient-to-br from-[#1f102a]/70 to-[#913f8f]/70
+        hover:scale-110 transition-all duration-300
+        group-hover:opacity-100 opacity-0 translate-y-2 group-hover:translate-y-0
+        rounded-full`}
     >
       {isCurrentSong && isPlaying ? (
-        <Pause className="size-5 text-lapsus-500" />
+        <Pause className="size-5 text-white drop-shadow" />
       ) : (
-        <Play className="size-5 text-lapsus-500" />
+        <Play className="size-5 text-white drop-shadow" />
       )}
     </Button>
   );

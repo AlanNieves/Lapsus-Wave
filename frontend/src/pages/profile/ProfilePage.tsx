@@ -3,7 +3,7 @@ import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Playlist } from "@/types";
+import { Playlist, UserPost } from "@/types";
 
 interface User {
   _id: string;
@@ -17,17 +17,7 @@ interface User {
   cover?: string;
 }
 
-interface Post {
-  _id: string;
-  image: string;
-  description: string;
-  createdAt: string;
-  userId: {
-    _id: string;
-    nickname: string;
-    image?: string;
-  };
-}
+
 
 const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -38,7 +28,7 @@ const ProfilePage = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [postImage, setPostImage] = useState<File | null>(null);
   const [postDescription, setPostDescription] = useState("");
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<UserPost[]>([]);
   const [showPostForm, setShowPostForm] = useState(false);
 
   const inputFileRef = useRef<HTMLInputElement | null>(null);
@@ -83,7 +73,7 @@ const ProfilePage = () => {
         const { data } = await axios.get(`${BASE_URL}/posts`, {
           withCredentials: true,
         });
-        setPosts(data.filter((p: Post) => p.userId?._id === user?._id));
+        setPosts(data.filter((p: UserPost) => p.userId?._id === user?._id));
       } catch (err) {
         console.error("Error al cargar posts", err);
       }
@@ -168,7 +158,7 @@ const ProfilePage = () => {
       setShowPostForm(false);
       alert("✅ Publicación creada");
       const { data } = await axios.get(`${BASE_URL}/posts`, { withCredentials: true });
-      setPosts(data.filter((p: Post) => p.userId?._id === user?._id));
+      setPosts(data.filter((p: UserPost) => p.userId?._id === user?._id));
     } catch (err) {
       console.error("Error creando post", err);
     }
@@ -177,7 +167,7 @@ const ProfilePage = () => {
   if (!user) return null;
 
   return (
-    <div className="w-full h-screen overflow-y-auto scrollbar-hide bg-gradient-to-b from-[#2c0e25] via-[#1c0b1a] to-[#0f0f0f] text-white pb-40">
+    <div className="rounded-xl w-full h-screen overflow-y-auto scrollbar-hide bg-gradient-to-b from-[#120b1d] via-[#0d0b14] to-[#0b0b0b] text-white pb-40 border border-white/20">
       <div className="relative w-full h-64">
         <img
           src={user.cover || "/default-cover.jpg"}
@@ -185,7 +175,7 @@ const ProfilePage = () => {
           className="object-cover w-full h-full"
         />
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-pointer"
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
           onClick={() => inputCoverRef.current?.click()}
         />
         <input
@@ -201,7 +191,7 @@ const ProfilePage = () => {
         <div className="flex-1 flex gap-8 items-start -mt-24">
           <div className="flex flex-col items-center">
             <div
-              className="relative w-36 h-36 rounded-full border-4 border-[#A64D79] overflow-hidden group bg-black cursor-pointer"
+              className="relative w-36 h-36 rounded-full border-4 border-white/20 overflow-hidden group backdrop-blur-md bg-white/5 shadow-lg cursor-pointer"
               onClick={() => inputFileRef.current?.click()}
             >
               <img
@@ -224,7 +214,7 @@ const ProfilePage = () => {
               ) : (
                 <Button
                   variant="outline"
-                  className="w-full border-lapsus-1100 text-white hover:bg-lapsus-1100/40"
+                  className="w-full border-white/20 text-white hover:bg-white/10"
                   onClick={() => setIsEditing(true)}
                 >
                   Editar perfil
@@ -232,7 +222,7 @@ const ProfilePage = () => {
               )}
               <Button
                 variant="secondary"
-                className="w-full bg-[#A64D79] hover:bg-[#6A1E55] text-white"
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white"
                 onClick={() => navigate("/library")}
               >
                 Ver biblioteca
@@ -251,14 +241,14 @@ const ProfilePage = () => {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full bg-transparent border-b border-lapsus-300 text-sm focus:outline-none"
+                  className="w-full bg-transparent border-b border-white text-sm focus:outline-none"
                 />
               </>
             ) : (
               <>
                 <h1 className="text-3xl font-bold">{user.nickname}</h1>
-                <p className="text-lapsus-300 text-sm">@{user.lapsusId}</p>
-                <p className="text-lapsus-400 text-sm">{user.bio || "Sin biografía"}</p>
+                <p className="text-purple-300 text-sm">@{user.lapsusId}</p>
+                <p className="text-purple-300 text-sm">{user.bio || "Sin biografía"}</p>
               </>
             )}
 
@@ -266,7 +256,7 @@ const ProfilePage = () => {
               {tags.map((tag, i) => (
                 <Badge
                   key={i}
-                  className="bg-lapsus-1100 text-white text-xs border border-lapsus-300 px-3 py-1 flex items-center gap-2"
+                  className="bg-white/10 backdrop-blur-sm text-white text-xs border border-white/20 px-3 py-1"
                 >
                   {tag}
                   {isEditing && (
@@ -283,21 +273,22 @@ const ProfilePage = () => {
                 <input
                   type="text"
                   placeholder="Nuevo tag"
-                  className="bg-transparent border-b border-lapsus-300 text-sm text-white outline-none"
+                  className="bg-transparent border-b border-white text-sm text-white outline-none"
                   onKeyDown={handleAddTag}
                   ref={tagInputRef}
                 />
               )}
             </div>
 
-            <p className="text-xs text-lapsus-400 mt-4">
-              Última canción escuchada: <span className="text-lapsus-500 font-semibold">{user.lastSong || "N/A"}</span>
+            <p className="text-xs text-purple-300 mt-4">
+              Última canción escuchada:{" "}
+              <span className="text-purple-300 font-semibold">{user.lastSong || "N/A"}</span>
             </p>
 
             <div className="mt-8 w-full">
               {!showPostForm ? (
                 <Button
-                  className="bg-[#A64D79] hover:bg-[#6A1E55] text-white"
+                  className="bg-purple-500 hover:bg-purple-600 text-white"
                   onClick={() => setShowPostForm(true)}
                 >
                   Crear publicación
@@ -305,11 +296,11 @@ const ProfilePage = () => {
               ) : (
                 <>
                   <h3 className="text-lg font-bold mb-2">Nueva publicación</h3>
-                  <div className="bg-black/20 p-4 rounded-xl border border-white/10 w-full">
+                  <div className="bg-white/5 backdrop-blur p-4 rounded-xl border border-white/10 w-full">
                     <div className="mb-2 flex items-center gap-2">
                       <button
                         onClick={() => document.getElementById("post-image-input")?.click()}
-                        className="text-white hover:text-lapsus-500 transition"
+                        className="text-white hover:text-purple-300 transition"
                         title="Subir imagen"
                       >
                         📷 Elegir imagen
@@ -330,13 +321,13 @@ const ProfilePage = () => {
                       value={postDescription}
                       onChange={(e) => setPostDescription(e.target.value)}
                       placeholder="Escribe una descripción..."
-                      className="w-full bg-transparent border-b border-lapsus-300 text-sm text-white mb-2 outline-none"
+                      className="w-full bg-transparent border-b border-white text-sm text-white mb-2 outline-none"
                     />
                     <div className="flex gap-4">
                       <Button
                         onClick={handleCreatePost}
                         disabled={!postImage}
-                        className="bg-[#A64D79] hover:bg-[#6A1E55]"
+                        className="bg-purple-700 hover:bg-purple-600"
                       >
                         Publicar
                       </Button>
@@ -360,24 +351,24 @@ const ProfilePage = () => {
               <h3 className="text-lg font-bold mb-4">Mis publicaciones</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {posts.map((post) => (
-                  <div key={post._id} className="bg-black/20 p-4 rounded-lg border border-white/10">
+                  <div key={post._id} className="bg-white/5 backdrop-blur p-4 rounded-lg border border-white/10">
                     <div className="flex items-center gap-3 mb-2">
                       <img
                         src={post.userId?.image || "/default-avatar.png"}
                         alt="User"
                         className="w-8 h-8 rounded-full object-cover"
                       />
-                      <p className="text-sm font-semibold text-white">
-                        {post.userId?.nickname || "Usuario eliminado"}
-                      </p>
+                      <p className="text-sm font-semibold">{post.userId?.nickname}</p>
                     </div>
                     <img
                       src={post.image}
                       alt="Post"
                       className="w-full h-60 object-cover rounded mb-2"
                     />
-                    <p className="text-sm text-white">{post.description}</p>
-                    <p className="text-xs text-gray-400 mt-1">{new Date(post.createdAt).toLocaleString()}</p>
+                    <p className="text-sm">{post.description}</p>
+                    <p className="text-xs text-purple-300 mt-1">
+                      {new Date(post.createdAt).toLocaleString()}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -385,13 +376,13 @@ const ProfilePage = () => {
           </div>
 
           <div className="max-w-6xl mx-auto px-4 mt-20">
-            <h2 className="text-white text-lg font-bold mb-4 whitespace-nowrap">MIS PLAYLIST</h2>
+            <h2 className="text-lg font-bold mb-4 whitespace-nowrap">MIS PLAYLIST</h2>
             <div className="flex flex-col gap-2">
               {playlists.map((p) => (
                 <div
                   key={p._id}
                   onClick={() => navigate(`/playlists/${p._id}`)}
-                  className="bg-lapsus-1250 text-white text-sm py-2 px-3 rounded hover:bg-lapsus-1100 cursor-pointer border border-white/20"
+                  className="bg-white/10 hover:bg-white/20 backdrop-blur rounded py-2 px-3 cursor-pointer border border-white/10"
                 >
                   {p.name}
                 </div>

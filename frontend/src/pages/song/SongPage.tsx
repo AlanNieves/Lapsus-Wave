@@ -64,7 +64,7 @@ const SongPage = () => {
       await toggleLikedSong(currentSongData._id);
       setIsLiked((prev) => !prev);
       setAnimate(true);
-      setTimeout(() => setAnimate(false), 400); // duración de la animación
+      setTimeout(() => setAnimate(false), 400);
     } catch (err) {
       console.error("Error al dar like a la canción", err);
     }
@@ -73,39 +73,31 @@ const SongPage = () => {
   return (
     <div className="h-full flex gap-6">
       <div className="flex-1 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000 to-lapsus-1000 -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1f102a]/50 to-[#0d0913]/90"/>
+
         <ScrollArea className="h-full rounded-md">
-          <div className="relative min-h-full">
-            <div className="absolute inset-0 bg-gradient-to-b from-lapsus-1000 via-lapsus-1000 to-red-1000 pointer-events-none" />
+          <div className="relative min-h-full px-6 py-8">
+            <div className="flex gap-6 mb-10">
+              <img
+                src={currentSongData.imageUrl}
+                alt={currentSongData.title}
+                className="w-60 h-60 shadow-xl rounded-xl object-cover border border-white/10"
+              />
 
-            {/* Encabezado del single */}
-            <div className="relative z-10 pt-6 px-6 bg-lapsus-1000">
-              <div className="flex gap-6 pb-8">
-                <img
-                  src={currentSongData.imageUrl}
-                  alt={currentSongData.title}
-                  className="w-[240px] h-[240px] shadow-xl rounded object-cover"
-                />
-                <div className="flex flex-col justify-end">
-                  <p className="text-sm font-medium">Single</p>
-                  <h1 className="text-5xl md:text-7xl font-bold my-4 text-white">
-                    {currentSongData.title}
-                  </h1>
-                  <div className="flex items-center gap-2 text-sm text-zinc-100">
-                    <span className="font-medium text-white">
-                      {currentSongData.artist}
-                    </span>
-                    <span>• 1 {t.songs?.toLowerCase() || "canción"}</span>
-                    <span>• {currentSongData.createdAt.split("T")[0]}</span>
-                  </div>
+              <div className="flex flex-col justify-end">
+                <p className="text-sm text-lapsus-400 font-semibold tracking-wide">SINGLE</p>
+                <h1 className="text-5xl md:text-7xl font-bold my-3 text-white">
+                  {currentSongData.title}
+                </h1>
+                <div className="flex items-center gap-3 text-sm text-lapsus-300">
+                  <span className="font-medium text-lapsus-500">
+                    {currentSongData.artist}
+                  </span>
+                  <span>• 1 {t.songs?.toLowerCase() || "canción"}</span>
+                  <span>• {currentSongData.createdAt.split("T")[0]}</span>
                 </div>
-              </div>
-            </div>
 
-            {/* Controles */}
-            <div className="sticky top-fix z-50 bg-gradient-1000 from-black/80 to-transparent backdrop-blur-sm">
-              <div className="flex items-center justify-between px-6 py-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 mt-6">
                   <Button
                     onClick={handlePlay}
                     size="icon"
@@ -132,76 +124,75 @@ const SongPage = () => {
                     />
                   </button>
                 </div>
-
-                <div className="w-[300px] mr-6">
-                  <MusicSearch
-                    tracks={[{
-                      _id: currentSongData._id,
-                      title: currentSongData.title,
-                      artist: currentSongData.artist,
-                      duration: formatDuration(currentSongData.duration),
-                      imageUrl: currentSongData.imageUrl,
-                    }]}
-                    onResultSelect={() => handlePlay()}
-                    placeholder={t.searchPlaceholder || "¿Qué canción buscas?"}
-                  />
-                </div>
               </div>
             </div>
 
-            {/* Tabla de canción única */}
-            <div className="bg-black/20 backdrop-blur-sm">
-              <div className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-10 py-2 text-sm text-lapsus-100">
-                <div className="flex justify-end">#</div>
+            <div className="flex justify-end w-full mb-4">
+              <div className="w-[300px]">
+                <MusicSearch
+                  tracks={[{
+                    _id: currentSongData._id,
+                    title: currentSongData.title,
+                    artist: currentSongData.artist,
+                    duration: formatDuration(currentSongData.duration),
+                    imageUrl: currentSongData.imageUrl,
+                  }]}
+                  onResultSelect={() => handlePlay()}
+                  placeholder={t.searchPlaceholder || "¿Qué canción buscas?"}
+                />
+              </div>
+            </div>
+
+            <div className="bg-black/30 border border-white/10 backdrop-blur-md rounded-xl overflow-hidden">
+              <div className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-8 py-3 text-sm text-lapsus-400 border-b border-white/10">
+                <div className="text-right">#</div>
                 <div>{t.title || "Título"}</div>
-                <div className="flex justify-start">{t.date || "Fecha"}</div>
-                <div className="flex justify-start">{t.duration || "Duración"}</div>
+                <div>{t.date || "Fecha"}</div>
+                <div>{t.duration || "Duración"}</div>
               </div>
 
-              <div className="px-6">
-                <div className="space-y-2 py-4">
-                  <div
-                    className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm text-lapsus-800 hover:bg-lapsus-1000 rounded-md group cursor-pointer"
-                    onClick={handlePlay}
-                  >
-                    <div className="flex items-center justify-center">
-                      {isPlayingThisSong ? (
-                        isPlaying ? (
-                          <Pause className="h-4 w-4 text-lapsus-1100 fill-current" />
-                        ) : (
-                          <Play className="h-4 w-4 text-lapsus-1100 fill-current" />
-                        )
+              <div className="px-6 py-4">
+                <div
+                  className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 rounded-lg cursor-pointer hover:bg-lapsus-1000 transition-colors"
+                  onClick={handlePlay}
+                >
+                  <div className="flex items-center justify-center">
+                    {isPlayingThisSong ? (
+                      isPlaying ? (
+                        <Pause className="h-4 w-4 text-lapsus-1100 fill-current" />
                       ) : (
-                        <Play className="h-4 w-4 text-lapsus-500" />
-                      )}
-                    </div>
+                        <Play className="h-4 w-4 text-lapsus-1100 fill-current" />
+                      )
+                    ) : (
+                      <Play className="h-4 w-4 text-lapsus-500" />
+                    )}
+                  </div>
 
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={currentSongData.imageUrl}
-                        alt={currentSongData.title}
-                        className="size-10 rounded-sm"
-                      />
-                      <div>
-                        <div className="font-medium text-lapsus-500">
-                          {currentSongData.title}
-                        </div>
-                        <Link
-                          to={`/artist/${currentSongData.artistId}`}
-                          className="text-lapsus-400 hover:underline"
-                        >
-                          {currentSongData.artist}
-                        </Link>
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={currentSongData.imageUrl}
+                      alt={currentSongData.title}
+                      className="w-10 h-10 rounded-sm object-cover"
+                    />
+                    <div>
+                      <div className="font-medium text-lapsus-500">
+                        {currentSongData.title}
                       </div>
+                      <Link
+                        to={`/artist/${currentSongData.artistId}`}
+                        className="text-lapsus-400 hover:underline"
+                      >
+                        {currentSongData.artist}
+                      </Link>
                     </div>
+                  </div>
 
-                    <div className="flex items-center text-lapsus-400">
-                      {currentSongData.createdAt.split("T")[0]}
-                    </div>
+                  <div className="flex items-center text-lapsus-400">
+                    {currentSongData.createdAt.split("T")[0]}
+                  </div>
 
-                    <div className="flex items-center text-lapsus-400">
-                      {formatDuration(currentSongData.duration)}
-                    </div>
+                  <div className="flex items-center text-lapsus-400">
+                    {formatDuration(currentSongData.duration)}
                   </div>
                 </div>
               </div>
