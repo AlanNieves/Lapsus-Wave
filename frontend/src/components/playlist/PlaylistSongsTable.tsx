@@ -59,16 +59,15 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
           className="px-4 py-2 rounded bg-zinc-800 text-white w-full max-w-xs outline-none"
         />
       </div>
-
-      <table className="w-full">
+      <table className="w-full table-auto">
         <thead>
-          <tr className="text-left border-b border-zinc-700">
-            <th className="pb-2">#</th>
-            <th className="pb-2">Nombre</th>
-            <th className="pb-2">Artista</th>
-            <th className="pb-2">Álbum</th>
-            <th className="pb-2">Fecha</th>
-            <th className="pb-2">Duración</th>
+          <tr className="border-b border-zinc-700">
+            <th className="pb-2 text-center">#</th>
+            <th className="pb-2 text-center">Nombre</th>
+            <th className="pb-2 text-center">Artista</th>
+            <th className="pb-2 text-center">Álbum</th>
+            <th className="pb-2 text-center">Fecha</th>
+            <th className="pb-2 text-center">Duración</th>
           </tr>
         </thead>
         <tbody>
@@ -91,7 +90,7 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
                   className="border-b border-zinc-800 hover:bg-zinc-800 transition cursor-pointer"
                   onClick={() => handlePlayPause(song, index)}
                 >
-                  <td className="py-2 w-8">
+                  <td className="py-2 text-center">
                     {isCurrent ? (
                       isPlaying ? <Pause size={18} /> : <Play size={18} />
                     ) : isHovered ? (
@@ -100,11 +99,17 @@ const PlaylistSongsTable = ({ playlistId }: { playlistId: string }) => {
                       index + 1
                     )}
                   </td>
-                  <td className="py-2">{song.title}</td>
-                  <td className="py-2">{song.artist}</td>
-                  <td className="py-2">{song.albumId}</td>
-                  <td className="py-2">{new Date(song.createdAt).toLocaleDateString()}</td>
-                  <td className="py-2">{formatDuration(song.duration)}</td>
+                  <td className="py-2 text-center truncate">{song.title}</td>
+                  <td className="py-2 text-center truncate">{song.artist}</td>
+                  <td className="py-2 text-center truncate">
+                    {typeof song.albumId === "object"
+                      ? song.albumId?.title || "Sin álbum"
+                      : "Sin álbum"}
+                  </td>
+                  <td className="py-2 text-center">
+                    {new Date(song.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="py-2 text-center">{formatDuration(song.duration)}</td>
                 </tr>
               );
             })

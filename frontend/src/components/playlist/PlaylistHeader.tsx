@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import type { Playlist } from "@/types";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { axiosInstance } from "@/lib/axios";
-
+import { getImageUrl } from "@/lib/getImageUrl";
 
 interface PlaylistHeaderProps {
   playlistId: string;
@@ -111,11 +111,8 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
 
   if (!playlist) return <div className="text-white p-6">Cargando...</div>;
 
-  const fullImageUrl = playlist.coverImage
-    ? playlist.coverImage.startsWith("http")
-      ? playlist.coverImage
-      : `${import.meta.env.VITE_API_URL}/uploads/${playlist.coverImage}`
-    : "/default-playlist-cover.png";
+  // ✅ Usamos el helper centralizado
+  const fullImageUrl = getImageUrl(playlist.coverImage);
 
   const totalDuration = playlist.songs.reduce((acc, song) => acc + song.duration, 0);
   const minutes = Math.floor(totalDuration / 60);
@@ -175,7 +172,10 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
                 autoFocus
               />
             ) : (
-              <h1 className="text-4xl font-bold cursor-pointer" onClick={() => setIsEditing(true)}>
+              <h1
+                className="text-4xl font-bold cursor-pointer"
+                onClick={() => setIsEditing(true)}
+              >
                 {playlist.name}
               </h1>
             )}
@@ -236,7 +236,10 @@ const PlaylistHeader = ({ playlistId, onOpenAddSongModal }: PlaylistHeaderProps)
             <button onClick={handleShuffle} className="bg-transparent text-white p-3 rounded-full">
               <Shuffle size={18} />
             </button>
-            <button onClick={onOpenAddSongModal} className="bg-transparent text-white p-3 rounded-full">
+            <button
+              onClick={onOpenAddSongModal}
+              className="bg-transparent text-white p-3 rounded-full"
+            >
               <Plus size={18} />
             </button>
           </div>

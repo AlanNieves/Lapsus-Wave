@@ -5,12 +5,48 @@ import path from "path";
 import fs from "fs";
 
 /**
- * Crear una nueva playlist
+ * Crear una nueva playlist con imagen opcional
  */
 export const createPlaylist = async (req, res, next) => {
   try {
     const { name, description, isPublic } = req.body;
     const userId = req.userId;
+
+    let coverFilename = "";
+
+    // Si se subió una imagen
+    if (req.files && req.files.cover) {
+      const cover = req.files.cover;
+
+      // Validar MIME
+      if (!cover.mimetype.startsWith("image/")) {
+        return res.status(400).json({ message: "Formato de imagen inválido." });
+      }
+
+      // Validar tamaño
+      if (cover.size > 2 * 1024 * 1024) {
+        return res
+          .status(400)
+          .json({ message: "La imagen supera el límite de 2MB." });
+      }
+
+      const allowedExts = [".jpg", ".jpeg", ".png", ".gif"];
+      const safeName = path
+        .basename(cover.name)
+        .replace(/\s+/g, "_")
+        .replace(/[^a-zA-Z0-9._-]/g, "");
+      const ext = path.extname(safeName).toLowerCase();
+
+      if (!allowedExts.includes(ext)) {
+        return res
+          .status(400)
+          .json({ message: "Extensión de imagen no permitida." });
+      }
+
+      coverFilename = `cover_${Date.now()}${ext}`;
+      const uploadPath = path.join(process.cwd(), "uploads", coverFilename);
+      await cover.mv(uploadPath);
+    }
 
     const playlist = await Playlist.create({
       name,
@@ -18,10 +54,12 @@ export const createPlaylist = async (req, res, next) => {
       isPublic,
       createdBy: userId,
       songs: [],
+      coverImage: coverFilename,
     });
 
     res.status(201).json(playlist);
   } catch (error) {
+    console.error("❌ Error creando playlist:", error);
     next(error);
   }
 };
@@ -48,22 +86,24 @@ export const getPlaylistById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Validar ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido" });
     }
 
-    const playlist = await Playlist.findById(id).populate("songs");
+    const playlist = await Playlist.findById(id).populate({
+      path: "songs",
+      populate: {
+        path: "albumId",
+        model: "Album",
+        select: "title", // Solo traer el título del álbum
+      },
+    });
 
     if (!playlist) {
       return res.status(404).json({ message: "Playlist no encontrada" });
     }
 
-    // Verificar permisos
-    if (
-      playlist.createdBy.toString() !== req.userId &&
-      !playlist.isPublic
-    ) {
+    if (playlist.createdBy.toString() !== req.userId && !playlist.isPublic) {
       return res
         .status(403)
         .json({ message: "No tienes acceso a esta playlist" });
@@ -84,7 +124,6 @@ export const addSongToPlaylist = async (req, res, next) => {
     const { songId } = req.body;
     const userId = req.userId;
 
-    // Validar IDs
     if (!mongoose.Types.ObjectId.isValid(playlistId)) {
       return res.status(400).json({ message: "ID de playlist inválido" });
     }
@@ -128,7 +167,6 @@ export const deletePlaylist = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.userId;
 
-    // Validar ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido" });
     }
@@ -158,53 +196,44 @@ export const updateCoverImage = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.userId;
 
-    //  Validar que el ID sea un ObjectId válido
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido" });
     }
 
-    //  Validar que se haya subido un archivo
     if (!req.files || !req.files.cover) {
       return res.status(400).json({ message: "No se subió ninguna imagen." });
     }
 
     const cover = req.files.cover;
 
-    //  Validar tipo MIME
     if (!cover.mimetype.startsWith("image/")) {
       return res.status(400).json({ message: "Formato de imagen inválido." });
     }
 
-    //  Validar tamaño máximo (2MB)
     if (cover.size > 2 * 1024 * 1024) {
-      return res.status(400).json({ message: "La imagen supera el límite de 2MB." });
+      return res
+        .status(400)
+        .json({ message: "La imagen supera el límite de 2MB." });
     }
 
-    // Lista blanca de extensiones permitidas
     const allowedExts = [".jpg", ".jpeg", ".png", ".gif"];
-
-    // Sanitizar nombre
     const safeName = path
       .basename(cover.name)
       .replace(/\s+/g, "_")
       .replace(/[^a-zA-Z0-9._-]/g, "");
-
-    //  Extraer extensión
     const ext = path.extname(safeName).toLowerCase();
 
-    //  Validar extensión
     if (!allowedExts.includes(ext)) {
-      return res.status(400).json({ message: "Extensión de imagen no permitida." });
+      return res
+        .status(400)
+        .json({ message: "Extensión de imagen no permitida." });
     }
 
-    //  Generar nombre único
     const filename = `cover_${id}_${Date.now()}${ext}`;
     const uploadPath = path.join(process.cwd(), "uploads", filename);
 
-    //  Mover archivo
     await cover.mv(uploadPath);
 
-    //  Actualizar la playlist con la nueva imagen
     const playlist = await Playlist.findOneAndUpdate(
       { _id: id, createdBy: userId },
       { coverImage: filename },
@@ -224,7 +253,6 @@ export const updateCoverImage = async (req, res, next) => {
   }
 };
 
-
 /**
  * Actualizar datos de la playlist
  */
@@ -234,7 +262,6 @@ export const updatePlaylist = async (req, res, next) => {
     const userId = req.userId;
     const { name, description, isPublic } = req.body;
 
-    // Validar ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "ID inválido" });
     }

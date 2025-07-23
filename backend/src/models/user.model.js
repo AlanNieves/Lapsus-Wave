@@ -81,6 +81,27 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
+    /**
+     * Canciones marcadas como favoritas por el usuario
+     */
+
+    likedSongs:[
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Song",
+      },
+    ],
+
+    /**
+     * Albumes guardados por el usuario
+     */
+    savedAlbums: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Album",
+      },
+    ],
+
     authProvider: {
       type: String,
       enum: ["local", "google", "facebook", "apple", "lapsus-wave"],
@@ -90,6 +111,8 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+
   },
   {
     timestamps: true,

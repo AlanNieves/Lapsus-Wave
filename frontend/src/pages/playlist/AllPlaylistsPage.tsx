@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Playlist } from "@/types";
 import { axiosInstance } from "@/lib/axios";
 import { Plus, X, Pencil } from "lucide-react";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 const AllPlaylistsPage = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -11,8 +12,6 @@ const AllPlaylistsPage = () => {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-  const FILE_BASE = API_BASE.replace("/api", "");
 
   const fetchPlaylists = async () => {
     try {
@@ -29,7 +28,11 @@ const AllPlaylistsPage = () => {
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsCreating(false);
+      if (e.key === "Escape") {
+        setIsCreating(false);
+        setNewName("");
+        setCoverFile(null);
+      }
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -144,10 +147,7 @@ const AllPlaylistsPage = () => {
         )}
 
         {playlists.map((playlist) => {
-          const correctedCoverImage = playlist.coverImage?.replace("/api/uploads", "/uploads");
-          const imageUrl = correctedCoverImage?.startsWith("http") || correctedCoverImage?.startsWith("/uploads")
-            ? correctedCoverImage
-            : `${FILE_BASE}/uploads/${correctedCoverImage}`;
+          const imageUrl = getImageUrl(playlist.coverImage);
 
           return (
             <div
@@ -156,7 +156,7 @@ const AllPlaylistsPage = () => {
               className="cursor-pointer hover:scale-[1.04] transition-transform rounded-xl overflow-hidden bg-white/10 backdrop-blur-md shadow-xl border border-white/10"
             >
               <img
-                src={imageUrl || "/placeholder.png"}
+                src={imageUrl}
                 alt={playlist.name}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/placeholder.png";

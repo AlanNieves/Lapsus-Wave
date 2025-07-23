@@ -2,35 +2,15 @@ import { useEffect, useState, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Playlist } from "@/types";
+import { Playlist, User, UserPost } from "@/types";
 import { axiosInstance } from "@/lib/axios";
 
-interface User {
-  _id: string;
-  nickname: string;
-  lapsusId: string;
-  email: string;
-  image?: string;
-  bio?: string;
-  tags?: string[];
-  lastSong?: string;
-  cover?: string;
-}
 
-interface Post {
-  _id: string;
-  image: string;
-  description: string;
-  createdAt: string;
-  userId: {
-    _id: string;
-    nickname: string;
-    image?: string;
-  };
-}
+
 
 const ProfilePage = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<(User & { lastSong?: string }) | null>(null);
+
   const [nickname, setNickname] = useState("");
   const [bio, setBio] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -38,7 +18,7 @@ const ProfilePage = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [postImage, setPostImage] = useState<File | null>(null);
   const [postDescription, setPostDescription] = useState("");
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<UserPost[]>([]);
   const [showPostForm, setShowPostForm] = useState(false);
 
   const inputFileRef = useRef<HTMLInputElement | null>(null);
@@ -83,7 +63,7 @@ const ProfilePage = () => {
         const { data } = await axiosInstance.get(`${BASE_URL}/posts`, {
           withCredentials: true,
         });
-        setPosts(data.filter((p: Post) => p.userId?._id === user?._id));
+        setPosts(data.filter((p: UserPost) => p.userId?._id === user?._id));
       } catch (err) {
         console.error("Error al cargar posts", err);
       }
@@ -120,7 +100,7 @@ const ProfilePage = () => {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setUser((prev) => (prev ? { ...prev, image: res.data.image } : prev));
+      setUser((prev) => (prev ? { ...prev, avatar: res.data.avatar } : prev));
     } catch (err) {
       console.error("Error al subir avatar", err);
     }
@@ -168,7 +148,7 @@ const ProfilePage = () => {
       setShowPostForm(false);
       alert("✅ Publicación creada");
       const { data } = await axiosInstance.get(`${BASE_URL}/posts`, { withCredentials: true });
-      setPosts(data.filter((p: Post) => p.userId?._id === user?._id));
+      setPosts(data.filter((p: UserPost) => p.userId?._id === user?._id));
     } catch (err) {
       console.error("Error creando post", err);
     }
@@ -205,7 +185,7 @@ const ProfilePage = () => {
               onClick={() => inputFileRef.current?.click()}
             >
               <img
-                src={user.image || "/default-avatar.png"}
+                src={user.avatar || "/default-avatar.png"}
                 alt="Avatar"
                 className="w-full h-full object-cover"
               />
@@ -363,7 +343,7 @@ const ProfilePage = () => {
                   <div key={post._id} className="bg-black/20 p-4 rounded-lg border border-white/10">
                     <div className="flex items-center gap-3 mb-2">
                       <img
-                        src={post.userId?.image || "/default-avatar.png"}
+                        src={post.userId?.avatar || "/default-avatar.png"}
                         alt="User"
                         className="w-8 h-8 rounded-full object-cover"
                       />

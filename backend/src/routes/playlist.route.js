@@ -24,7 +24,7 @@ const router = express.Router();
 router.get("/:id", verifyToken, getPlaylistById);
 router.patch("/:id", verifyToken, validateRequest(updatePlaylistSchema), updatePlaylist);
 router.patch("/:playlistId/add-song", verifyToken, validateRequest(addSongToPlaylistSchema), addSongToPlaylist);
-router.patch("/:id/cover", verifyToken, validateRequest(updateCoverImageSchema), updateCoverImage);
+router.patch("/:id/cover", verifyToken, updateCoverImage);
 router.delete("/:id", verifyToken, deletePlaylist);
 router.get("/", verifyToken, getUserPlaylists);
 router.post("/", verifyToken, validateRequest(createPlaylistSchema), createPlaylist);
