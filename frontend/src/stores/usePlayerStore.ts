@@ -3,10 +3,13 @@ import { create } from "zustand";
 import {  Song, Album} from "@/types";
 
 import toast from 'react-hot-toast';
+import React from "react";
 
 interface PlayerStore {
   
   // Estado existente
+  audioRef: React.RefObject<HTMLAudioElement> | null;
+
   currentSong: Song | null;
   isPlaying: boolean;
   queue: Song[];
@@ -47,10 +50,13 @@ interface PlayerStore {
 
   // Nueva acción para Chromecast
   setCurrentTime: (time: number) => void;
+  setAudioRef: (ref: React.RefObject<HTMLAudioElement> | null) => void;
 }
 
 export const usePlayerStore = create<PlayerStore>((set, get) => ({
   // Estado inicial (actualizado)
+   audioRef: null,
+ 
   currentSong: null,
   isPlaying: false,
   queue: [],
@@ -63,8 +69,8 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   openMenuSongId: null,
   currentTime: 0, // Valor inicial
 
-  
-  initializeQueue: (songs) => {
+  setAudioRef: (ref) => set({ audioRef: ref }),
+  initializeQueue: (songs) => { 
   const { queue } = get();
 
   const isSameQueue =
@@ -108,7 +114,10 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
 
 
-  togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+   togglePlay: () => {
+    const current = get().isPlaying;
+    get().setIsPlaying(!current);
+  },
 
   playNext: () => {
     const { currentIndex, queue } = get();
@@ -190,7 +199,24 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 
   setRepeatMode: (mode) => set({ repeatMode: mode }),
 
-  setIsPlaying: (isPlaying) => set({ isPlaying }),
+  setIsPlaying: (isPlaying) => {
+  const audio = get().audioRef?.current;
+  if (!audio) return;
+
+  // Evitar loop si el estado ya coincide
+  if (isPlaying === !audio.paused) return;
+
+  if (isPlaying) {
+    audio.play().catch((error) => {
+      console.error("Error al reproducir desde setIsPlaying:", error);
+      set({ isPlaying: false });
+    });
+  } else {
+    audio.pause();
+  }
+
+  set({ isPlaying });
+},
 
   setQueue: (queue) => {
     set({ queue });

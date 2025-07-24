@@ -2,20 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume, Volume1, Volume2, VolumeX } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react"; // Eliminamos useRef
 import { useLanguageStore } from "@/stores/useLanguageStore";
 import { translations } from "@/locales";
-import CastButton from "./CastButton"; // Import CastButton component
+import CastButton from "./CastButton";
 import React, { useMemo } from "react";
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
 } from "@/components/ui/dialog";
-
-
-
-
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
@@ -32,79 +28,82 @@ const Tooltip = ({ text }: { text: string }) => {
   );
 };
 
-
-
 export const PlaybackControls = () => {
-  const { currentSong, setCurrentSong, isPlaying, togglePlay, playNext, playPrevious, toggleShuffle, isShuffleActive, toggleRepeat, repeatMode, toggleExpandedView } = usePlayerStore();
+  const { 
+    currentSong, 
+    setCurrentSong, 
+    isPlaying, 
+    togglePlay, 
+    playNext, 
+    playPrevious, 
+    toggleShuffle, 
+    isShuffleActive, 
+    toggleRepeat, 
+    repeatMode, 
+    toggleExpandedView,
+    audioRef // Obtener referencia del store
+  } = usePlayerStore();
+  
   const [volume, setVolume] = useState(75);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [hoveredButton, setHoveredButton] = useState<null | 'shuffle' | 'previous' | 'play' | 'next' | 'repeat' | 'queue' | 'lyrics' | 'mute' | 'connect'>(null);
 
   // Aquí extraemos el estado y funciones para la cola y popover
   const queue = usePlayerStore((state) => state.queue);
   
-
   // Idioma
   const { language } = useLanguageStore();
   const t = translations[language];
 
+  const rotatedQueue = useMemo(() => {
+    if (!queue.length || !currentSong) return queue;
 
- const rotatedQueue = useMemo(() => {
-  if (!queue.length || !currentSong) return queue;
+    const currentIndex = queue.findIndex(song => song._id === currentSong._id);
 
-  const currentIndex = queue.findIndex(song => song._id === currentSong._id);
+    if (currentIndex === -1) {
+      return [currentSong, ...queue];
+    }
 
-  if (currentIndex === -1) {
-    // currentSong no está en la cola, así que la mostramos arriba + la cola original
-    return [currentSong, ...queue];
-  }
+    return [
+      ...queue.slice(currentIndex),
+      ...queue.slice(0, currentIndex),
+    ];
+  }, [queue, currentSong]);
 
-  // Rotamos la cola para empezar desde currentSong
-  return [
-    ...queue.slice(currentIndex),
-    ...queue.slice(0, currentIndex),
-  ];
-}, [queue, currentSong]);
-
-
-  // O el contenido JSX que quieras renderizar
-  
+  // Efecto para sincronizar tiempo y duración con el audio central
   useEffect(() => {
-    audioRef.current = document.querySelector("audio");
-
-    const audio = audioRef.current;
+    const audio = audioRef?.current;
     if (!audio) return;
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
-
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", updateDuration);
-
     const handleEnded = () => {
-      usePlayerStore.setState({ isPlaying: false });
+      console.log("Canción finalizada");
     };
 
-    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("durationchange", updateDuration);
+
+    // Actualizar duración si ya está disponible
+    if (audio.duration) {
+      setDuration(audio.duration);
+    }
 
     return () => {
       audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("durationchange", updateDuration);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [currentSong]);
+  }, [audioRef]); // Dependencia importante
 
   const handleSeek = (value: number[]) => {
-    if (audioRef.current) {
+    if (audioRef?.current) {
       audioRef.current.currentTime = value[0];
     }
   };
 
-
-
-  /*Codigo para el Mute*/
+  /* Codigo para el Mute */
   const [isMuted, setIsMuted] = useState(false);
 
   const toggleMute = () => {
@@ -117,11 +116,12 @@ export const PlaybackControls = () => {
     if (volume < 67) return <Volume1 />;
     return <Volume2 />;
   };
+  
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef?.current) {
       audioRef.current.volume = isMuted ? 0 : volume / 100;
     }
-  }, [volume, isMuted]);
+  }, [volume, isMuted, audioRef]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -134,8 +134,7 @@ export const PlaybackControls = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  /*Play-pause-keyboard*/
-
+  /* Play-pause-keyboard */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isTyping =
@@ -152,7 +151,6 @@ export const PlaybackControls = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [togglePlay]);
-
 
   return (
     <footer className='h-20 sm:h-24 bg-gradient-to-tl from-lapsus-1200/30 to-lapsus-900  border-x-lapsus-900 px-4'>
@@ -306,48 +304,47 @@ export const PlaybackControls = () => {
           </div>
 
           {/* Queue Button */}
-           <Dialog>
-        <DialogTrigger asChild>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="hover:text-white text-lapsus-500"
-            onMouseEnter={() => setHoveredButton("queue")}
-            onMouseLeave={() => setHoveredButton(null)}
-          >
-            <ListMusic className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        {hoveredButton === "queue" && <Tooltip text="Queue" />}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="hover:text-white text-lapsus-500"
+                onMouseEnter={() => setHoveredButton("queue")}
+                onMouseLeave={() => setHoveredButton(null)}
+              >
+                <ListMusic className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            {hoveredButton === "queue" && <Tooltip text="Queue" />}
 
-        <DialogContent className="bg-lapsus-900 border border-lapsus-700 max-w-sm">
-          <h4 className="text-sm font-medium text-lapsus-300 mb-2">Queue</h4>
-          {queue.length > 0 ? (
-            <ul className="space-y-2 max-h-[400px] overflow-y-auto">
-              
-              {rotatedQueue.map((song) => (
-                <li
-                  key={song._id}
-                  className="flex items-center gap-3 cursor-pointer hover:bg-lapsus-800/40 p-2 rounded-md transition"
-                  onClick={() => setCurrentSong(song)}
-                >
-                  <img
-                    src={song.imageUrl}
-                    alt={song.title}
-                    className="w-10 h-10 rounded-md object-cover"
-                  />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-medium truncate">{song.title}</span>
-                    <span className="text-xs text-lapsus-500 truncate">{song.artist}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-lapsus-500">No songs in queue</p>
-          )}
-        </DialogContent>
-      </Dialog>
+            <DialogContent className="bg-lapsus-900 border border-lapsus-700 max-w-sm">
+              <h4 className="text-sm font-medium text-lapsus-300 mb-2">Queue</h4>
+              {queue.length > 0 ? (
+                <ul className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {rotatedQueue.map((song) => (
+                    <li
+                      key={song._id}
+                      className="flex items-center gap-3 cursor-pointer hover:bg-lapsus-800/40 p-2 rounded-md transition"
+                      onClick={() => setCurrentSong(song)}
+                    >
+                      <img
+                        src={song.imageUrl}
+                        alt={song.title}
+                        className="w-10 h-10 rounded-md object-cover"
+                      />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-medium truncate">{song.title}</span>
+                        <span className="text-xs text-lapsus-500 truncate">{song.artist}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-lapsus-500">No songs in queue</p>
+              )}
+            </DialogContent>
+          </Dialog>
 
           {/* Connect Button */}
           <div className="relative">
@@ -357,8 +354,6 @@ export const PlaybackControls = () => {
             />
             {hoveredButton === 'connect' && <Tooltip text={t.connect || "Connect to a device"} />}
           </div>
-
-
 
           {/* Volume Controls */}
           <div className="relative flex items-center gap-2">
@@ -380,7 +375,7 @@ export const PlaybackControls = () => {
               className='w-24 hover:cursor-grab active:cursor-grabbing'
               onValueChange={(value) => {
                 setVolume(value[0]);
-                if (audioRef.current) {
+                if (audioRef?.current) {
                   audioRef.current.volume = value[0] / 100;
                 }
               }}
